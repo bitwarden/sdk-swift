@@ -61,6 +61,8 @@ typedef struct RustCallStatus {
 
 // Callbacks for UniFFI Futures
 typedef void (*UniFfiFutureCallbackUInt8)(const void * _Nonnull, uint8_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackInt8)(const void * _Nonnull, int8_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnull, void*_Nonnull, RustCallStatus);
 typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnull, void*_Nonnull, RustCallStatus);
 typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnull, void*_Nonnull, RustCallStatus);
 typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnull, void*_Nonnull, RustCallStatus);
@@ -82,13 +84,23 @@ void uniffi_bitwarden_uniffi_fn_free_client(void*_Nonnull ptr, RustCallStatus *_
 );
 void*_Nonnull uniffi_bitwarden_uniffi_fn_constructor_client_new(RustBuffer settings, RustCallStatus *_Nonnull out_status
 );
+void*_Nonnull uniffi_bitwarden_uniffi_fn_method_client_auth(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
 void*_Nonnull uniffi_bitwarden_uniffi_fn_method_client_crypto(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
 RustBuffer uniffi_bitwarden_uniffi_fn_method_client_echo(void*_Nonnull ptr, RustBuffer msg, RustCallStatus *_Nonnull out_status
 );
-void*_Nonnull uniffi_bitwarden_uniffi_fn_method_client_kdf(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+void*_Nonnull uniffi_bitwarden_uniffi_fn_method_client_generators(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
 void*_Nonnull uniffi_bitwarden_uniffi_fn_method_client_vault(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+void uniffi_bitwarden_uniffi_fn_free_clientauth(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+void uniffi_bitwarden_uniffi_fn_method_clientauth_hash_password(void*_Nonnull ptr, RustBuffer email, RustBuffer password, RustBuffer kdf_params, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+);
+void uniffi_bitwarden_uniffi_fn_method_clientauth_password_strength(void*_Nonnull ptr, RustBuffer password, RustBuffer email, RustBuffer additional_inputs, size_t uniffi_executor, UniFfiFutureCallbackUInt8 _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+);
+void uniffi_bitwarden_uniffi_fn_method_clientauth_satisfies_policy(void*_Nonnull ptr, RustBuffer password, uint8_t strength, RustBuffer policy, size_t uniffi_executor, UniFfiFutureCallbackInt8 _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
 );
 void uniffi_bitwarden_uniffi_fn_free_clientciphers(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
@@ -116,9 +128,11 @@ void uniffi_bitwarden_uniffi_fn_method_clientfolders_decrypt_list(void*_Nonnull 
 );
 void uniffi_bitwarden_uniffi_fn_method_clientfolders_encrypt(void*_Nonnull ptr, RustBuffer folder, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
 );
-void uniffi_bitwarden_uniffi_fn_free_clientkdf(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+void uniffi_bitwarden_uniffi_fn_free_clientgenerators(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
-void uniffi_bitwarden_uniffi_fn_method_clientkdf_hash_password(void*_Nonnull ptr, RustBuffer email, RustBuffer password, RustBuffer kdf_params, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+void uniffi_bitwarden_uniffi_fn_method_clientgenerators_passphrase(void*_Nonnull ptr, RustBuffer settings, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+);
+void uniffi_bitwarden_uniffi_fn_method_clientgenerators_password(void*_Nonnull ptr, RustBuffer settings, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
 );
 void uniffi_bitwarden_uniffi_fn_free_clientpasswordhistory(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
@@ -144,16 +158,28 @@ void ffi_bitwarden_uniffi_rustbuffer_free(RustBuffer buf, RustCallStatus *_Nonnu
 );
 RustBuffer ffi_bitwarden_uniffi_rustbuffer_reserve(RustBuffer buf, int32_t additional, RustCallStatus *_Nonnull out_status
 );
+uint16_t uniffi_bitwarden_uniffi_checksum_method_client_auth(void
+    
+);
 uint16_t uniffi_bitwarden_uniffi_checksum_method_client_crypto(void
     
 );
 uint16_t uniffi_bitwarden_uniffi_checksum_method_client_echo(void
     
 );
-uint16_t uniffi_bitwarden_uniffi_checksum_method_client_kdf(void
+uint16_t uniffi_bitwarden_uniffi_checksum_method_client_generators(void
     
 );
 uint16_t uniffi_bitwarden_uniffi_checksum_method_client_vault(void
+    
+);
+uint16_t uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password(void
+    
+);
+uint16_t uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength(void
+    
+);
+uint16_t uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy(void
     
 );
 uint16_t uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt(void
@@ -183,7 +209,10 @@ uint16_t uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt_list(void
 uint16_t uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt(void
     
 );
-uint16_t uniffi_bitwarden_uniffi_checksum_method_clientkdf_hash_password(void
+uint16_t uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase(void
+    
+);
+uint16_t uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password(void
     
 );
 uint16_t uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list(void

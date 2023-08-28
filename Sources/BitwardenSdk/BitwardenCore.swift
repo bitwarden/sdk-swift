@@ -293,6 +293,19 @@ private func uniffiCheckCallStatus(
 // Public interface members begin here.
 
 
+fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
+    typealias FfiType = UInt8
+    typealias SwiftType = UInt8
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     typealias FfiType = UInt32
     typealias SwiftType = UInt32
@@ -2714,6 +2727,291 @@ public func FfiConverterTypeLoginView_lower(_ value: LoginView) -> RustBuffer {
 }
 
 
+public struct MasterPasswordPolicyOptions {
+    public var `minComplexity`: UInt8
+    public var `minLength`: UInt8
+    public var `requireUpper`: Bool
+    public var `requireLower`: Bool
+    public var `requireNumbers`: Bool
+    public var `requireSpecial`: Bool
+    public var `enforceOnLogin`: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`minComplexity`: UInt8, `minLength`: UInt8, `requireUpper`: Bool, `requireLower`: Bool, `requireNumbers`: Bool, `requireSpecial`: Bool, `enforceOnLogin`: Bool) {
+        self.`minComplexity` = `minComplexity`
+        self.`minLength` = `minLength`
+        self.`requireUpper` = `requireUpper`
+        self.`requireLower` = `requireLower`
+        self.`requireNumbers` = `requireNumbers`
+        self.`requireSpecial` = `requireSpecial`
+        self.`enforceOnLogin` = `enforceOnLogin`
+    }
+}
+
+
+extension MasterPasswordPolicyOptions: Equatable, Hashable {
+    public static func ==(lhs: MasterPasswordPolicyOptions, rhs: MasterPasswordPolicyOptions) -> Bool {
+        if lhs.`minComplexity` != rhs.`minComplexity` {
+            return false
+        }
+        if lhs.`minLength` != rhs.`minLength` {
+            return false
+        }
+        if lhs.`requireUpper` != rhs.`requireUpper` {
+            return false
+        }
+        if lhs.`requireLower` != rhs.`requireLower` {
+            return false
+        }
+        if lhs.`requireNumbers` != rhs.`requireNumbers` {
+            return false
+        }
+        if lhs.`requireSpecial` != rhs.`requireSpecial` {
+            return false
+        }
+        if lhs.`enforceOnLogin` != rhs.`enforceOnLogin` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`minComplexity`)
+        hasher.combine(`minLength`)
+        hasher.combine(`requireUpper`)
+        hasher.combine(`requireLower`)
+        hasher.combine(`requireNumbers`)
+        hasher.combine(`requireSpecial`)
+        hasher.combine(`enforceOnLogin`)
+    }
+}
+
+
+public struct FfiConverterTypeMasterPasswordPolicyOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MasterPasswordPolicyOptions {
+        return try MasterPasswordPolicyOptions(
+            `minComplexity`: FfiConverterUInt8.read(from: &buf), 
+            `minLength`: FfiConverterUInt8.read(from: &buf), 
+            `requireUpper`: FfiConverterBool.read(from: &buf), 
+            `requireLower`: FfiConverterBool.read(from: &buf), 
+            `requireNumbers`: FfiConverterBool.read(from: &buf), 
+            `requireSpecial`: FfiConverterBool.read(from: &buf), 
+            `enforceOnLogin`: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MasterPasswordPolicyOptions, into buf: inout [UInt8]) {
+        FfiConverterUInt8.write(value.`minComplexity`, into: &buf)
+        FfiConverterUInt8.write(value.`minLength`, into: &buf)
+        FfiConverterBool.write(value.`requireUpper`, into: &buf)
+        FfiConverterBool.write(value.`requireLower`, into: &buf)
+        FfiConverterBool.write(value.`requireNumbers`, into: &buf)
+        FfiConverterBool.write(value.`requireSpecial`, into: &buf)
+        FfiConverterBool.write(value.`enforceOnLogin`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeMasterPasswordPolicyOptions_lift(_ buf: RustBuffer) throws -> MasterPasswordPolicyOptions {
+    return try FfiConverterTypeMasterPasswordPolicyOptions.lift(buf)
+}
+
+public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPasswordPolicyOptions) -> RustBuffer {
+    return FfiConverterTypeMasterPasswordPolicyOptions.lower(value)
+}
+
+
+public struct PassphraseGeneratorRequest {
+    public var `numWords`: UInt8?
+    public var `wordSeparator`: String?
+    public var `capitalize`: Bool?
+    public var `includeNumber`: Bool?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`numWords`: UInt8?, `wordSeparator`: String?, `capitalize`: Bool?, `includeNumber`: Bool?) {
+        self.`numWords` = `numWords`
+        self.`wordSeparator` = `wordSeparator`
+        self.`capitalize` = `capitalize`
+        self.`includeNumber` = `includeNumber`
+    }
+}
+
+
+extension PassphraseGeneratorRequest: Equatable, Hashable {
+    public static func ==(lhs: PassphraseGeneratorRequest, rhs: PassphraseGeneratorRequest) -> Bool {
+        if lhs.`numWords` != rhs.`numWords` {
+            return false
+        }
+        if lhs.`wordSeparator` != rhs.`wordSeparator` {
+            return false
+        }
+        if lhs.`capitalize` != rhs.`capitalize` {
+            return false
+        }
+        if lhs.`includeNumber` != rhs.`includeNumber` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`numWords`)
+        hasher.combine(`wordSeparator`)
+        hasher.combine(`capitalize`)
+        hasher.combine(`includeNumber`)
+    }
+}
+
+
+public struct FfiConverterTypePassphraseGeneratorRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassphraseGeneratorRequest {
+        return try PassphraseGeneratorRequest(
+            `numWords`: FfiConverterOptionUInt8.read(from: &buf), 
+            `wordSeparator`: FfiConverterOptionString.read(from: &buf), 
+            `capitalize`: FfiConverterOptionBool.read(from: &buf), 
+            `includeNumber`: FfiConverterOptionBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PassphraseGeneratorRequest, into buf: inout [UInt8]) {
+        FfiConverterOptionUInt8.write(value.`numWords`, into: &buf)
+        FfiConverterOptionString.write(value.`wordSeparator`, into: &buf)
+        FfiConverterOptionBool.write(value.`capitalize`, into: &buf)
+        FfiConverterOptionBool.write(value.`includeNumber`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypePassphraseGeneratorRequest_lift(_ buf: RustBuffer) throws -> PassphraseGeneratorRequest {
+    return try FfiConverterTypePassphraseGeneratorRequest.lift(buf)
+}
+
+public func FfiConverterTypePassphraseGeneratorRequest_lower(_ value: PassphraseGeneratorRequest) -> RustBuffer {
+    return FfiConverterTypePassphraseGeneratorRequest.lower(value)
+}
+
+
+public struct PasswordGeneratorRequest {
+    public var `lowercase`: Bool
+    public var `uppercase`: Bool
+    public var `numbers`: Bool
+    public var `special`: Bool
+    public var `length`: UInt8?
+    public var `avoidAmbiguous`: Bool?
+    public var `minLowercase`: Bool?
+    public var `minUppercase`: Bool?
+    public var `minNumber`: Bool?
+    public var `minSpecial`: Bool?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`lowercase`: Bool, `uppercase`: Bool, `numbers`: Bool, `special`: Bool, `length`: UInt8?, `avoidAmbiguous`: Bool?, `minLowercase`: Bool?, `minUppercase`: Bool?, `minNumber`: Bool?, `minSpecial`: Bool?) {
+        self.`lowercase` = `lowercase`
+        self.`uppercase` = `uppercase`
+        self.`numbers` = `numbers`
+        self.`special` = `special`
+        self.`length` = `length`
+        self.`avoidAmbiguous` = `avoidAmbiguous`
+        self.`minLowercase` = `minLowercase`
+        self.`minUppercase` = `minUppercase`
+        self.`minNumber` = `minNumber`
+        self.`minSpecial` = `minSpecial`
+    }
+}
+
+
+extension PasswordGeneratorRequest: Equatable, Hashable {
+    public static func ==(lhs: PasswordGeneratorRequest, rhs: PasswordGeneratorRequest) -> Bool {
+        if lhs.`lowercase` != rhs.`lowercase` {
+            return false
+        }
+        if lhs.`uppercase` != rhs.`uppercase` {
+            return false
+        }
+        if lhs.`numbers` != rhs.`numbers` {
+            return false
+        }
+        if lhs.`special` != rhs.`special` {
+            return false
+        }
+        if lhs.`length` != rhs.`length` {
+            return false
+        }
+        if lhs.`avoidAmbiguous` != rhs.`avoidAmbiguous` {
+            return false
+        }
+        if lhs.`minLowercase` != rhs.`minLowercase` {
+            return false
+        }
+        if lhs.`minUppercase` != rhs.`minUppercase` {
+            return false
+        }
+        if lhs.`minNumber` != rhs.`minNumber` {
+            return false
+        }
+        if lhs.`minSpecial` != rhs.`minSpecial` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`lowercase`)
+        hasher.combine(`uppercase`)
+        hasher.combine(`numbers`)
+        hasher.combine(`special`)
+        hasher.combine(`length`)
+        hasher.combine(`avoidAmbiguous`)
+        hasher.combine(`minLowercase`)
+        hasher.combine(`minUppercase`)
+        hasher.combine(`minNumber`)
+        hasher.combine(`minSpecial`)
+    }
+}
+
+
+public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordGeneratorRequest {
+        return try PasswordGeneratorRequest(
+            `lowercase`: FfiConverterBool.read(from: &buf), 
+            `uppercase`: FfiConverterBool.read(from: &buf), 
+            `numbers`: FfiConverterBool.read(from: &buf), 
+            `special`: FfiConverterBool.read(from: &buf), 
+            `length`: FfiConverterOptionUInt8.read(from: &buf), 
+            `avoidAmbiguous`: FfiConverterOptionBool.read(from: &buf), 
+            `minLowercase`: FfiConverterOptionBool.read(from: &buf), 
+            `minUppercase`: FfiConverterOptionBool.read(from: &buf), 
+            `minNumber`: FfiConverterOptionBool.read(from: &buf), 
+            `minSpecial`: FfiConverterOptionBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PasswordGeneratorRequest, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.`lowercase`, into: &buf)
+        FfiConverterBool.write(value.`uppercase`, into: &buf)
+        FfiConverterBool.write(value.`numbers`, into: &buf)
+        FfiConverterBool.write(value.`special`, into: &buf)
+        FfiConverterOptionUInt8.write(value.`length`, into: &buf)
+        FfiConverterOptionBool.write(value.`avoidAmbiguous`, into: &buf)
+        FfiConverterOptionBool.write(value.`minLowercase`, into: &buf)
+        FfiConverterOptionBool.write(value.`minUppercase`, into: &buf)
+        FfiConverterOptionBool.write(value.`minNumber`, into: &buf)
+        FfiConverterOptionBool.write(value.`minSpecial`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypePasswordGeneratorRequest_lift(_ buf: RustBuffer) throws -> PasswordGeneratorRequest {
+    return try FfiConverterTypePasswordGeneratorRequest.lift(buf)
+}
+
+public func FfiConverterTypePasswordGeneratorRequest_lower(_ value: PasswordGeneratorRequest) -> RustBuffer {
+    return FfiConverterTypePasswordGeneratorRequest.lower(value)
+}
+
+
 public struct PasswordHistory {
     public var `password`: CipherString
     public var `lastUsedDate`: DateTime
@@ -3479,6 +3777,27 @@ public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuf
 extension UriMatchType: Equatable, Hashable {}
 
 
+
+fileprivate struct FfiConverterOptionUInt8: FfiConverterRustBuffer {
+    typealias SwiftType = UInt8?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt8.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt8.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
 
 fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
     typealias SwiftType = UInt32?

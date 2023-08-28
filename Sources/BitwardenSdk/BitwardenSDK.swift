@@ -293,6 +293,40 @@ private func uniffiCheckCallStatus(
 // Public interface members begin here.
 
 
+fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
+    typealias FfiType = UInt8
+    typealias SwiftType = UInt8
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
+
+    public static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
+    }
+
+    public static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Bool, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -333,9 +367,10 @@ fileprivate struct FfiConverterString: FfiConverter {
 
 
 public protocol ClientProtocol {
+    func `auth`()   -> ClientAuth
     func `crypto`()   -> ClientCrypto
     func `echo`(`msg`: String)   -> String
-    func `kdf`()   -> ClientKdf
+    func `generators`()   -> ClientGenerators
     func `vault`()   -> ClientVault
     
 }
@@ -365,6 +400,17 @@ public class Client: ClientProtocol {
     
     
 
+    public func `auth`()  -> ClientAuth {
+        return try!  FfiConverterTypeClientAuth.lift(
+            try! 
+    rustCall() {
+    
+    uniffi_bitwarden_uniffi_fn_method_client_auth(self.pointer, $0
+    )
+}
+        )
+    }
+
     public func `crypto`()  -> ClientCrypto {
         return try!  FfiConverterTypeClientCrypto.lift(
             try! 
@@ -388,12 +434,12 @@ public class Client: ClientProtocol {
         )
     }
 
-    public func `kdf`()  -> ClientKdf {
-        return try!  FfiConverterTypeClientKdf.lift(
+    public func `generators`()  -> ClientGenerators {
+        return try!  FfiConverterTypeClientGenerators.lift(
             try! 
     rustCall() {
     
-    uniffi_bitwarden_uniffi_fn_method_client_kdf(self.pointer, $0
+    uniffi_bitwarden_uniffi_fn_method_client_generators(self.pointer, $0
     )
 }
         )
@@ -448,6 +494,154 @@ public func FfiConverterTypeClient_lift(_ pointer: UnsafeMutableRawPointer) thro
 
 public func FfiConverterTypeClient_lower(_ value: Client) -> UnsafeMutableRawPointer {
     return FfiConverterTypeClient.lower(value)
+}
+
+
+public protocol ClientAuthProtocol {
+    func `hashPassword`(`email`: String, `password`: String, `kdfParams`: Kdf) async throws -> String
+    func `passwordStrength`(`password`: String, `email`: String, `additionalInputs`: [String]) async  -> UInt8
+    func `satisfiesPolicy`(`password`: String, `strength`: UInt8, `policy`: MasterPasswordPolicyOptions) async  -> Bool
+    
+}
+
+public class ClientAuth: ClientAuthProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientauth(pointer, $0) }
+    }
+
+    
+
+    
+    
+
+    public func `hashPassword`(`email`: String, `password`: String, `kdfParams`: Kdf) async throws -> String {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<String, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_hash_password(
+                    self.pointer,
+                    
+        FfiConverterString.lower(`email`),
+        FfiConverterString.lower(`password`),
+        FfiConverterTypeKdf_lower(`kdfParams`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerStringTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `passwordStrength`(`password`: String, `email`: String, `additionalInputs`: [String]) async  -> UInt8 {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<UInt8, Error>? = nil
+        return try!  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_password_strength(
+                    self.pointer,
+                    
+        FfiConverterString.lower(`password`),
+        FfiConverterString.lower(`email`),
+        FfiConverterSequenceString.lower(`additionalInputs`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerUInt8,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `satisfiesPolicy`(`password`: String, `strength`: UInt8, `policy`: MasterPasswordPolicyOptions) async  -> Bool {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<Bool, Error>? = nil
+        return try!  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_satisfies_policy(
+                    self.pointer,
+                    
+        FfiConverterString.lower(`password`),
+        FfiConverterUInt8.lower(`strength`),
+        FfiConverterTypeMasterPasswordPolicyOptions_lower(`policy`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerBool,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+}
+
+public struct FfiConverterTypeClientAuth: FfiConverter {
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = ClientAuth
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientAuth {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: ClientAuth, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientAuth {
+        return ClientAuth(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: ClientAuth) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+}
+
+
+public func FfiConverterTypeClientAuth_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientAuth {
+    return try FfiConverterTypeClientAuth.lift(pointer)
+}
+
+public func FfiConverterTypeClientAuth_lower(_ value: ClientAuth) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientAuth.lower(value)
 }
 
 
@@ -941,12 +1135,13 @@ public func FfiConverterTypeClientFolders_lower(_ value: ClientFolders) -> Unsaf
 }
 
 
-public protocol ClientKdfProtocol {
-    func `hashPassword`(`email`: String, `password`: String, `kdfParams`: Kdf) async throws -> String
+public protocol ClientGeneratorsProtocol {
+    func `passphrase`(`settings`: PassphraseGeneratorRequest) async throws -> String
+    func `password`(`settings`: PasswordGeneratorRequest) async throws -> String
     
 }
 
-public class ClientKdf: ClientKdfProtocol {
+public class ClientGenerators: ClientGeneratorsProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -957,7 +1152,7 @@ public class ClientKdf: ClientKdfProtocol {
     }
 
     deinit {
-        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientkdf(pointer, $0) }
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientgenerators(pointer, $0) }
     }
 
     
@@ -965,7 +1160,7 @@ public class ClientKdf: ClientKdfProtocol {
     
     
 
-    public func `hashPassword`(`email`: String, `password`: String, `kdfParams`: Kdf) async throws -> String {
+    public func `passphrase`(`settings`: PassphraseGeneratorRequest) async throws -> String {
         // Suspend the function and call the scaffolding function, passing it a callback handler from
         // `AsyncTypes.swift`
         //
@@ -975,12 +1170,35 @@ public class ClientKdf: ClientKdfProtocol {
         return try  await withCheckedThrowingContinuation {
             continuation = $0
             try! rustCall() {
-                uniffi_bitwarden_uniffi_fn_method_clientkdf_hash_password(
+                uniffi_bitwarden_uniffi_fn_method_clientgenerators_passphrase(
                     self.pointer,
                     
-        FfiConverterString.lower(`email`),
-        FfiConverterString.lower(`password`),
-        FfiConverterTypeKdf_lower(`kdfParams`),
+        FfiConverterTypePassphraseGeneratorRequest_lower(`settings`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerStringTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `password`(`settings`: PasswordGeneratorRequest) async throws -> String {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<String, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientgenerators_password(
+                    self.pointer,
+                    
+        FfiConverterTypePasswordGeneratorRequest_lower(`settings`),
                     FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
                     uniffiFutureCallbackHandlerStringTypeBitwardenError,
                     &continuation,
@@ -993,11 +1211,11 @@ public class ClientKdf: ClientKdfProtocol {
     
 }
 
-public struct FfiConverterTypeClientKdf: FfiConverter {
+public struct FfiConverterTypeClientGenerators: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer
-    typealias SwiftType = ClientKdf
+    typealias SwiftType = ClientGenerators
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientKdf {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientGenerators {
         let v: UInt64 = try readInt(&buf)
         // The Rust code won't compile if a pointer won't fit in a UInt64.
         // We have to go via `UInt` because that's the thing that's the size of a pointer.
@@ -1008,28 +1226,28 @@ public struct FfiConverterTypeClientKdf: FfiConverter {
         return try lift(ptr!)
     }
 
-    public static func write(_ value: ClientKdf, into buf: inout [UInt8]) {
+    public static func write(_ value: ClientGenerators, into buf: inout [UInt8]) {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
         writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
     }
 
-    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientKdf {
-        return ClientKdf(unsafeFromRawPointer: pointer)
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientGenerators {
+        return ClientGenerators(unsafeFromRawPointer: pointer)
     }
 
-    public static func lower(_ value: ClientKdf) -> UnsafeMutableRawPointer {
+    public static func lower(_ value: ClientGenerators) -> UnsafeMutableRawPointer {
         return value.pointer
     }
 }
 
 
-public func FfiConverterTypeClientKdf_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientKdf {
-    return try FfiConverterTypeClientKdf.lift(pointer)
+public func FfiConverterTypeClientGenerators_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientGenerators {
+    return try FfiConverterTypeClientGenerators.lift(pointer)
 }
 
-public func FfiConverterTypeClientKdf_lower(_ value: ClientKdf) -> UnsafeMutableRawPointer {
-    return FfiConverterTypeClientKdf.lower(value)
+public func FfiConverterTypeClientGenerators_lower(_ value: ClientGenerators) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientGenerators.lower(value)
 }
 
 
@@ -1390,6 +1608,28 @@ fileprivate struct FfiConverterOptionTypeClientSettings: FfiConverterRustBuffer 
     }
 }
 
+fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+}
+
 fileprivate struct FfiConverterSequenceTypeCipher: FfiConverterRustBuffer {
     typealias SwiftType = [Cipher]
 
@@ -1588,6 +1828,12 @@ fileprivate struct FfiConverterSequenceTypePasswordHistoryView: FfiConverterRust
 
 
 
+
+
+
+
+
+
 // Callbacks for async functions
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
@@ -1605,6 +1851,40 @@ fileprivate func uniffiFutureCallbackHandlerVoidTypeBitwardenError(
     do {
         try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
         continuation.pointee.resume(returning: ())
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerUInt8(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: UInt8,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<UInt8, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        continuation.pointee.resume(returning: try FfiConverterUInt8.lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerBool(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: Int8,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<Bool, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        continuation.pointee.resume(returning: try FfiConverterBool.lift(returnValue))
     } catch let error {
         continuation.pointee.resume(throwing: error)
     }
@@ -1656,6 +1936,23 @@ fileprivate func uniffiFutureCallbackHandlerTypeClient(
     do {
         try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
         continuation.pointee.resume(returning: try FfiConverterTypeClient.lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerTypeClientAuth(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: UnsafeMutableRawPointer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<ClientAuth, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        continuation.pointee.resume(returning: try FfiConverterTypeClientAuth.lift(returnValue))
     } catch let error {
         continuation.pointee.resume(throwing: error)
     }
@@ -1728,19 +2025,19 @@ fileprivate func uniffiFutureCallbackHandlerTypeClientFolders(
         continuation.pointee.resume(throwing: error)
     }
 }
-fileprivate func uniffiFutureCallbackHandlerTypeClientKdf(
+fileprivate func uniffiFutureCallbackHandlerTypeClientGenerators(
     rawContinutation: UnsafeRawPointer,
     returnValue: UnsafeMutableRawPointer,
     callStatus: RustCallStatus) {
 
     let continuation = rawContinutation.bindMemory(
-        to: CheckedContinuation<ClientKdf, Error>.self,
+        to: CheckedContinuation<ClientGenerators, Error>.self,
         capacity: 1
     )
 
     do {
         try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
-        continuation.pointee.resume(returning: try FfiConverterTypeClientKdf.lift(returnValue))
+        continuation.pointee.resume(returning: try FfiConverterTypeClientGenerators.lift(returnValue))
     } catch let error {
         continuation.pointee.resume(throwing: error)
     }
@@ -1965,16 +2262,28 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 9299) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 50097) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 17135) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_kdf() != 49093) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 54338) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 62276) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 11695) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 5352) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 38024) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 54536) {
@@ -2004,7 +2313,10 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt() != 54957) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientkdf_hash_password() != 45495) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 14402) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 3370) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 19686) {
