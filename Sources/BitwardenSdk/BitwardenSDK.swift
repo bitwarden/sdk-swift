@@ -499,6 +499,7 @@ public func FfiConverterTypeClient_lower(_ value: Client) -> UnsafeMutableRawPoi
 
 public protocol ClientAuthProtocol {
     func `hashPassword`(`email`: String, `password`: String, `kdfParams`: Kdf) async throws -> String
+    func `makeRegisterKeys`(`email`: String, `password`: String, `kdf`: Kdf) async throws -> RegisterKeyResponse
     func `passwordStrength`(`password`: String, `email`: String, `additionalInputs`: [String]) async  -> UInt8
     func `satisfiesPolicy`(`password`: String, `strength`: UInt8, `policy`: MasterPasswordPolicyOptions) async  -> Bool
     
@@ -541,6 +542,33 @@ public class ClientAuth: ClientAuthProtocol {
         FfiConverterTypeKdf_lower(`kdfParams`),
                     FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
                     uniffiFutureCallbackHandlerStringTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `makeRegisterKeys`(`email`: String, `password`: String, `kdf`: Kdf) async throws -> RegisterKeyResponse {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<RegisterKeyResponse, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_make_register_keys(
+                    self.pointer,
+                    
+        FfiConverterString.lower(`email`),
+        FfiConverterString.lower(`password`),
+        FfiConverterTypeKdf_lower(`kdf`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerTypeRegisterKeyResponseTypeBitwardenError,
                     &continuation,
                     $0
                 )
@@ -993,6 +1021,126 @@ public func FfiConverterTypeClientCrypto_lower(_ value: ClientCrypto) -> UnsafeM
 }
 
 
+public protocol ClientExportersProtocol {
+    func `exportOrganizationVault`(`collections`: [Collection], `ciphers`: [Cipher], `format`: ExportFormat) async throws -> String
+    func `exportVault`(`folders`: [Folder], `ciphers`: [Cipher], `format`: ExportFormat) async throws -> String
+    
+}
+
+public class ClientExporters: ClientExportersProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientexporters(pointer, $0) }
+    }
+
+    
+
+    
+    
+
+    public func `exportOrganizationVault`(`collections`: [Collection], `ciphers`: [Cipher], `format`: ExportFormat) async throws -> String {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<String, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientexporters_export_organization_vault(
+                    self.pointer,
+                    
+        FfiConverterSequenceTypeCollection.lower(`collections`),
+        FfiConverterSequenceTypeCipher.lower(`ciphers`),
+        FfiConverterTypeExportFormat_lower(`format`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerStringTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `exportVault`(`folders`: [Folder], `ciphers`: [Cipher], `format`: ExportFormat) async throws -> String {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<String, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientexporters_export_vault(
+                    self.pointer,
+                    
+        FfiConverterSequenceTypeFolder.lower(`folders`),
+        FfiConverterSequenceTypeCipher.lower(`ciphers`),
+        FfiConverterTypeExportFormat_lower(`format`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerStringTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+}
+
+public struct FfiConverterTypeClientExporters: FfiConverter {
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = ClientExporters
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientExporters {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: ClientExporters, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientExporters {
+        return ClientExporters(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: ClientExporters) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+}
+
+
+public func FfiConverterTypeClientExporters_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientExporters {
+    return try FfiConverterTypeClientExporters.lift(pointer)
+}
+
+public func FfiConverterTypeClientExporters_lower(_ value: ClientExporters) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientExporters.lower(value)
+}
+
+
 public protocol ClientFoldersProtocol {
     func `decrypt`(`folder`: Folder) async throws -> FolderView
     func `decryptList`(`folders`: [Folder]) async throws -> [FolderView]
@@ -1367,11 +1515,264 @@ public func FfiConverterTypeClientPasswordHistory_lower(_ value: ClientPasswordH
 }
 
 
+public protocol ClientSendsProtocol {
+    func `decrypt`(`send`: Send) async throws -> SendView
+    func `decryptBuffer`(`send`: Send, `buffer`: [UInt8]) async throws -> [UInt8]
+    func `decryptFile`(`send`: Send, `encryptedFilePath`: String, `decryptedFilePath`: String) async throws
+    func `decryptList`(`sends`: [Send]) async throws -> [SendListView]
+    func `encrypt`(`send`: SendView) async throws -> Send
+    func `encryptBuffer`(`send`: Send, `buffer`: [UInt8]) async throws -> [UInt8]
+    func `encryptFile`(`send`: Send, `decryptedFilePath`: String, `encryptedFilePath`: String) async throws
+    
+}
+
+public class ClientSends: ClientSendsProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientsends(pointer, $0) }
+    }
+
+    
+
+    
+    
+
+    public func `decrypt`(`send`: Send) async throws -> SendView {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<SendView, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_decrypt(
+                    self.pointer,
+                    
+        FfiConverterTypeSend_lower(`send`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerTypeSendViewTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `decryptBuffer`(`send`: Send, `buffer`: [UInt8]) async throws -> [UInt8] {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<[UInt8], Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_decrypt_buffer(
+                    self.pointer,
+                    
+        FfiConverterTypeSend_lower(`send`),
+        FfiConverterSequenceUInt8.lower(`buffer`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerSequenceUInt8TypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `decryptFile`(`send`: Send, `encryptedFilePath`: String, `decryptedFilePath`: String) async throws {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<(), Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_decrypt_file(
+                    self.pointer,
+                    
+        FfiConverterTypeSend_lower(`send`),
+        FfiConverterString.lower(`encryptedFilePath`),
+        FfiConverterString.lower(`decryptedFilePath`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerVoidTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `decryptList`(`sends`: [Send]) async throws -> [SendListView] {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<[SendListView], Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_decrypt_list(
+                    self.pointer,
+                    
+        FfiConverterSequenceTypeSend.lower(`sends`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerSequenceTypeSendListViewTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `encrypt`(`send`: SendView) async throws -> Send {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<Send, Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_encrypt(
+                    self.pointer,
+                    
+        FfiConverterTypeSendView_lower(`send`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerTypeSendTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `encryptBuffer`(`send`: Send, `buffer`: [UInt8]) async throws -> [UInt8] {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<[UInt8], Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_encrypt_buffer(
+                    self.pointer,
+                    
+        FfiConverterTypeSend_lower(`send`),
+        FfiConverterSequenceUInt8.lower(`buffer`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerSequenceUInt8TypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+
+    public func `encryptFile`(`send`: Send, `decryptedFilePath`: String, `encryptedFilePath`: String) async throws {
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: CheckedContinuation<(), Error>? = nil
+        return try  await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                uniffi_bitwarden_uniffi_fn_method_clientsends_encrypt_file(
+                    self.pointer,
+                    
+        FfiConverterTypeSend_lower(`send`),
+        FfiConverterString.lower(`decryptedFilePath`),
+        FfiConverterString.lower(`encryptedFilePath`),
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    uniffiFutureCallbackHandlerVoidTypeBitwardenError,
+                    &continuation,
+                    $0
+                )
+            }
+        }
+    }
+
+    
+}
+
+public struct FfiConverterTypeClientSends: FfiConverter {
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = ClientSends
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientSends {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: ClientSends, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientSends {
+        return ClientSends(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: ClientSends) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+}
+
+
+public func FfiConverterTypeClientSends_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientSends {
+    return try FfiConverterTypeClientSends.lift(pointer)
+}
+
+public func FfiConverterTypeClientSends_lower(_ value: ClientSends) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientSends.lower(value)
+}
+
+
 public protocol ClientVaultProtocol {
     func `ciphers`()   -> ClientCiphers
     func `collections`()   -> ClientCollections
     func `folders`()   -> ClientFolders
     func `passwordHistory`()   -> ClientPasswordHistory
+    func `sends`()   -> ClientSends
     
 }
 
@@ -1433,6 +1834,17 @@ public class ClientVault: ClientVaultProtocol {
     rustCall() {
     
     uniffi_bitwarden_uniffi_fn_method_clientvault_password_history(self.pointer, $0
+    )
+}
+        )
+    }
+
+    public func `sends`()  -> ClientSends {
+        return try!  FfiConverterTypeClientSends.lift(
+            try! 
+    rustCall() {
+    
+    uniffi_bitwarden_uniffi_fn_method_clientvault_sends(self.pointer, $0
     )
 }
         )
@@ -1605,6 +2017,28 @@ fileprivate struct FfiConverterOptionTypeClientSettings: FfiConverterRustBuffer 
         case 1: return try FfiConverterTypeClientSettings.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+fileprivate struct FfiConverterSequenceUInt8: FfiConverterRustBuffer {
+    typealias SwiftType = [UInt8]
+
+    public static func write(_ value: [UInt8], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterUInt8.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [UInt8] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [UInt8]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterUInt8.read(from: &buf))
+        }
+        return seq
     }
 }
 
@@ -1805,6 +2239,60 @@ fileprivate struct FfiConverterSequenceTypePasswordHistoryView: FfiConverterRust
         return seq
     }
 }
+
+fileprivate struct FfiConverterSequenceTypeSend: FfiConverterRustBuffer {
+    typealias SwiftType = [Send]
+
+    public static func write(_ value: [Send], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSend.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Send] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Send]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSend.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer {
+    typealias SwiftType = [SendListView]
+
+    public static func write(_ value: [SendListView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSendListView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SendListView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SendListView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSendListView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2059,6 +2547,23 @@ fileprivate func uniffiFutureCallbackHandlerTypeClientPasswordHistory(
         continuation.pointee.resume(throwing: error)
     }
 }
+fileprivate func uniffiFutureCallbackHandlerTypeClientSends(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: UnsafeMutableRawPointer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<ClientSends, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        continuation.pointee.resume(returning: try FfiConverterTypeClientSends.lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
 fileprivate func uniffiFutureCallbackHandlerTypeClientVault(
     rawContinutation: UnsafeRawPointer,
     returnValue: UnsafeMutableRawPointer,
@@ -2072,6 +2577,23 @@ fileprivate func uniffiFutureCallbackHandlerTypeClientVault(
     do {
         try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
         continuation.pointee.resume(returning: try FfiConverterTypeClientVault.lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerSequenceUInt8TypeBitwardenError(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<[UInt8], Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
+        continuation.pointee.resume(returning: try FfiConverterSequenceUInt8.lift(returnValue))
     } catch let error {
         continuation.pointee.resume(throwing: error)
     }
@@ -2140,6 +2662,23 @@ fileprivate func uniffiFutureCallbackHandlerSequenceTypePasswordHistoryViewTypeB
     do {
         try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
         continuation.pointee.resume(returning: try FfiConverterSequenceTypePasswordHistoryView.lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerSequenceTypeSendListViewTypeBitwardenError(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<[SendListView], Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
+        continuation.pointee.resume(returning: try FfiConverterSequenceTypeSendListView.lift(returnValue))
     } catch let error {
         continuation.pointee.resume(throwing: error)
     }
@@ -2246,6 +2785,57 @@ fileprivate func uniffiFutureCallbackHandlerTypePasswordHistoryTypeBitwardenErro
         continuation.pointee.resume(throwing: error)
     }
 }
+fileprivate func uniffiFutureCallbackHandlerTypeRegisterKeyResponseTypeBitwardenError(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<RegisterKeyResponse, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
+        continuation.pointee.resume(returning: try FfiConverterTypeRegisterKeyResponse_lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerTypeSendTypeBitwardenError(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<Send, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
+        continuation.pointee.resume(returning: try FfiConverterTypeSend_lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+fileprivate func uniffiFutureCallbackHandlerTypeSendViewTypeBitwardenError(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus) {
+
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<SendView, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: FfiConverterTypeBitwardenError.lift)
+        continuation.pointee.resume(returning: try FfiConverterTypeSendView_lift(returnValue))
+    } catch let error {
+        continuation.pointee.resume(throwing: error)
+    }
+}
 
 private enum InitializationResult {
     case ok
@@ -2280,6 +2870,9 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 11695) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 49256) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 5352) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -2304,6 +2897,12 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_crypto() != 45104) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 4952) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 11990) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt() != 1351) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -2325,6 +2924,27 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_encrypt() != 38769) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt() != 12489) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_buffer() != 19741) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_file() != 8851) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_list() != 3693) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt() != 6399) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_buffer() != 19766) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_file() != 11305) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_ciphers() != 31213) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -2335,6 +2955,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 10182) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_sends() != 17906) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 21800) {

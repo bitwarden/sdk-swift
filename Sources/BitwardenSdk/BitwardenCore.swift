@@ -419,12 +419,12 @@ public struct Attachment {
     public var `url`: String?
     public var `size`: String?
     public var `sizeName`: String?
-    public var `fileName`: CipherString?
-    public var `key`: CipherString?
+    public var `fileName`: EncString?
+    public var `key`: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: String?, `url`: String?, `size`: String?, `sizeName`: String?, `fileName`: CipherString?, `key`: CipherString?) {
+    public init(`id`: String?, `url`: String?, `size`: String?, `sizeName`: String?, `fileName`: EncString?, `key`: EncString?) {
         self.`id` = `id`
         self.`url` = `url`
         self.`size` = `size`
@@ -476,8 +476,8 @@ public struct FfiConverterTypeAttachment: FfiConverterRustBuffer {
             `url`: FfiConverterOptionString.read(from: &buf), 
             `size`: FfiConverterOptionString.read(from: &buf), 
             `sizeName`: FfiConverterOptionString.read(from: &buf), 
-            `fileName`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `key`: FfiConverterOptionTypeCipherString.read(from: &buf)
+            `fileName`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `key`: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
@@ -486,8 +486,8 @@ public struct FfiConverterTypeAttachment: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.`url`, into: &buf)
         FfiConverterOptionString.write(value.`size`, into: &buf)
         FfiConverterOptionString.write(value.`sizeName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`fileName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`key`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`fileName`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`key`, into: &buf)
     }
 }
 
@@ -589,16 +589,16 @@ public func FfiConverterTypeAttachmentView_lower(_ value: AttachmentView) -> Rus
 
 
 public struct Card {
-    public var `cardholderName`: CipherString?
-    public var `expMonth`: CipherString?
-    public var `expYear`: CipherString?
-    public var `code`: CipherString?
-    public var `brand`: CipherString?
-    public var `number`: CipherString?
+    public var `cardholderName`: EncString?
+    public var `expMonth`: EncString?
+    public var `expYear`: EncString?
+    public var `code`: EncString?
+    public var `brand`: EncString?
+    public var `number`: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`cardholderName`: CipherString?, `expMonth`: CipherString?, `expYear`: CipherString?, `code`: CipherString?, `brand`: CipherString?, `number`: CipherString?) {
+    public init(`cardholderName`: EncString?, `expMonth`: EncString?, `expYear`: EncString?, `code`: EncString?, `brand`: EncString?, `number`: EncString?) {
         self.`cardholderName` = `cardholderName`
         self.`expMonth` = `expMonth`
         self.`expYear` = `expYear`
@@ -646,22 +646,22 @@ extension Card: Equatable, Hashable {
 public struct FfiConverterTypeCard: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Card {
         return try Card(
-            `cardholderName`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `expMonth`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `expYear`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `code`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `brand`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `number`: FfiConverterOptionTypeCipherString.read(from: &buf)
+            `cardholderName`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `expMonth`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `expYear`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `code`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `brand`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `number`: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: Card, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeCipherString.write(value.`cardholderName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`expMonth`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`expYear`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`code`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`brand`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`number`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`cardholderName`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`expMonth`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`expYear`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`code`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`brand`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`number`, into: &buf)
     }
 }
 
@@ -767,8 +767,8 @@ public struct Cipher {
     public var `organizationId`: Uuid?
     public var `folderId`: Uuid?
     public var `collectionIds`: [Uuid]
-    public var `name`: CipherString
-    public var `notes`: CipherString
+    public var `name`: EncString
+    public var `notes`: EncString
     public var `type`: CipherType
     public var `login`: Login?
     public var `identity`: Identity?
@@ -789,7 +789,7 @@ public struct Cipher {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: CipherString, `notes`: CipherString, `type`: CipherType, `login`: Login?, `identity`: Identity?, `card`: Card?, `secureNote`: SecureNote?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalData?, `attachments`: [Attachment], `fields`: [Field], `passwordHistory`: [PasswordHistory], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
+    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: EncString, `notes`: EncString, `type`: CipherType, `login`: Login?, `identity`: Identity?, `card`: Card?, `secureNote`: SecureNote?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalData?, `attachments`: [Attachment], `fields`: [Field], `passwordHistory`: [PasswordHistory], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
         self.`id` = `id`
         self.`organizationId` = `organizationId`
         self.`folderId` = `folderId`
@@ -926,8 +926,8 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
             `organizationId`: FfiConverterOptionTypeUuid.read(from: &buf), 
             `folderId`: FfiConverterOptionTypeUuid.read(from: &buf), 
             `collectionIds`: FfiConverterSequenceTypeUuid.read(from: &buf), 
-            `name`: FfiConverterTypeCipherString.read(from: &buf), 
-            `notes`: FfiConverterTypeCipherString.read(from: &buf), 
+            `name`: FfiConverterTypeEncString.read(from: &buf), 
+            `notes`: FfiConverterTypeEncString.read(from: &buf), 
             `type`: FfiConverterTypeCipherType.read(from: &buf), 
             `login`: FfiConverterOptionTypeLogin.read(from: &buf), 
             `identity`: FfiConverterOptionTypeIdentity.read(from: &buf), 
@@ -953,8 +953,8 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.`organizationId`, into: &buf)
         FfiConverterOptionTypeUuid.write(value.`folderId`, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.`collectionIds`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`name`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`notes`, into: &buf)
+        FfiConverterTypeEncString.write(value.`name`, into: &buf)
+        FfiConverterTypeEncString.write(value.`notes`, into: &buf)
         FfiConverterTypeCipherType.write(value.`type`, into: &buf)
         FfiConverterOptionTypeLogin.write(value.`login`, into: &buf)
         FfiConverterOptionTypeIdentity.write(value.`identity`, into: &buf)
@@ -1441,14 +1441,14 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 public struct Collection {
     public var `id`: Uuid
     public var `organizationId`: Uuid
-    public var `name`: CipherString
+    public var `name`: EncString
     public var `externalId`: String?
     public var `hidePasswords`: Bool
     public var `readOnly`: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: Uuid, `organizationId`: Uuid, `name`: CipherString, `externalId`: String?, `hidePasswords`: Bool, `readOnly`: Bool) {
+    public init(`id`: Uuid, `organizationId`: Uuid, `name`: EncString, `externalId`: String?, `hidePasswords`: Bool, `readOnly`: Bool) {
         self.`id` = `id`
         self.`organizationId` = `organizationId`
         self.`name` = `name`
@@ -1498,7 +1498,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
         return try Collection(
             `id`: FfiConverterTypeUuid.read(from: &buf), 
             `organizationId`: FfiConverterTypeUuid.read(from: &buf), 
-            `name`: FfiConverterTypeCipherString.read(from: &buf), 
+            `name`: FfiConverterTypeEncString.read(from: &buf), 
             `externalId`: FfiConverterOptionString.read(from: &buf), 
             `hidePasswords`: FfiConverterBool.read(from: &buf), 
             `readOnly`: FfiConverterBool.read(from: &buf)
@@ -1508,7 +1508,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
     public static func write(_ value: Collection, into buf: inout [UInt8]) {
         FfiConverterTypeUuid.write(value.`id`, into: &buf)
         FfiConverterTypeUuid.write(value.`organizationId`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`name`, into: &buf)
+        FfiConverterTypeEncString.write(value.`name`, into: &buf)
         FfiConverterOptionString.write(value.`externalId`, into: &buf)
         FfiConverterBool.write(value.`hidePasswords`, into: &buf)
         FfiConverterBool.write(value.`readOnly`, into: &buf)
@@ -1613,14 +1613,14 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 
 
 public struct Field {
-    public var `name`: CipherString
-    public var `value`: CipherString
+    public var `name`: EncString
+    public var `value`: EncString
     public var `type`: FieldType
     public var `linkedId`: LinkedIdType?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`name`: CipherString, `value`: CipherString, `type`: FieldType, `linkedId`: LinkedIdType?) {
+    public init(`name`: EncString, `value`: EncString, `type`: FieldType, `linkedId`: LinkedIdType?) {
         self.`name` = `name`
         self.`value` = `value`
         self.`type` = `type`
@@ -1658,16 +1658,16 @@ extension Field: Equatable, Hashable {
 public struct FfiConverterTypeField: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Field {
         return try Field(
-            `name`: FfiConverterTypeCipherString.read(from: &buf), 
-            `value`: FfiConverterTypeCipherString.read(from: &buf), 
+            `name`: FfiConverterTypeEncString.read(from: &buf), 
+            `value`: FfiConverterTypeEncString.read(from: &buf), 
             `type`: FfiConverterTypeFieldType.read(from: &buf), 
             `linkedId`: FfiConverterOptionTypeLinkedIdType.read(from: &buf)
         )
     }
 
     public static func write(_ value: Field, into buf: inout [UInt8]) {
-        FfiConverterTypeCipherString.write(value.`name`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`value`, into: &buf)
+        FfiConverterTypeEncString.write(value.`name`, into: &buf)
+        FfiConverterTypeEncString.write(value.`value`, into: &buf)
         FfiConverterTypeFieldType.write(value.`type`, into: &buf)
         FfiConverterOptionTypeLinkedIdType.write(value.`linkedId`, into: &buf)
     }
@@ -1756,12 +1756,12 @@ public func FfiConverterTypeFieldView_lower(_ value: FieldView) -> RustBuffer {
 
 public struct Folder {
     public var `id`: Uuid
-    public var `name`: CipherString
+    public var `name`: EncString
     public var `revisionDate`: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: Uuid, `name`: CipherString, `revisionDate`: DateTime) {
+    public init(`id`: Uuid, `name`: EncString, `revisionDate`: DateTime) {
         self.`id` = `id`
         self.`name` = `name`
         self.`revisionDate` = `revisionDate`
@@ -1795,14 +1795,14 @@ public struct FfiConverterTypeFolder: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Folder {
         return try Folder(
             `id`: FfiConverterTypeUuid.read(from: &buf), 
-            `name`: FfiConverterTypeCipherString.read(from: &buf), 
+            `name`: FfiConverterTypeEncString.read(from: &buf), 
             `revisionDate`: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: Folder, into buf: inout [UInt8]) {
         FfiConverterTypeUuid.write(value.`id`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`name`, into: &buf)
+        FfiConverterTypeEncString.write(value.`name`, into: &buf)
         FfiConverterTypeDateTime.write(value.`revisionDate`, into: &buf)
     }
 }
@@ -1881,28 +1881,28 @@ public func FfiConverterTypeFolderView_lower(_ value: FolderView) -> RustBuffer 
 
 
 public struct Identity {
-    public var `title`: CipherString?
-    public var `firstName`: CipherString?
-    public var `middleName`: CipherString?
-    public var `lastName`: CipherString?
-    public var `address1`: CipherString?
-    public var `address2`: CipherString?
-    public var `address3`: CipherString?
-    public var `city`: CipherString?
-    public var `state`: CipherString?
-    public var `postalCode`: CipherString?
-    public var `country`: CipherString?
-    public var `company`: CipherString?
-    public var `email`: CipherString?
-    public var `phone`: CipherString?
-    public var `ssn`: CipherString?
-    public var `username`: CipherString?
-    public var `passportNumber`: CipherString?
-    public var `licenseNumber`: CipherString?
+    public var `title`: EncString?
+    public var `firstName`: EncString?
+    public var `middleName`: EncString?
+    public var `lastName`: EncString?
+    public var `address1`: EncString?
+    public var `address2`: EncString?
+    public var `address3`: EncString?
+    public var `city`: EncString?
+    public var `state`: EncString?
+    public var `postalCode`: EncString?
+    public var `country`: EncString?
+    public var `company`: EncString?
+    public var `email`: EncString?
+    public var `phone`: EncString?
+    public var `ssn`: EncString?
+    public var `username`: EncString?
+    public var `passportNumber`: EncString?
+    public var `licenseNumber`: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`title`: CipherString?, `firstName`: CipherString?, `middleName`: CipherString?, `lastName`: CipherString?, `address1`: CipherString?, `address2`: CipherString?, `address3`: CipherString?, `city`: CipherString?, `state`: CipherString?, `postalCode`: CipherString?, `country`: CipherString?, `company`: CipherString?, `email`: CipherString?, `phone`: CipherString?, `ssn`: CipherString?, `username`: CipherString?, `passportNumber`: CipherString?, `licenseNumber`: CipherString?) {
+    public init(`title`: EncString?, `firstName`: EncString?, `middleName`: EncString?, `lastName`: EncString?, `address1`: EncString?, `address2`: EncString?, `address3`: EncString?, `city`: EncString?, `state`: EncString?, `postalCode`: EncString?, `country`: EncString?, `company`: EncString?, `email`: EncString?, `phone`: EncString?, `ssn`: EncString?, `username`: EncString?, `passportNumber`: EncString?, `licenseNumber`: EncString?) {
         self.`title` = `title`
         self.`firstName` = `firstName`
         self.`middleName` = `middleName`
@@ -2010,46 +2010,46 @@ extension Identity: Equatable, Hashable {
 public struct FfiConverterTypeIdentity: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Identity {
         return try Identity(
-            `title`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `firstName`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `middleName`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `lastName`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `address1`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `address2`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `address3`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `city`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `state`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `postalCode`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `country`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `company`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `email`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `phone`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `ssn`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `username`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `passportNumber`: FfiConverterOptionTypeCipherString.read(from: &buf), 
-            `licenseNumber`: FfiConverterOptionTypeCipherString.read(from: &buf)
+            `title`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `firstName`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `middleName`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `lastName`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `address1`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `address2`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `address3`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `city`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `state`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `postalCode`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `country`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `company`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `email`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `phone`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `ssn`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `username`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `passportNumber`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `licenseNumber`: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: Identity, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeCipherString.write(value.`title`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`firstName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`middleName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`lastName`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`address1`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`address2`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`address3`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`city`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`state`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`postalCode`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`country`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`company`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`email`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`phone`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`ssn`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`username`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`passportNumber`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`licenseNumber`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`title`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`firstName`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`middleName`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`lastName`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`address1`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`address2`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`address3`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`city`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`state`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`postalCode`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`country`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`company`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`email`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`phone`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`ssn`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`username`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`passportNumber`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`licenseNumber`, into: &buf)
     }
 }
 
@@ -2444,16 +2444,16 @@ public func FfiConverterTypeLocalDataView_lower(_ value: LocalDataView) -> RustB
 
 
 public struct Login {
-    public var `username`: CipherString
-    public var `password`: CipherString
+    public var `username`: EncString
+    public var `password`: EncString
     public var `passwordRevisionDate`: DateTime?
     public var `uris`: [LoginUri]
-    public var `totp`: CipherString?
+    public var `totp`: EncString?
     public var `autofillOnPageLoad`: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`username`: CipherString, `password`: CipherString, `passwordRevisionDate`: DateTime?, `uris`: [LoginUri], `totp`: CipherString?, `autofillOnPageLoad`: Bool?) {
+    public init(`username`: EncString, `password`: EncString, `passwordRevisionDate`: DateTime?, `uris`: [LoginUri], `totp`: EncString?, `autofillOnPageLoad`: Bool?) {
         self.`username` = `username`
         self.`password` = `password`
         self.`passwordRevisionDate` = `passwordRevisionDate`
@@ -2501,21 +2501,21 @@ extension Login: Equatable, Hashable {
 public struct FfiConverterTypeLogin: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Login {
         return try Login(
-            `username`: FfiConverterTypeCipherString.read(from: &buf), 
-            `password`: FfiConverterTypeCipherString.read(from: &buf), 
+            `username`: FfiConverterTypeEncString.read(from: &buf), 
+            `password`: FfiConverterTypeEncString.read(from: &buf), 
             `passwordRevisionDate`: FfiConverterOptionTypeDateTime.read(from: &buf), 
             `uris`: FfiConverterSequenceTypeLoginUri.read(from: &buf), 
-            `totp`: FfiConverterOptionTypeCipherString.read(from: &buf), 
+            `totp`: FfiConverterOptionTypeEncString.read(from: &buf), 
             `autofillOnPageLoad`: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
     public static func write(_ value: Login, into buf: inout [UInt8]) {
-        FfiConverterTypeCipherString.write(value.`username`, into: &buf)
-        FfiConverterTypeCipherString.write(value.`password`, into: &buf)
+        FfiConverterTypeEncString.write(value.`username`, into: &buf)
+        FfiConverterTypeEncString.write(value.`password`, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.`passwordRevisionDate`, into: &buf)
         FfiConverterSequenceTypeLoginUri.write(value.`uris`, into: &buf)
-        FfiConverterOptionTypeCipherString.write(value.`totp`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`totp`, into: &buf)
         FfiConverterOptionBool.write(value.`autofillOnPageLoad`, into: &buf)
     }
 }
@@ -2531,12 +2531,12 @@ public func FfiConverterTypeLogin_lower(_ value: Login) -> RustBuffer {
 
 
 public struct LoginUri {
-    public var `uri`: CipherString
+    public var `uri`: EncString
     public var `match`: UriMatchType?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`uri`: CipherString, `match`: UriMatchType?) {
+    public init(`uri`: EncString, `match`: UriMatchType?) {
         self.`uri` = `uri`
         self.`match` = `match`
     }
@@ -2564,13 +2564,13 @@ extension LoginUri: Equatable, Hashable {
 public struct FfiConverterTypeLoginUri: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoginUri {
         return try LoginUri(
-            `uri`: FfiConverterTypeCipherString.read(from: &buf), 
+            `uri`: FfiConverterTypeEncString.read(from: &buf), 
             `match`: FfiConverterOptionTypeUriMatchType.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginUri, into buf: inout [UInt8]) {
-        FfiConverterTypeCipherString.write(value.`uri`, into: &buf)
+        FfiConverterTypeEncString.write(value.`uri`, into: &buf)
         FfiConverterOptionTypeUriMatchType.write(value.`match`, into: &buf)
     }
 }
@@ -3013,12 +3013,12 @@ public func FfiConverterTypePasswordGeneratorRequest_lower(_ value: PasswordGene
 
 
 public struct PasswordHistory {
-    public var `password`: CipherString
+    public var `password`: EncString
     public var `lastUsedDate`: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`password`: CipherString, `lastUsedDate`: DateTime) {
+    public init(`password`: EncString, `lastUsedDate`: DateTime) {
         self.`password` = `password`
         self.`lastUsedDate` = `lastUsedDate`
     }
@@ -3046,13 +3046,13 @@ extension PasswordHistory: Equatable, Hashable {
 public struct FfiConverterTypePasswordHistory: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordHistory {
         return try PasswordHistory(
-            `password`: FfiConverterTypeCipherString.read(from: &buf), 
+            `password`: FfiConverterTypeEncString.read(from: &buf), 
             `lastUsedDate`: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: PasswordHistory, into buf: inout [UInt8]) {
-        FfiConverterTypeCipherString.write(value.`password`, into: &buf)
+        FfiConverterTypeEncString.write(value.`password`, into: &buf)
         FfiConverterTypeDateTime.write(value.`lastUsedDate`, into: &buf)
     }
 }
@@ -3119,6 +3119,124 @@ public func FfiConverterTypePasswordHistoryView_lift(_ buf: RustBuffer) throws -
 
 public func FfiConverterTypePasswordHistoryView_lower(_ value: PasswordHistoryView) -> RustBuffer {
     return FfiConverterTypePasswordHistoryView.lower(value)
+}
+
+
+public struct RegisterKeyResponse {
+    public var `masterPasswordHash`: String
+    public var `encryptedUserKey`: String
+    public var `keys`: RsaKeyPair
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`masterPasswordHash`: String, `encryptedUserKey`: String, `keys`: RsaKeyPair) {
+        self.`masterPasswordHash` = `masterPasswordHash`
+        self.`encryptedUserKey` = `encryptedUserKey`
+        self.`keys` = `keys`
+    }
+}
+
+
+extension RegisterKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: RegisterKeyResponse, rhs: RegisterKeyResponse) -> Bool {
+        if lhs.`masterPasswordHash` != rhs.`masterPasswordHash` {
+            return false
+        }
+        if lhs.`encryptedUserKey` != rhs.`encryptedUserKey` {
+            return false
+        }
+        if lhs.`keys` != rhs.`keys` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`masterPasswordHash`)
+        hasher.combine(`encryptedUserKey`)
+        hasher.combine(`keys`)
+    }
+}
+
+
+public struct FfiConverterTypeRegisterKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterKeyResponse {
+        return try RegisterKeyResponse(
+            `masterPasswordHash`: FfiConverterString.read(from: &buf), 
+            `encryptedUserKey`: FfiConverterString.read(from: &buf), 
+            `keys`: FfiConverterTypeRsaKeyPair.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RegisterKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.`masterPasswordHash`, into: &buf)
+        FfiConverterString.write(value.`encryptedUserKey`, into: &buf)
+        FfiConverterTypeRsaKeyPair.write(value.`keys`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeRegisterKeyResponse_lift(_ buf: RustBuffer) throws -> RegisterKeyResponse {
+    return try FfiConverterTypeRegisterKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyResponse) -> RustBuffer {
+    return FfiConverterTypeRegisterKeyResponse.lower(value)
+}
+
+
+public struct RsaKeyPair {
+    public var `public`: String
+    public var `private`: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`public`: String, `private`: EncString) {
+        self.`public` = `public`
+        self.`private` = `private`
+    }
+}
+
+
+extension RsaKeyPair: Equatable, Hashable {
+    public static func ==(lhs: RsaKeyPair, rhs: RsaKeyPair) -> Bool {
+        if lhs.`public` != rhs.`public` {
+            return false
+        }
+        if lhs.`private` != rhs.`private` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`public`)
+        hasher.combine(`private`)
+    }
+}
+
+
+public struct FfiConverterTypeRsaKeyPair: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RsaKeyPair {
+        return try RsaKeyPair(
+            `public`: FfiConverterString.read(from: &buf), 
+            `private`: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RsaKeyPair, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.`public`, into: &buf)
+        FfiConverterTypeEncString.write(value.`private`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeRsaKeyPair_lift(_ buf: RustBuffer) throws -> RsaKeyPair {
+    return try FfiConverterTypeRsaKeyPair.lift(buf)
+}
+
+public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer {
+    return FfiConverterTypeRsaKeyPair.lower(value)
 }
 
 
@@ -3213,6 +3331,695 @@ public func FfiConverterTypeSecureNoteView_lift(_ buf: RustBuffer) throws -> Sec
 
 public func FfiConverterTypeSecureNoteView_lower(_ value: SecureNoteView) -> RustBuffer {
     return FfiConverterTypeSecureNoteView.lower(value)
+}
+
+
+public struct Send {
+    public var `id`: Uuid
+    public var `accessId`: String
+    public var `name`: EncString
+    public var `notes`: EncString?
+    public var `key`: EncString
+    public var `password`: String?
+    public var `type`: SendType
+    public var `file`: SendFile?
+    public var `text`: SendText?
+    public var `maxAccessCount`: UInt32?
+    public var `accessCount`: UInt32
+    public var `disabled`: Bool
+    public var `hideEmail`: Bool
+    public var `revisionDate`: DateTime
+    public var `deletionDate`: DateTime
+    public var `expirationDate`: DateTime?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`id`: Uuid, `accessId`: String, `name`: EncString, `notes`: EncString?, `key`: EncString, `password`: String?, `type`: SendType, `file`: SendFile?, `text`: SendText?, `maxAccessCount`: UInt32?, `accessCount`: UInt32, `disabled`: Bool, `hideEmail`: Bool, `revisionDate`: DateTime, `deletionDate`: DateTime, `expirationDate`: DateTime?) {
+        self.`id` = `id`
+        self.`accessId` = `accessId`
+        self.`name` = `name`
+        self.`notes` = `notes`
+        self.`key` = `key`
+        self.`password` = `password`
+        self.`type` = `type`
+        self.`file` = `file`
+        self.`text` = `text`
+        self.`maxAccessCount` = `maxAccessCount`
+        self.`accessCount` = `accessCount`
+        self.`disabled` = `disabled`
+        self.`hideEmail` = `hideEmail`
+        self.`revisionDate` = `revisionDate`
+        self.`deletionDate` = `deletionDate`
+        self.`expirationDate` = `expirationDate`
+    }
+}
+
+
+extension Send: Equatable, Hashable {
+    public static func ==(lhs: Send, rhs: Send) -> Bool {
+        if lhs.`id` != rhs.`id` {
+            return false
+        }
+        if lhs.`accessId` != rhs.`accessId` {
+            return false
+        }
+        if lhs.`name` != rhs.`name` {
+            return false
+        }
+        if lhs.`notes` != rhs.`notes` {
+            return false
+        }
+        if lhs.`key` != rhs.`key` {
+            return false
+        }
+        if lhs.`password` != rhs.`password` {
+            return false
+        }
+        if lhs.`type` != rhs.`type` {
+            return false
+        }
+        if lhs.`file` != rhs.`file` {
+            return false
+        }
+        if lhs.`text` != rhs.`text` {
+            return false
+        }
+        if lhs.`maxAccessCount` != rhs.`maxAccessCount` {
+            return false
+        }
+        if lhs.`accessCount` != rhs.`accessCount` {
+            return false
+        }
+        if lhs.`disabled` != rhs.`disabled` {
+            return false
+        }
+        if lhs.`hideEmail` != rhs.`hideEmail` {
+            return false
+        }
+        if lhs.`revisionDate` != rhs.`revisionDate` {
+            return false
+        }
+        if lhs.`deletionDate` != rhs.`deletionDate` {
+            return false
+        }
+        if lhs.`expirationDate` != rhs.`expirationDate` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`id`)
+        hasher.combine(`accessId`)
+        hasher.combine(`name`)
+        hasher.combine(`notes`)
+        hasher.combine(`key`)
+        hasher.combine(`password`)
+        hasher.combine(`type`)
+        hasher.combine(`file`)
+        hasher.combine(`text`)
+        hasher.combine(`maxAccessCount`)
+        hasher.combine(`accessCount`)
+        hasher.combine(`disabled`)
+        hasher.combine(`hideEmail`)
+        hasher.combine(`revisionDate`)
+        hasher.combine(`deletionDate`)
+        hasher.combine(`expirationDate`)
+    }
+}
+
+
+public struct FfiConverterTypeSend: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Send {
+        return try Send(
+            `id`: FfiConverterTypeUuid.read(from: &buf), 
+            `accessId`: FfiConverterString.read(from: &buf), 
+            `name`: FfiConverterTypeEncString.read(from: &buf), 
+            `notes`: FfiConverterOptionTypeEncString.read(from: &buf), 
+            `key`: FfiConverterTypeEncString.read(from: &buf), 
+            `password`: FfiConverterOptionString.read(from: &buf), 
+            `type`: FfiConverterTypeSendType.read(from: &buf), 
+            `file`: FfiConverterOptionTypeSendFile.read(from: &buf), 
+            `text`: FfiConverterOptionTypeSendText.read(from: &buf), 
+            `maxAccessCount`: FfiConverterOptionUInt32.read(from: &buf), 
+            `accessCount`: FfiConverterUInt32.read(from: &buf), 
+            `disabled`: FfiConverterBool.read(from: &buf), 
+            `hideEmail`: FfiConverterBool.read(from: &buf), 
+            `revisionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `deletionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `expirationDate`: FfiConverterOptionTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Send, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.`id`, into: &buf)
+        FfiConverterString.write(value.`accessId`, into: &buf)
+        FfiConverterTypeEncString.write(value.`name`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`notes`, into: &buf)
+        FfiConverterTypeEncString.write(value.`key`, into: &buf)
+        FfiConverterOptionString.write(value.`password`, into: &buf)
+        FfiConverterTypeSendType.write(value.`type`, into: &buf)
+        FfiConverterOptionTypeSendFile.write(value.`file`, into: &buf)
+        FfiConverterOptionTypeSendText.write(value.`text`, into: &buf)
+        FfiConverterOptionUInt32.write(value.`maxAccessCount`, into: &buf)
+        FfiConverterUInt32.write(value.`accessCount`, into: &buf)
+        FfiConverterBool.write(value.`disabled`, into: &buf)
+        FfiConverterBool.write(value.`hideEmail`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`revisionDate`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`deletionDate`, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.`expirationDate`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSend_lift(_ buf: RustBuffer) throws -> Send {
+    return try FfiConverterTypeSend.lift(buf)
+}
+
+public func FfiConverterTypeSend_lower(_ value: Send) -> RustBuffer {
+    return FfiConverterTypeSend.lower(value)
+}
+
+
+public struct SendFile {
+    public var `id`: String
+    public var `fileName`: EncString
+    public var `size`: String
+    public var `sizeName`: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`id`: String, `fileName`: EncString, `size`: String, `sizeName`: String) {
+        self.`id` = `id`
+        self.`fileName` = `fileName`
+        self.`size` = `size`
+        self.`sizeName` = `sizeName`
+    }
+}
+
+
+extension SendFile: Equatable, Hashable {
+    public static func ==(lhs: SendFile, rhs: SendFile) -> Bool {
+        if lhs.`id` != rhs.`id` {
+            return false
+        }
+        if lhs.`fileName` != rhs.`fileName` {
+            return false
+        }
+        if lhs.`size` != rhs.`size` {
+            return false
+        }
+        if lhs.`sizeName` != rhs.`sizeName` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`id`)
+        hasher.combine(`fileName`)
+        hasher.combine(`size`)
+        hasher.combine(`sizeName`)
+    }
+}
+
+
+public struct FfiConverterTypeSendFile: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFile {
+        return try SendFile(
+            `id`: FfiConverterString.read(from: &buf), 
+            `fileName`: FfiConverterTypeEncString.read(from: &buf), 
+            `size`: FfiConverterString.read(from: &buf), 
+            `sizeName`: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendFile, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.`id`, into: &buf)
+        FfiConverterTypeEncString.write(value.`fileName`, into: &buf)
+        FfiConverterString.write(value.`size`, into: &buf)
+        FfiConverterString.write(value.`sizeName`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendFile_lift(_ buf: RustBuffer) throws -> SendFile {
+    return try FfiConverterTypeSendFile.lift(buf)
+}
+
+public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
+    return FfiConverterTypeSendFile.lower(value)
+}
+
+
+public struct SendFileView {
+    public var `id`: String
+    public var `fileName`: String
+    public var `size`: String
+    public var `sizeName`: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`id`: String, `fileName`: String, `size`: String, `sizeName`: String) {
+        self.`id` = `id`
+        self.`fileName` = `fileName`
+        self.`size` = `size`
+        self.`sizeName` = `sizeName`
+    }
+}
+
+
+extension SendFileView: Equatable, Hashable {
+    public static func ==(lhs: SendFileView, rhs: SendFileView) -> Bool {
+        if lhs.`id` != rhs.`id` {
+            return false
+        }
+        if lhs.`fileName` != rhs.`fileName` {
+            return false
+        }
+        if lhs.`size` != rhs.`size` {
+            return false
+        }
+        if lhs.`sizeName` != rhs.`sizeName` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`id`)
+        hasher.combine(`fileName`)
+        hasher.combine(`size`)
+        hasher.combine(`sizeName`)
+    }
+}
+
+
+public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFileView {
+        return try SendFileView(
+            `id`: FfiConverterString.read(from: &buf), 
+            `fileName`: FfiConverterString.read(from: &buf), 
+            `size`: FfiConverterString.read(from: &buf), 
+            `sizeName`: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendFileView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.`id`, into: &buf)
+        FfiConverterString.write(value.`fileName`, into: &buf)
+        FfiConverterString.write(value.`size`, into: &buf)
+        FfiConverterString.write(value.`sizeName`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendFileView_lift(_ buf: RustBuffer) throws -> SendFileView {
+    return try FfiConverterTypeSendFileView.lift(buf)
+}
+
+public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuffer {
+    return FfiConverterTypeSendFileView.lower(value)
+}
+
+
+public struct SendListView {
+    public var `id`: Uuid
+    public var `accessId`: String
+    public var `name`: String
+    public var `type`: SendType
+    public var `disabled`: Bool
+    public var `revisionDate`: DateTime
+    public var `deletionDate`: DateTime
+    public var `expirationDate`: DateTime?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`id`: Uuid, `accessId`: String, `name`: String, `type`: SendType, `disabled`: Bool, `revisionDate`: DateTime, `deletionDate`: DateTime, `expirationDate`: DateTime?) {
+        self.`id` = `id`
+        self.`accessId` = `accessId`
+        self.`name` = `name`
+        self.`type` = `type`
+        self.`disabled` = `disabled`
+        self.`revisionDate` = `revisionDate`
+        self.`deletionDate` = `deletionDate`
+        self.`expirationDate` = `expirationDate`
+    }
+}
+
+
+extension SendListView: Equatable, Hashable {
+    public static func ==(lhs: SendListView, rhs: SendListView) -> Bool {
+        if lhs.`id` != rhs.`id` {
+            return false
+        }
+        if lhs.`accessId` != rhs.`accessId` {
+            return false
+        }
+        if lhs.`name` != rhs.`name` {
+            return false
+        }
+        if lhs.`type` != rhs.`type` {
+            return false
+        }
+        if lhs.`disabled` != rhs.`disabled` {
+            return false
+        }
+        if lhs.`revisionDate` != rhs.`revisionDate` {
+            return false
+        }
+        if lhs.`deletionDate` != rhs.`deletionDate` {
+            return false
+        }
+        if lhs.`expirationDate` != rhs.`expirationDate` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`id`)
+        hasher.combine(`accessId`)
+        hasher.combine(`name`)
+        hasher.combine(`type`)
+        hasher.combine(`disabled`)
+        hasher.combine(`revisionDate`)
+        hasher.combine(`deletionDate`)
+        hasher.combine(`expirationDate`)
+    }
+}
+
+
+public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendListView {
+        return try SendListView(
+            `id`: FfiConverterTypeUuid.read(from: &buf), 
+            `accessId`: FfiConverterString.read(from: &buf), 
+            `name`: FfiConverterString.read(from: &buf), 
+            `type`: FfiConverterTypeSendType.read(from: &buf), 
+            `disabled`: FfiConverterBool.read(from: &buf), 
+            `revisionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `deletionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `expirationDate`: FfiConverterOptionTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendListView, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.`id`, into: &buf)
+        FfiConverterString.write(value.`accessId`, into: &buf)
+        FfiConverterString.write(value.`name`, into: &buf)
+        FfiConverterTypeSendType.write(value.`type`, into: &buf)
+        FfiConverterBool.write(value.`disabled`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`revisionDate`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`deletionDate`, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.`expirationDate`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendListView_lift(_ buf: RustBuffer) throws -> SendListView {
+    return try FfiConverterTypeSendListView.lift(buf)
+}
+
+public func FfiConverterTypeSendListView_lower(_ value: SendListView) -> RustBuffer {
+    return FfiConverterTypeSendListView.lower(value)
+}
+
+
+public struct SendText {
+    public var `text`: EncString
+    public var `hidden`: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`text`: EncString, `hidden`: Bool) {
+        self.`text` = `text`
+        self.`hidden` = `hidden`
+    }
+}
+
+
+extension SendText: Equatable, Hashable {
+    public static func ==(lhs: SendText, rhs: SendText) -> Bool {
+        if lhs.`text` != rhs.`text` {
+            return false
+        }
+        if lhs.`hidden` != rhs.`hidden` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`text`)
+        hasher.combine(`hidden`)
+    }
+}
+
+
+public struct FfiConverterTypeSendText: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendText {
+        return try SendText(
+            `text`: FfiConverterTypeEncString.read(from: &buf), 
+            `hidden`: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendText, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.`text`, into: &buf)
+        FfiConverterBool.write(value.`hidden`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendText_lift(_ buf: RustBuffer) throws -> SendText {
+    return try FfiConverterTypeSendText.lift(buf)
+}
+
+public func FfiConverterTypeSendText_lower(_ value: SendText) -> RustBuffer {
+    return FfiConverterTypeSendText.lower(value)
+}
+
+
+public struct SendTextView {
+    public var `text`: String
+    public var `hidden`: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`text`: String, `hidden`: Bool) {
+        self.`text` = `text`
+        self.`hidden` = `hidden`
+    }
+}
+
+
+extension SendTextView: Equatable, Hashable {
+    public static func ==(lhs: SendTextView, rhs: SendTextView) -> Bool {
+        if lhs.`text` != rhs.`text` {
+            return false
+        }
+        if lhs.`hidden` != rhs.`hidden` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`text`)
+        hasher.combine(`hidden`)
+    }
+}
+
+
+public struct FfiConverterTypeSendTextView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendTextView {
+        return try SendTextView(
+            `text`: FfiConverterString.read(from: &buf), 
+            `hidden`: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendTextView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.`text`, into: &buf)
+        FfiConverterBool.write(value.`hidden`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendTextView_lift(_ buf: RustBuffer) throws -> SendTextView {
+    return try FfiConverterTypeSendTextView.lift(buf)
+}
+
+public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuffer {
+    return FfiConverterTypeSendTextView.lower(value)
+}
+
+
+public struct SendView {
+    public var `id`: Uuid
+    public var `accessId`: String
+    public var `name`: String
+    public var `notes`: String?
+    public var `key`: EncString
+    public var `password`: String?
+    public var `type`: SendType
+    public var `file`: SendFileView?
+    public var `text`: SendTextView?
+    public var `maxAccessCount`: UInt32?
+    public var `accessCount`: UInt32
+    public var `disabled`: Bool
+    public var `hideEmail`: Bool
+    public var `revisionDate`: DateTime
+    public var `deletionDate`: DateTime
+    public var `expirationDate`: DateTime?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(`id`: Uuid, `accessId`: String, `name`: String, `notes`: String?, `key`: EncString, `password`: String?, `type`: SendType, `file`: SendFileView?, `text`: SendTextView?, `maxAccessCount`: UInt32?, `accessCount`: UInt32, `disabled`: Bool, `hideEmail`: Bool, `revisionDate`: DateTime, `deletionDate`: DateTime, `expirationDate`: DateTime?) {
+        self.`id` = `id`
+        self.`accessId` = `accessId`
+        self.`name` = `name`
+        self.`notes` = `notes`
+        self.`key` = `key`
+        self.`password` = `password`
+        self.`type` = `type`
+        self.`file` = `file`
+        self.`text` = `text`
+        self.`maxAccessCount` = `maxAccessCount`
+        self.`accessCount` = `accessCount`
+        self.`disabled` = `disabled`
+        self.`hideEmail` = `hideEmail`
+        self.`revisionDate` = `revisionDate`
+        self.`deletionDate` = `deletionDate`
+        self.`expirationDate` = `expirationDate`
+    }
+}
+
+
+extension SendView: Equatable, Hashable {
+    public static func ==(lhs: SendView, rhs: SendView) -> Bool {
+        if lhs.`id` != rhs.`id` {
+            return false
+        }
+        if lhs.`accessId` != rhs.`accessId` {
+            return false
+        }
+        if lhs.`name` != rhs.`name` {
+            return false
+        }
+        if lhs.`notes` != rhs.`notes` {
+            return false
+        }
+        if lhs.`key` != rhs.`key` {
+            return false
+        }
+        if lhs.`password` != rhs.`password` {
+            return false
+        }
+        if lhs.`type` != rhs.`type` {
+            return false
+        }
+        if lhs.`file` != rhs.`file` {
+            return false
+        }
+        if lhs.`text` != rhs.`text` {
+            return false
+        }
+        if lhs.`maxAccessCount` != rhs.`maxAccessCount` {
+            return false
+        }
+        if lhs.`accessCount` != rhs.`accessCount` {
+            return false
+        }
+        if lhs.`disabled` != rhs.`disabled` {
+            return false
+        }
+        if lhs.`hideEmail` != rhs.`hideEmail` {
+            return false
+        }
+        if lhs.`revisionDate` != rhs.`revisionDate` {
+            return false
+        }
+        if lhs.`deletionDate` != rhs.`deletionDate` {
+            return false
+        }
+        if lhs.`expirationDate` != rhs.`expirationDate` {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(`id`)
+        hasher.combine(`accessId`)
+        hasher.combine(`name`)
+        hasher.combine(`notes`)
+        hasher.combine(`key`)
+        hasher.combine(`password`)
+        hasher.combine(`type`)
+        hasher.combine(`file`)
+        hasher.combine(`text`)
+        hasher.combine(`maxAccessCount`)
+        hasher.combine(`accessCount`)
+        hasher.combine(`disabled`)
+        hasher.combine(`hideEmail`)
+        hasher.combine(`revisionDate`)
+        hasher.combine(`deletionDate`)
+        hasher.combine(`expirationDate`)
+    }
+}
+
+
+public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendView {
+        return try SendView(
+            `id`: FfiConverterTypeUuid.read(from: &buf), 
+            `accessId`: FfiConverterString.read(from: &buf), 
+            `name`: FfiConverterString.read(from: &buf), 
+            `notes`: FfiConverterOptionString.read(from: &buf), 
+            `key`: FfiConverterTypeEncString.read(from: &buf), 
+            `password`: FfiConverterOptionString.read(from: &buf), 
+            `type`: FfiConverterTypeSendType.read(from: &buf), 
+            `file`: FfiConverterOptionTypeSendFileView.read(from: &buf), 
+            `text`: FfiConverterOptionTypeSendTextView.read(from: &buf), 
+            `maxAccessCount`: FfiConverterOptionUInt32.read(from: &buf), 
+            `accessCount`: FfiConverterUInt32.read(from: &buf), 
+            `disabled`: FfiConverterBool.read(from: &buf), 
+            `hideEmail`: FfiConverterBool.read(from: &buf), 
+            `revisionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `deletionDate`: FfiConverterTypeDateTime.read(from: &buf), 
+            `expirationDate`: FfiConverterOptionTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendView, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.`id`, into: &buf)
+        FfiConverterString.write(value.`accessId`, into: &buf)
+        FfiConverterString.write(value.`name`, into: &buf)
+        FfiConverterOptionString.write(value.`notes`, into: &buf)
+        FfiConverterTypeEncString.write(value.`key`, into: &buf)
+        FfiConverterOptionString.write(value.`password`, into: &buf)
+        FfiConverterTypeSendType.write(value.`type`, into: &buf)
+        FfiConverterOptionTypeSendFileView.write(value.`file`, into: &buf)
+        FfiConverterOptionTypeSendTextView.write(value.`text`, into: &buf)
+        FfiConverterOptionUInt32.write(value.`maxAccessCount`, into: &buf)
+        FfiConverterUInt32.write(value.`accessCount`, into: &buf)
+        FfiConverterBool.write(value.`disabled`, into: &buf)
+        FfiConverterBool.write(value.`hideEmail`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`revisionDate`, into: &buf)
+        FfiConverterTypeDateTime.write(value.`deletionDate`, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.`expirationDate`, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSendView_lift(_ buf: RustBuffer) throws -> SendView {
+    return try FfiConverterTypeSendView.lift(buf)
+}
+
+public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
+    return FfiConverterTypeSendView.lower(value)
 }
 
 // Note that we don't yet support `indirect` for enums.
@@ -3527,6 +4334,75 @@ extension DeviceType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum ExportFormat {
+    
+    case `csv`
+    case `json`
+    case `accountEncryptedJson`
+    case `encryptedJson`(`password`: String)
+}
+
+public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
+    typealias SwiftType = ExportFormat
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExportFormat {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .`csv`
+        
+        case 2: return .`json`
+        
+        case 3: return .`accountEncryptedJson`
+        
+        case 4: return .`encryptedJson`(
+            `password`: try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ExportFormat, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .`csv`:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .`json`:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .`accountEncryptedJson`:
+            writeInt(&buf, Int32(3))
+        
+        
+        case let .`encryptedJson`(`password`):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(`password`, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeExportFormat_lift(_ buf: RustBuffer) throws -> ExportFormat {
+    return try FfiConverterTypeExportFormat.lift(buf)
+}
+
+public func FfiConverterTypeExportFormat_lower(_ value: ExportFormat) -> RustBuffer {
+    return FfiConverterTypeExportFormat.lower(value)
+}
+
+
+extension ExportFormat: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum FieldType {
     
     case `text`
@@ -3695,6 +4571,58 @@ public func FfiConverterTypeSecureNoteType_lower(_ value: SecureNoteType) -> Rus
 
 
 extension SecureNoteType: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum SendType {
+    
+    case `text`
+    case `file`
+}
+
+public struct FfiConverterTypeSendType: FfiConverterRustBuffer {
+    typealias SwiftType = SendType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .`text`
+        
+        case 2: return .`file`
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .`text`:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .`file`:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+public func FfiConverterTypeSendType_lift(_ buf: RustBuffer) throws -> SendType {
+    return try FfiConverterTypeSendType.lift(buf)
+}
+
+public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
+    return FfiConverterTypeSendType.lower(value)
+}
+
+
+extension SendType: Equatable, Hashable {}
 
 
 
@@ -4072,6 +5000,90 @@ fileprivate struct FfiConverterOptionTypeSecureNoteView: FfiConverterRustBuffer 
     }
 }
 
+fileprivate struct FfiConverterOptionTypeSendFile: FfiConverterRustBuffer {
+    typealias SwiftType = SendFile?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendFile.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendFile.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeSendFileView: FfiConverterRustBuffer {
+    typealias SwiftType = SendFileView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendFileView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendFileView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeSendText: FfiConverterRustBuffer {
+    typealias SwiftType = SendText?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendText.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendText.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeSendTextView: FfiConverterRustBuffer {
+    typealias SwiftType = SendTextView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendTextView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendTextView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 fileprivate struct FfiConverterOptionTypeUriMatchType: FfiConverterRustBuffer {
     typealias SwiftType = UriMatchType?
 
@@ -4093,27 +5105,6 @@ fileprivate struct FfiConverterOptionTypeUriMatchType: FfiConverterRustBuffer {
     }
 }
 
-fileprivate struct FfiConverterOptionTypeCipherString: FfiConverterRustBuffer {
-    typealias SwiftType = CipherString?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeCipherString.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeCipherString.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
 fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
     typealias SwiftType = DateTime?
 
@@ -4130,6 +5121,27 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeDateTime.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
+    typealias SwiftType = EncString?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeEncString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeEncString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -4403,39 +5415,6 @@ fileprivate struct FfiConverterDictionaryTypeUuidString: FfiConverterRustBuffer 
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias CipherString = String
-public struct FfiConverterTypeCipherString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherString {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: CipherString, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> CipherString {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: CipherString) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-public func FfiConverterTypeCipherString_lift(_ value: RustBuffer) throws -> CipherString {
-    return try FfiConverterTypeCipherString.lift(value)
-}
-
-public func FfiConverterTypeCipherString_lower(_ value: CipherString) -> RustBuffer {
-    return FfiConverterTypeCipherString.lower(value)
-}
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias DateTime = Date
 public struct FfiConverterTypeDateTime: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DateTime {
@@ -4462,6 +5441,39 @@ public func FfiConverterTypeDateTime_lift(_ value: RustBuffer) throws -> DateTim
 
 public func FfiConverterTypeDateTime_lower(_ value: DateTime) -> RustBuffer {
     return FfiConverterTypeDateTime.lower(value)
+}
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias EncString = String
+public struct FfiConverterTypeEncString: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncString {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: EncString, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> EncString {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: EncString) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+public func FfiConverterTypeEncString_lift(_ value: RustBuffer) throws -> EncString {
+    return try FfiConverterTypeEncString.lift(value)
+}
+
+public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
+    return FfiConverterTypeEncString.lower(value)
 }
 
 
