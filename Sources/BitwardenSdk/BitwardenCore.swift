@@ -768,7 +768,7 @@ public struct Cipher {
     public var `folderId`: Uuid?
     public var `collectionIds`: [Uuid]
     public var `name`: EncString
-    public var `notes`: EncString
+    public var `notes`: EncString?
     public var `type`: CipherType
     public var `login`: Login?
     public var `identity`: Identity?
@@ -789,7 +789,7 @@ public struct Cipher {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: EncString, `notes`: EncString, `type`: CipherType, `login`: Login?, `identity`: Identity?, `card`: Card?, `secureNote`: SecureNote?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalData?, `attachments`: [Attachment], `fields`: [Field], `passwordHistory`: [PasswordHistory], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
+    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: EncString, `notes`: EncString?, `type`: CipherType, `login`: Login?, `identity`: Identity?, `card`: Card?, `secureNote`: SecureNote?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalData?, `attachments`: [Attachment], `fields`: [Field], `passwordHistory`: [PasswordHistory], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
         self.`id` = `id`
         self.`organizationId` = `organizationId`
         self.`folderId` = `folderId`
@@ -927,7 +927,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
             `folderId`: FfiConverterOptionTypeUuid.read(from: &buf), 
             `collectionIds`: FfiConverterSequenceTypeUuid.read(from: &buf), 
             `name`: FfiConverterTypeEncString.read(from: &buf), 
-            `notes`: FfiConverterTypeEncString.read(from: &buf), 
+            `notes`: FfiConverterOptionTypeEncString.read(from: &buf), 
             `type`: FfiConverterTypeCipherType.read(from: &buf), 
             `login`: FfiConverterOptionTypeLogin.read(from: &buf), 
             `identity`: FfiConverterOptionTypeIdentity.read(from: &buf), 
@@ -954,7 +954,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.`folderId`, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.`collectionIds`, into: &buf)
         FfiConverterTypeEncString.write(value.`name`, into: &buf)
-        FfiConverterTypeEncString.write(value.`notes`, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.`notes`, into: &buf)
         FfiConverterTypeCipherType.write(value.`type`, into: &buf)
         FfiConverterOptionTypeLogin.write(value.`login`, into: &buf)
         FfiConverterOptionTypeIdentity.write(value.`identity`, into: &buf)
@@ -1150,7 +1150,7 @@ public struct CipherView {
     public var `folderId`: Uuid?
     public var `collectionIds`: [Uuid]
     public var `name`: String
-    public var `notes`: String
+    public var `notes`: String?
     public var `type`: CipherType
     public var `login`: LoginView?
     public var `identity`: IdentityView?
@@ -1171,7 +1171,7 @@ public struct CipherView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: String, `notes`: String, `type`: CipherType, `login`: LoginView?, `identity`: IdentityView?, `card`: CardView?, `secureNote`: SecureNoteView?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalDataView?, `attachments`: [AttachmentView], `fields`: [FieldView], `passwordHistory`: [PasswordHistoryView], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
+    public init(`id`: Uuid?, `organizationId`: Uuid?, `folderId`: Uuid?, `collectionIds`: [Uuid], `name`: String, `notes`: String?, `type`: CipherType, `login`: LoginView?, `identity`: IdentityView?, `card`: CardView?, `secureNote`: SecureNoteView?, `favorite`: Bool, `reprompt`: CipherRepromptType, `organizationUseTotp`: Bool, `edit`: Bool, `viewPassword`: Bool, `localData`: LocalDataView?, `attachments`: [AttachmentView], `fields`: [FieldView], `passwordHistory`: [PasswordHistoryView], `creationDate`: DateTime, `deletedDate`: DateTime?, `revisionDate`: DateTime) {
         self.`id` = `id`
         self.`organizationId` = `organizationId`
         self.`folderId` = `folderId`
@@ -1309,7 +1309,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
             `folderId`: FfiConverterOptionTypeUuid.read(from: &buf), 
             `collectionIds`: FfiConverterSequenceTypeUuid.read(from: &buf), 
             `name`: FfiConverterString.read(from: &buf), 
-            `notes`: FfiConverterString.read(from: &buf), 
+            `notes`: FfiConverterOptionString.read(from: &buf), 
             `type`: FfiConverterTypeCipherType.read(from: &buf), 
             `login`: FfiConverterOptionTypeLoginView.read(from: &buf), 
             `identity`: FfiConverterOptionTypeIdentityView.read(from: &buf), 
@@ -1336,7 +1336,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.`folderId`, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.`collectionIds`, into: &buf)
         FfiConverterString.write(value.`name`, into: &buf)
-        FfiConverterString.write(value.`notes`, into: &buf)
+        FfiConverterOptionString.write(value.`notes`, into: &buf)
         FfiConverterTypeCipherType.write(value.`type`, into: &buf)
         FfiConverterOptionTypeLoginView.write(value.`login`, into: &buf)
         FfiConverterOptionTypeIdentityView.write(value.`identity`, into: &buf)
