@@ -1,0 +1,25 @@
+---
+name: Release Swift SDK
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  github-release:
+    runs-on: ubuntu-22.04
+    name: Release Swift SDK
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      
+      - name: Create release
+        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 # v1.13.0
+        with:
+          commit: ${{ github.sha }}
+          tag: ${{ github.ref }}
+          name: SDK Swift ${{ github.ref }}
+          body: "<insert release notes here>"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
