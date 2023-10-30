@@ -4,7 +4,7 @@ name: Release Swift SDK
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '*'
 
 jobs:
   github-release:
