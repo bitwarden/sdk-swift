@@ -287,7 +287,7 @@ private func uniffiCheckCallStatus(
             }
 
         case CALL_CANCELLED:
-                throw CancellationError()
+            fatalError("Cancellation not supported yet")
 
         default:
             throw UniffiInternalError.unexpectedRustCallStatusCode
@@ -386,16 +386,39 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
 
 
 
+
 public protocol ClientProtocol : AnyObject {
+    
+    /**
+     * Auth operations
+     */
     func auth()  -> ClientAuth
+    
+    /**
+     * Crypto operations
+     */
     func crypto()  -> ClientCrypto
+    
+    /**
+     * Test method, echoes back the input
+     */
     func echo(msg: String)  -> String
+    
+    /**
+     * Generator operations
+     */
     func generators()  -> ClientGenerators
+    
+    func platform()  -> ClientPlatform
+    
+    /**
+     * Vault item operations
+     */
     func vault()  -> ClientVault
     
 }
-
-public class Client: ClientProtocol {
+public class Client:
+    ClientProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -404,6 +427,9 @@ public class Client: ClientProtocol {
     required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
+    /**
+     * Initialize a new instance of the SDK client
+     */
     public convenience init(settings: ClientSettings?)  {
         self.init(unsafeFromRawPointer: try! rustCall() {
     uniffi_bitwarden_uniffi_fn_constructor_client_new(
@@ -419,7 +445,9 @@ public class Client: ClientProtocol {
 
     
     
-
+    /**
+     * Auth operations
+     */
     public func auth()  -> ClientAuth {
         return try!  FfiConverterTypeClientAuth.lift(
             try! 
@@ -430,7 +458,9 @@ public class Client: ClientProtocol {
 }
         )
     }
-
+    /**
+     * Crypto operations
+     */
     public func crypto()  -> ClientCrypto {
         return try!  FfiConverterTypeClientCrypto.lift(
             try! 
@@ -441,7 +471,9 @@ public class Client: ClientProtocol {
 }
         )
     }
-
+    /**
+     * Test method, echoes back the input
+     */
     public func echo(msg: String)  -> String {
         return try!  FfiConverterString.lift(
             try! 
@@ -453,7 +485,9 @@ public class Client: ClientProtocol {
 }
         )
     }
-
+    /**
+     * Generator operations
+     */
     public func generators()  -> ClientGenerators {
         return try!  FfiConverterTypeClientGenerators.lift(
             try! 
@@ -464,7 +498,19 @@ public class Client: ClientProtocol {
 }
         )
     }
-
+    public func platform()  -> ClientPlatform {
+        return try!  FfiConverterTypeClientPlatform.lift(
+            try! 
+    rustCall() {
+    
+    uniffi_bitwarden_uniffi_fn_method_client_platform(self.pointer, $0
+    )
+}
+        )
+    }
+    /**
+     * Vault item operations
+     */
     public func vault()  -> ClientVault {
         return try!  FfiConverterTypeClientVault.lift(
             try! 
@@ -475,6 +521,7 @@ public class Client: ClientProtocol {
 }
         )
     }
+
 }
 
 public struct FfiConverterTypeClient: FfiConverter {
@@ -519,15 +566,32 @@ public func FfiConverterTypeClient_lower(_ value: Client) -> UnsafeMutableRawPoi
 
 
 
+
 public protocol ClientAuthProtocol : AnyObject {
+    
+    /**
+     * Hash the user password
+     */
     func hashPassword(email: String, password: String, kdfParams: Kdf) async throws  -> String
+    
+    /**
+     * Generate keys needed for registration process
+     */
     func makeRegisterKeys(email: String, password: String, kdf: Kdf) async throws  -> RegisterKeyResponse
+    
+    /**
+     * **API Draft:** Calculate Password Strength
+     */
     func passwordStrength(password: String, email: String, additionalInputs: [String]) async  -> UInt8
+    
+    /**
+     * **API Draft:** Evaluate if the provided password satisfies the provided policy
+     */
     func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool
     
 }
-
-public class ClientAuth: ClientAuthProtocol {
+public class ClientAuth:
+    ClientAuthProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -545,7 +609,9 @@ public class ClientAuth: ClientAuthProtocol {
 
     
     
-
+    /**
+     * Hash the user password
+     */
     public func hashPassword(email: String, password: String, kdfParams: Kdf) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -565,7 +631,9 @@ public class ClientAuth: ClientAuthProtocol {
     }
 
     
-
+    /**
+     * Generate keys needed for registration process
+     */
     public func makeRegisterKeys(email: String, password: String, kdf: Kdf) async throws  -> RegisterKeyResponse {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -585,7 +653,9 @@ public class ClientAuth: ClientAuthProtocol {
     }
 
     
-
+    /**
+     * **API Draft:** Calculate Password Strength
+     */
     public func passwordStrength(password: String, email: String, additionalInputs: [String]) async  -> UInt8 {
         return try!  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -606,7 +676,9 @@ public class ClientAuth: ClientAuthProtocol {
     }
 
     
-
+    /**
+     * **API Draft:** Evaluate if the provided password satisfies the provided policy
+     */
     public func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool {
         return try!  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -627,6 +699,7 @@ public class ClientAuth: ClientAuthProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientAuth: FfiConverter {
@@ -671,14 +744,27 @@ public func FfiConverterTypeClientAuth_lower(_ value: ClientAuth) -> UnsafeMutab
 
 
 
+
 public protocol ClientCiphersProtocol : AnyObject {
+    
+    /**
+     * Decrypt cipher
+     */
     func decrypt(cipher: Cipher) async throws  -> CipherView
+    
+    /**
+     * Decrypt cipher list
+     */
     func decryptList(ciphers: [Cipher]) async throws  -> [CipherListView]
+    
+    /**
+     * Encrypt cipher
+     */
     func encrypt(cipherView: CipherView) async throws  -> Cipher
     
 }
-
-public class ClientCiphers: ClientCiphersProtocol {
+public class ClientCiphers:
+    ClientCiphersProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -696,7 +782,9 @@ public class ClientCiphers: ClientCiphersProtocol {
 
     
     
-
+    /**
+     * Decrypt cipher
+     */
     public func decrypt(cipher: Cipher) async throws  -> CipherView {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -714,7 +802,9 @@ public class ClientCiphers: ClientCiphersProtocol {
     }
 
     
-
+    /**
+     * Decrypt cipher list
+     */
     public func decryptList(ciphers: [Cipher]) async throws  -> [CipherListView] {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -732,7 +822,9 @@ public class ClientCiphers: ClientCiphersProtocol {
     }
 
     
-
+    /**
+     * Encrypt cipher
+     */
     public func encrypt(cipherView: CipherView) async throws  -> Cipher {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -750,6 +842,7 @@ public class ClientCiphers: ClientCiphersProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientCiphers: FfiConverter {
@@ -794,13 +887,22 @@ public func FfiConverterTypeClientCiphers_lower(_ value: ClientCiphers) -> Unsaf
 
 
 
+
 public protocol ClientCollectionsProtocol : AnyObject {
+    
+    /**
+     * Decrypt collection
+     */
     func decrypt(collection: Collection) async throws  -> CollectionView
+    
+    /**
+     * Decrypt collection list
+     */
     func decryptList(collections: [Collection]) async throws  -> [CollectionView]
     
 }
-
-public class ClientCollections: ClientCollectionsProtocol {
+public class ClientCollections:
+    ClientCollectionsProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -818,7 +920,9 @@ public class ClientCollections: ClientCollectionsProtocol {
 
     
     
-
+    /**
+     * Decrypt collection
+     */
     public func decrypt(collection: Collection) async throws  -> CollectionView {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -836,7 +940,9 @@ public class ClientCollections: ClientCollectionsProtocol {
     }
 
     
-
+    /**
+     * Decrypt collection list
+     */
     public func decryptList(collections: [Collection]) async throws  -> [CollectionView] {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -854,6 +960,7 @@ public class ClientCollections: ClientCollectionsProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientCollections: FfiConverter {
@@ -898,12 +1005,28 @@ public func FfiConverterTypeClientCollections_lower(_ value: ClientCollections) 
 
 
 
+
 public protocol ClientCryptoProtocol : AnyObject {
-    func initializeCrypto(req: InitCryptoRequest) async throws 
+    
+    /**
+     * Get the uses's decrypted encryption key. Note: It's very important
+     * to keep this key safe, as it can be used to decrypt all of the user's data
+     */
+    func getUserEncryptionKey() async throws  -> String
+    
+    /**
+     * Initialization method for the organization crypto. Needs to be called after `initialize_user_crypto` but before any other crypto operations.
+     */
+    func initializeOrgCrypto(req: InitOrgCryptoRequest) async throws 
+    
+    /**
+     * Initialization method for the user crypto. Needs to be called before any other crypto operations.
+     */
+    func initializeUserCrypto(req: InitUserCryptoRequest) async throws 
     
 }
-
-public class ClientCrypto: ClientCryptoProtocol {
+public class ClientCrypto:
+    ClientCryptoProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -921,13 +1044,35 @@ public class ClientCrypto: ClientCryptoProtocol {
 
     
     
-
-    public func initializeCrypto(req: InitCryptoRequest) async throws  {
+    /**
+     * Get the uses's decrypted encryption key. Note: It's very important
+     * to keep this key safe, as it can be used to decrypt all of the user's data
+     */
+    public func getUserEncryptionKey() async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_clientcrypto_initialize_crypto(
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_get_user_encryption_key(
+                    self.pointer
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Initialization method for the organization crypto. Needs to be called after `initialize_user_crypto` but before any other crypto operations.
+     */
+    public func initializeOrgCrypto(req: InitOrgCryptoRequest) async throws  {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_initialize_org_crypto(
                     self.pointer,
-                    FfiConverterTypeInitCryptoRequest_lower(req)
+                    FfiConverterTypeInitOrgCryptoRequest_lower(req)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -939,6 +1084,27 @@ public class ClientCrypto: ClientCryptoProtocol {
     }
 
     
+    /**
+     * Initialization method for the user crypto. Needs to be called before any other crypto operations.
+     */
+    public func initializeUserCrypto(req: InitUserCryptoRequest) async throws  {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_initialize_user_crypto(
+                    self.pointer,
+                    FfiConverterTypeInitUserCryptoRequest_lower(req)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+
 }
 
 public struct FfiConverterTypeClientCrypto: FfiConverter {
@@ -983,13 +1149,22 @@ public func FfiConverterTypeClientCrypto_lower(_ value: ClientCrypto) -> UnsafeM
 
 
 
+
 public protocol ClientExportersProtocol : AnyObject {
+    
+    /**
+     * **API Draft:** Export organization vault
+     */
     func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat) async throws  -> String
+    
+    /**
+     * **API Draft:** Export user vault
+     */
     func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat) async throws  -> String
     
 }
-
-public class ClientExporters: ClientExportersProtocol {
+public class ClientExporters:
+    ClientExportersProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1007,7 +1182,9 @@ public class ClientExporters: ClientExportersProtocol {
 
     
     
-
+    /**
+     * **API Draft:** Export organization vault
+     */
     public func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1027,7 +1204,9 @@ public class ClientExporters: ClientExportersProtocol {
     }
 
     
-
+    /**
+     * **API Draft:** Export user vault
+     */
     public func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1047,6 +1226,7 @@ public class ClientExporters: ClientExportersProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientExporters: FfiConverter {
@@ -1091,14 +1271,27 @@ public func FfiConverterTypeClientExporters_lower(_ value: ClientExporters) -> U
 
 
 
+
 public protocol ClientFoldersProtocol : AnyObject {
+    
+    /**
+     * Decrypt folder
+     */
     func decrypt(folder: Folder) async throws  -> FolderView
+    
+    /**
+     * Decrypt folder list
+     */
     func decryptList(folders: [Folder]) async throws  -> [FolderView]
+    
+    /**
+     * Encrypt folder
+     */
     func encrypt(folder: FolderView) async throws  -> Folder
     
 }
-
-public class ClientFolders: ClientFoldersProtocol {
+public class ClientFolders:
+    ClientFoldersProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1116,7 +1309,9 @@ public class ClientFolders: ClientFoldersProtocol {
 
     
     
-
+    /**
+     * Decrypt folder
+     */
     public func decrypt(folder: Folder) async throws  -> FolderView {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1134,7 +1329,9 @@ public class ClientFolders: ClientFoldersProtocol {
     }
 
     
-
+    /**
+     * Decrypt folder list
+     */
     public func decryptList(folders: [Folder]) async throws  -> [FolderView] {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1152,7 +1349,9 @@ public class ClientFolders: ClientFoldersProtocol {
     }
 
     
-
+    /**
+     * Encrypt folder
+     */
     public func encrypt(folder: FolderView) async throws  -> Folder {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1170,6 +1369,7 @@ public class ClientFolders: ClientFoldersProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientFolders: FfiConverter {
@@ -1214,13 +1414,22 @@ public func FfiConverterTypeClientFolders_lower(_ value: ClientFolders) -> Unsaf
 
 
 
+
 public protocol ClientGeneratorsProtocol : AnyObject {
+    
+    /**
+     * **API Draft:** Generate Passphrase
+     */
     func passphrase(settings: PassphraseGeneratorRequest) async throws  -> String
+    
+    /**
+     * **API Draft:** Generate Password
+     */
     func password(settings: PasswordGeneratorRequest) async throws  -> String
     
 }
-
-public class ClientGenerators: ClientGeneratorsProtocol {
+public class ClientGenerators:
+    ClientGeneratorsProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1238,7 +1447,9 @@ public class ClientGenerators: ClientGeneratorsProtocol {
 
     
     
-
+    /**
+     * **API Draft:** Generate Passphrase
+     */
     public func passphrase(settings: PassphraseGeneratorRequest) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1256,7 +1467,9 @@ public class ClientGenerators: ClientGeneratorsProtocol {
     }
 
     
-
+    /**
+     * **API Draft:** Generate Password
+     */
     public func password(settings: PasswordGeneratorRequest) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1274,6 +1487,7 @@ public class ClientGenerators: ClientGeneratorsProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientGenerators: FfiConverter {
@@ -1318,13 +1532,22 @@ public func FfiConverterTypeClientGenerators_lower(_ value: ClientGenerators) ->
 
 
 
+
 public protocol ClientPasswordHistoryProtocol : AnyObject {
+    
+    /**
+     * Decrypt password history
+     */
     func decryptList(list: [PasswordHistory]) async throws  -> [PasswordHistoryView]
+    
+    /**
+     * Encrypt password history
+     */
     func encrypt(passwordHistory: PasswordHistoryView) async throws  -> PasswordHistory
     
 }
-
-public class ClientPasswordHistory: ClientPasswordHistoryProtocol {
+public class ClientPasswordHistory:
+    ClientPasswordHistoryProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1342,7 +1565,9 @@ public class ClientPasswordHistory: ClientPasswordHistoryProtocol {
 
     
     
-
+    /**
+     * Decrypt password history
+     */
     public func decryptList(list: [PasswordHistory]) async throws  -> [PasswordHistoryView] {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1360,7 +1585,9 @@ public class ClientPasswordHistory: ClientPasswordHistoryProtocol {
     }
 
     
-
+    /**
+     * Encrypt password history
+     */
     public func encrypt(passwordHistory: PasswordHistoryView) async throws  -> PasswordHistory {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1378,6 +1605,7 @@ public class ClientPasswordHistory: ClientPasswordHistoryProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientPasswordHistory: FfiConverter {
@@ -1422,18 +1650,140 @@ public func FfiConverterTypeClientPasswordHistory_lower(_ value: ClientPasswordH
 
 
 
+
+public protocol ClientPlatformProtocol : AnyObject {
+    
+    /**
+     * Fingerprint
+     */
+    func fingerprint(req: FingerprintRequest) async throws  -> String
+    
+}
+public class ClientPlatform:
+    ClientPlatformProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientplatform(pointer, $0) }
+    }
+
+    
+
+    
+    
+    /**
+     * Fingerprint
+     */
+    public func fingerprint(req: FingerprintRequest) async throws  -> String {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientplatform_fingerprint(
+                    self.pointer,
+                    FfiConverterTypeFingerprintRequest_lower(req)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+
+}
+
+public struct FfiConverterTypeClientPlatform: FfiConverter {
+
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = ClientPlatform
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientPlatform {
+        return ClientPlatform(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: ClientPlatform) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientPlatform {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: ClientPlatform, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+}
+
+
+public func FfiConverterTypeClientPlatform_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientPlatform {
+    return try FfiConverterTypeClientPlatform.lift(pointer)
+}
+
+public func FfiConverterTypeClientPlatform_lower(_ value: ClientPlatform) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientPlatform.lower(value)
+}
+
+
+
+
 public protocol ClientSendsProtocol : AnyObject {
+    
+    /**
+     * Decrypt send
+     */
     func decrypt(send: Send) async throws  -> SendView
+    
+    /**
+     * Decrypt a send file in memory
+     */
     func decryptBuffer(send: Send, buffer: Data) async throws  -> Data
+    
+    /**
+     * Decrypt a send file located in the file system
+     */
     func decryptFile(send: Send, encryptedFilePath: String, decryptedFilePath: String) async throws 
+    
+    /**
+     * Decrypt send list
+     */
     func decryptList(sends: [Send]) async throws  -> [SendListView]
+    
+    /**
+     * Encrypt send
+     */
     func encrypt(send: SendView) async throws  -> Send
+    
+    /**
+     * Encrypt a send file in memory
+     */
     func encryptBuffer(send: Send, buffer: Data) async throws  -> Data
+    
+    /**
+     * Encrypt a send file located in the file system
+     */
     func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: String) async throws 
     
 }
-
-public class ClientSends: ClientSendsProtocol {
+public class ClientSends:
+    ClientSendsProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1451,7 +1801,9 @@ public class ClientSends: ClientSendsProtocol {
 
     
     
-
+    /**
+     * Decrypt send
+     */
     public func decrypt(send: Send) async throws  -> SendView {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1469,7 +1821,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Decrypt a send file in memory
+     */
     public func decryptBuffer(send: Send, buffer: Data) async throws  -> Data {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1488,7 +1842,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Decrypt a send file located in the file system
+     */
     public func decryptFile(send: Send, encryptedFilePath: String, decryptedFilePath: String) async throws  {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1508,7 +1864,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Decrypt send list
+     */
     public func decryptList(sends: [Send]) async throws  -> [SendListView] {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1526,7 +1884,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Encrypt send
+     */
     public func encrypt(send: SendView) async throws  -> Send {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1544,7 +1904,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Encrypt a send file in memory
+     */
     public func encryptBuffer(send: Send, buffer: Data) async throws  -> Data {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1563,7 +1925,9 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
-
+    /**
+     * Encrypt a send file located in the file system
+     */
     public func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: String) async throws  {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1583,6 +1947,7 @@ public class ClientSends: ClientSendsProtocol {
     }
 
     
+
 }
 
 public struct FfiConverterTypeClientSends: FfiConverter {
@@ -1627,17 +1992,47 @@ public func FfiConverterTypeClientSends_lower(_ value: ClientSends) -> UnsafeMut
 
 
 
+
 public protocol ClientVaultProtocol : AnyObject {
+    
+    /**
+     * Ciphers operations
+     */
     func ciphers()  -> ClientCiphers
+    
+    /**
+     * Collections operations
+     */
     func collections()  -> ClientCollections
+    
+    /**
+     * Folder operations
+     */
     func folders()  -> ClientFolders
+    
+    /**
+     * Generate a TOTP code from a provided key.
+     *
+     * The key can be either:
+     * - A base32 encoded string
+     * - OTP Auth URI
+     * - Steam URI
+     */
     func generateTotp(key: String, time: DateTime?) async  -> TotpResponse
+    
+    /**
+     * Password history operations
+     */
     func passwordHistory()  -> ClientPasswordHistory
+    
+    /**
+     * Sends operations
+     */
     func sends()  -> ClientSends
     
 }
-
-public class ClientVault: ClientVaultProtocol {
+public class ClientVault:
+    ClientVaultProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -1655,7 +2050,9 @@ public class ClientVault: ClientVaultProtocol {
 
     
     
-
+    /**
+     * Ciphers operations
+     */
     public func ciphers()  -> ClientCiphers {
         return try!  FfiConverterTypeClientCiphers.lift(
             try! 
@@ -1666,7 +2063,9 @@ public class ClientVault: ClientVaultProtocol {
 }
         )
     }
-
+    /**
+     * Collections operations
+     */
     public func collections()  -> ClientCollections {
         return try!  FfiConverterTypeClientCollections.lift(
             try! 
@@ -1677,7 +2076,9 @@ public class ClientVault: ClientVaultProtocol {
 }
         )
     }
-
+    /**
+     * Folder operations
+     */
     public func folders()  -> ClientFolders {
         return try!  FfiConverterTypeClientFolders.lift(
             try! 
@@ -1688,7 +2089,14 @@ public class ClientVault: ClientVaultProtocol {
 }
         )
     }
-
+    /**
+     * Generate a TOTP code from a provided key.
+     *
+     * The key can be either:
+     * - A base32 encoded string
+     * - OTP Auth URI
+     * - Steam URI
+     */
     public func generateTotp(key: String, time: DateTime?) async  -> TotpResponse {
         return try!  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1708,7 +2116,9 @@ public class ClientVault: ClientVaultProtocol {
     }
 
     
-
+    /**
+     * Password history operations
+     */
     public func passwordHistory()  -> ClientPasswordHistory {
         return try!  FfiConverterTypeClientPasswordHistory.lift(
             try! 
@@ -1719,7 +2129,9 @@ public class ClientVault: ClientVaultProtocol {
 }
         )
     }
-
+    /**
+     * Sends operations
+     */
     public func sends()  -> ClientSends {
         return try!  FfiConverterTypeClientSends.lift(
             try! 
@@ -1730,6 +2142,7 @@ public class ClientVault: ClientVaultProtocol {
 }
         )
     }
+
 }
 
 public struct FfiConverterTypeClientVault: FfiConverter {
@@ -1772,11 +2185,11 @@ public func FfiConverterTypeClientVault_lower(_ value: ClientVault) -> UnsafeMut
     return FfiConverterTypeClientVault.lower(value)
 }
 
+
 public enum BitwardenError {
 
     
     
-    // Simple error enums only carry a message
     case E(message: String)
     
 
@@ -2151,6 +2564,10 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -2225,118 +2642,130 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 9299) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 39544) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 50097) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 52605) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 17135) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 12707) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 54338) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 61870) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 62276) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 42798) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 11695) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 18969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 49256) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 41778) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 5352) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 52737) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 38024) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 4133) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 54536) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 6917) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt_list() != 51333) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 51056) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_encrypt() != 2060) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt_list() != 55518) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt() != 2515) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_encrypt() != 16939) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 54660) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt() != 57086) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_crypto() != 45104) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 50770) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 4952) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 28516) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 11990) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 38980) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt() != 1351) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_user_crypto() != 38742) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt_list() != 37050) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 19185) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt() != 54957) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 55068) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 14402) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt() != 52773) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 3370) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt_list() != 19533) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 19686) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt() != 61456) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_encrypt() != 38769) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 11634) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt() != 12489) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 45238) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_buffer() != 19741) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 13786) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_file() != 8851) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_encrypt() != 60400) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_list() != 3693) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fingerprint() != 64688) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt() != 6399) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt() != 62017) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_buffer() != 19766) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_buffer() != 62984) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_file() != 11305) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_file() != 41813) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_ciphers() != 31213) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt_list() != 35852) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_collections() != 49218) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt() != 30371) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_folders() != 18540) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_buffer() != 19563) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp() != 32001) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_file() != 11058) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 10182) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_ciphers() != 3759) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_sends() != 17906) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_collections() != 14153) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 21800) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_folders() != 42428) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp() != 56836) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 43934) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_sends() != 50090) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 54800) {
         return InitializationResult.apiChecksumMismatch
     }
 
