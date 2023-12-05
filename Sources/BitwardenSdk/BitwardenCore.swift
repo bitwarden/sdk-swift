@@ -3257,23 +3257,47 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 
 
 /**
- * Passphrase generator request.
- *
- * The default separator is `-` and default number of words is 3.
+ * Passphrase generator request options.
  */
 public struct PassphraseGeneratorRequest {
-    public let numWords: UInt8?
-    public let wordSeparator: String?
-    public let capitalize: Bool?
-    public let includeNumber: Bool?
+    /**
+     * Number of words in the generated passphrase.
+     * This value must be between 3 and 20.
+     */
+    public let numWords: UInt8
+    /**
+     * Character separator between words in the generated passphrase. The value cannot be empty.
+     */
+    public let wordSeparator: String
+    /**
+     * When set to true, capitalize the first letter of each word in the generated passphrase.
+     */
+    public let capitalize: Bool
+    /**
+     * When set to true, include a number at the end of one of the words in the generated passphrase.
+     */
+    public let includeNumber: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        numWords: UInt8?, 
-        wordSeparator: String?, 
-        capitalize: Bool?, 
-        includeNumber: Bool?) {
+        /**
+         * Number of words in the generated passphrase.
+         * This value must be between 3 and 20.
+         */
+        numWords: UInt8, 
+        /**
+         * Character separator between words in the generated passphrase. The value cannot be empty.
+         */
+        wordSeparator: String, 
+        /**
+         * When set to true, capitalize the first letter of each word in the generated passphrase.
+         */
+        capitalize: Bool, 
+        /**
+         * When set to true, include a number at the end of one of the words in the generated passphrase.
+         */
+        includeNumber: Bool) {
         self.numWords = numWords
         self.wordSeparator = wordSeparator
         self.capitalize = capitalize
@@ -3312,18 +3336,18 @@ public struct FfiConverterTypePassphraseGeneratorRequest: FfiConverterRustBuffer
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassphraseGeneratorRequest {
         return
             try PassphraseGeneratorRequest(
-                numWords: FfiConverterOptionUInt8.read(from: &buf), 
-                wordSeparator: FfiConverterOptionString.read(from: &buf), 
-                capitalize: FfiConverterOptionBool.read(from: &buf), 
-                includeNumber: FfiConverterOptionBool.read(from: &buf)
+                numWords: FfiConverterUInt8.read(from: &buf), 
+                wordSeparator: FfiConverterString.read(from: &buf), 
+                capitalize: FfiConverterBool.read(from: &buf), 
+                includeNumber: FfiConverterBool.read(from: &buf)
         )
     }
 
     public static func write(_ value: PassphraseGeneratorRequest, into buf: inout [UInt8]) {
-        FfiConverterOptionUInt8.write(value.numWords, into: &buf)
-        FfiConverterOptionString.write(value.wordSeparator, into: &buf)
-        FfiConverterOptionBool.write(value.capitalize, into: &buf)
-        FfiConverterOptionBool.write(value.includeNumber, into: &buf)
+        FfiConverterUInt8.write(value.numWords, into: &buf)
+        FfiConverterString.write(value.wordSeparator, into: &buf)
+        FfiConverterBool.write(value.capitalize, into: &buf)
+        FfiConverterBool.write(value.includeNumber, into: &buf)
     }
 }
 
@@ -3338,39 +3362,105 @@ public func FfiConverterTypePassphraseGeneratorRequest_lower(_ value: Passphrase
 
 
 /**
- * Password generator request. If all options are false, the default is to
- * generate a password with:
- * - lowercase
- * - uppercase
- * - numbers
- *
- * The default length is 16.
+ * Password generator request options.
  */
 public struct PasswordGeneratorRequest {
+    /**
+     * Include lowercase characters (a-z).
+     */
     public let lowercase: Bool
+    /**
+     * Include uppercase characters (A-Z).
+     */
     public let uppercase: Bool
+    /**
+     * Include numbers (0-9).
+     */
     public let numbers: Bool
+    /**
+     * Include special characters: ! @ # $ % ^ & *
+     */
     public let special: Bool
-    public let length: UInt8?
-    public let avoidAmbiguous: Bool?
-    public let minLowercase: Bool?
-    public let minUppercase: Bool?
-    public let minNumber: Bool?
-    public let minSpecial: Bool?
+    /**
+     * The length of the generated password.
+     * Note that the password length must be greater than the sum of all the minimums.
+     */
+    public let length: UInt8
+    /**
+     * When set to true, the generated password will not contain ambiguous characters.
+     * The ambiguous characters are: I, O, l, 0, 1
+     */
+    public let avoidAmbiguous: Bool
+    /**
+     * The minimum number of lowercase characters in the generated password.
+     * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
+     */
+    public let minLowercase: UInt8?
+    /**
+     * The minimum number of uppercase characters in the generated password.
+     * When set, the value must be between 1 and 9. This value is ignored is uppercase is false  
+     */
+    public let minUppercase: UInt8?
+    /**
+     * The minimum number of numbers in the generated password.
+     * When set, the value must be between 1 and 9. This value is ignored is numbers is false
+     */
+    public let minNumber: UInt8?
+    /**
+     * The minimum number of special characters in the generated password.
+     * When set, the value must be between 1 and 9. This value is ignored is special is false
+     */
+    public let minSpecial: UInt8?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
+        /**
+         * Include lowercase characters (a-z).
+         */
         lowercase: Bool, 
+        /**
+         * Include uppercase characters (A-Z).
+         */
         uppercase: Bool, 
+        /**
+         * Include numbers (0-9).
+         */
         numbers: Bool, 
+        /**
+         * Include special characters: ! @ # $ % ^ & *
+         */
         special: Bool, 
-        length: UInt8?, 
-        avoidAmbiguous: Bool?, 
-        minLowercase: Bool?, 
-        minUppercase: Bool?, 
-        minNumber: Bool?, 
-        minSpecial: Bool?) {
+        /**
+         * The length of the generated password.
+         * Note that the password length must be greater than the sum of all the minimums.
+         */
+        length: UInt8, 
+        /**
+         * When set to true, the generated password will not contain ambiguous characters.
+         * The ambiguous characters are: I, O, l, 0, 1
+         */
+        avoidAmbiguous: Bool, 
+        /**
+         * The minimum number of lowercase characters in the generated password.
+         * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
+         */
+        minLowercase: UInt8?, 
+        /**
+         * The minimum number of uppercase characters in the generated password.
+         * When set, the value must be between 1 and 9. This value is ignored is uppercase is false  
+         */
+        minUppercase: UInt8?, 
+        /**
+         * The minimum number of numbers in the generated password.
+         * When set, the value must be between 1 and 9. This value is ignored is numbers is false
+         */
+        minNumber: UInt8?, 
+        /**
+         * The minimum number of special characters in the generated password.
+         * When set, the value must be between 1 and 9. This value is ignored is special is false
+         */
+        minSpecial: UInt8?) {
         self.lowercase = lowercase
         self.uppercase = uppercase
         self.numbers = numbers
@@ -3443,12 +3533,12 @@ public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
                 uppercase: FfiConverterBool.read(from: &buf), 
                 numbers: FfiConverterBool.read(from: &buf), 
                 special: FfiConverterBool.read(from: &buf), 
-                length: FfiConverterOptionUInt8.read(from: &buf), 
-                avoidAmbiguous: FfiConverterOptionBool.read(from: &buf), 
-                minLowercase: FfiConverterOptionBool.read(from: &buf), 
-                minUppercase: FfiConverterOptionBool.read(from: &buf), 
-                minNumber: FfiConverterOptionBool.read(from: &buf), 
-                minSpecial: FfiConverterOptionBool.read(from: &buf)
+                length: FfiConverterUInt8.read(from: &buf), 
+                avoidAmbiguous: FfiConverterBool.read(from: &buf), 
+                minLowercase: FfiConverterOptionUInt8.read(from: &buf), 
+                minUppercase: FfiConverterOptionUInt8.read(from: &buf), 
+                minNumber: FfiConverterOptionUInt8.read(from: &buf), 
+                minSpecial: FfiConverterOptionUInt8.read(from: &buf)
         )
     }
 
@@ -3457,12 +3547,12 @@ public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
         FfiConverterBool.write(value.uppercase, into: &buf)
         FfiConverterBool.write(value.numbers, into: &buf)
         FfiConverterBool.write(value.special, into: &buf)
-        FfiConverterOptionUInt8.write(value.length, into: &buf)
-        FfiConverterOptionBool.write(value.avoidAmbiguous, into: &buf)
-        FfiConverterOptionBool.write(value.minLowercase, into: &buf)
-        FfiConverterOptionBool.write(value.minUppercase, into: &buf)
-        FfiConverterOptionBool.write(value.minNumber, into: &buf)
-        FfiConverterOptionBool.write(value.minSpecial, into: &buf)
+        FfiConverterUInt8.write(value.length, into: &buf)
+        FfiConverterBool.write(value.avoidAmbiguous, into: &buf)
+        FfiConverterOptionUInt8.write(value.minLowercase, into: &buf)
+        FfiConverterOptionUInt8.write(value.minUppercase, into: &buf)
+        FfiConverterOptionUInt8.write(value.minNumber, into: &buf)
+        FfiConverterOptionUInt8.write(value.minSpecial, into: &buf)
     }
 }
 

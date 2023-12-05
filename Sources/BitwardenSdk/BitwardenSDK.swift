@@ -2018,7 +2018,7 @@ public protocol ClientVaultProtocol : AnyObject {
      * - OTP Auth URI
      * - Steam URI
      */
-    func generateTotp(key: String, time: DateTime?) async  -> TotpResponse
+    func generateTotp(key: String, time: DateTime?) async throws  -> TotpResponse
     
     /**
      * Password history operations
@@ -2097,8 +2097,8 @@ public class ClientVault:
      * - OTP Auth URI
      * - Steam URI
      */
-    public func generateTotp(key: String, time: DateTime?) async  -> TotpResponse {
-        return try!  await uniffiRustCallAsync(
+    public func generateTotp(key: String, time: DateTime?) async throws  -> TotpResponse {
+        return try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientvault_generate_totp(
                     self.pointer,
@@ -2110,8 +2110,7 @@ public class ClientVault:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeTotpResponse_lift,
-            errorHandler: nil
-            
+            errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
 
@@ -2756,7 +2755,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_folders() != 42428) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp() != 56836) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp() != 43353) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 43934) {
