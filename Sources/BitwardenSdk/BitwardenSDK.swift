@@ -572,7 +572,7 @@ public protocol ClientAuthProtocol : AnyObject {
     /**
      * Hash the user password
      */
-    func hashPassword(email: String, password: String, kdfParams: Kdf) async throws  -> String
+    func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String
     
     /**
      * Generate keys needed for registration process
@@ -588,6 +588,15 @@ public protocol ClientAuthProtocol : AnyObject {
      * **API Draft:** Evaluate if the provided password satisfies the provided policy
      */
     func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool
+    
+    /**
+     * Validate the user password
+     *
+     * To retrieve the user's password hash, use [`ClientAuth::hash_password`] with
+     * `HashPurpose::LocalAuthentication` during login and persist it. If the login method has no
+     * password, use the email OTP.
+     */
+    func validatePassword(password: String, passwordHash: String) async throws  -> Bool
     
 }
 public class ClientAuth:
@@ -612,14 +621,15 @@ public class ClientAuth:
     /**
      * Hash the user password
      */
-    public func hashPassword(email: String, password: String, kdfParams: Kdf) async throws  -> String {
+    public func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientauth_hash_password(
                     self.pointer,
                     FfiConverterString.lower(email),
                     FfiConverterString.lower(password),
-                    FfiConverterTypeKdf_lower(kdfParams)
+                    FfiConverterTypeKdf_lower(kdfParams),
+                    FfiConverterTypeHashPurpose_lower(purpose)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -695,6 +705,31 @@ public class ClientAuth:
             liftFunc: FfiConverterBool.lift,
             errorHandler: nil
             
+        )
+    }
+
+    
+    /**
+     * Validate the user password
+     *
+     * To retrieve the user's password hash, use [`ClientAuth::hash_password`] with
+     * `HashPurpose::LocalAuthentication` during login and persist it. If the login method has no
+     * password, use the email OTP.
+     */
+    public func validatePassword(password: String, passwordHash: String) async throws  -> Bool {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_validate_password(
+                    self.pointer,
+                    FfiConverterString.lower(password),
+                    FfiConverterString.lower(passwordHash)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
 
@@ -1009,6 +1044,12 @@ public func FfiConverterTypeClientCollections_lower(_ value: ClientCollections) 
 public protocol ClientCryptoProtocol : AnyObject {
     
     /**
+     * Generates a PIN protected user key from the provided PIN. The result can be stored and later used
+     * to initialize another client instance by using the PIN and the PIN key with `initialize_user_crypto`.
+     */
+    func derivePinKey(pin: String) async throws  -> DerivePinKeyResponse
+    
+    /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
@@ -1043,6 +1084,27 @@ public class ClientCrypto:
     
 
     
+    
+    /**
+     * Generates a PIN protected user key from the provided PIN. The result can be stored and later used
+     * to initialize another client instance by using the PIN and the PIN key with `initialize_user_crypto`.
+     */
+    public func derivePinKey(pin: String) async throws  -> DerivePinKeyResponse {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_derive_pin_key(
+                    self.pointer,
+                    FfiConverterString.lower(pin)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDerivePinKeyResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
     
     /**
      * Get the uses's decrypted encryption key. Note: It's very important
@@ -2567,6 +2629,10 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -2659,7 +2725,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 18969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 41778) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 48320) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 52737) {
@@ -2669,6 +2735,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 6917) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password() != 33585) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 51056) {
@@ -2684,6 +2753,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 50770) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 6374) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 28516) {

@@ -1507,7 +1507,6 @@ public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer 
  *
  * ```
  * # use bitwarden::client::client_settings::{ClientSettings, DeviceType};
- * # use assert_matches::assert_matches;
  * let settings = ClientSettings {
  *     identity_url: "https://identity.bitwarden.com".to_string(),
  *     api_url: "https://api.bitwarden.com".to_string(),
@@ -1515,10 +1514,7 @@ public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer 
  *     device_type: DeviceType::SDK,
  * };
  * let default = ClientSettings::default();
- * assert_matches!(settings, default);
  * ```
- *
- * Targets `localhost:8080` for debug builds.
  */
 public struct ClientSettings {
     /**
@@ -1805,6 +1801,64 @@ public func FfiConverterTypeCollectionView_lift(_ buf: RustBuffer) throws -> Col
 
 public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> RustBuffer {
     return FfiConverterTypeCollectionView.lower(value)
+}
+
+
+public struct DerivePinKeyResponse {
+    public let pinProtectedUserKey: EncString
+    public let encryptedPin: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        pinProtectedUserKey: EncString, 
+        encryptedPin: EncString) {
+        self.pinProtectedUserKey = pinProtectedUserKey
+        self.encryptedPin = encryptedPin
+    }
+}
+
+
+extension DerivePinKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: DerivePinKeyResponse, rhs: DerivePinKeyResponse) -> Bool {
+        if lhs.pinProtectedUserKey != rhs.pinProtectedUserKey {
+            return false
+        }
+        if lhs.encryptedPin != rhs.encryptedPin {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pinProtectedUserKey)
+        hasher.combine(encryptedPin)
+    }
+}
+
+
+public struct FfiConverterTypeDerivePinKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DerivePinKeyResponse {
+        return
+            try DerivePinKeyResponse(
+                pinProtectedUserKey: FfiConverterTypeEncString.read(from: &buf), 
+                encryptedPin: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DerivePinKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.pinProtectedUserKey, into: &buf)
+        FfiConverterTypeEncString.write(value.encryptedPin, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeDerivePinKeyResponse_lift(_ buf: RustBuffer) throws -> DerivePinKeyResponse {
+    return try FfiConverterTypeDerivePinKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResponse) -> RustBuffer {
+    return FfiConverterTypeDerivePinKeyResponse.lower(value)
 }
 
 
@@ -5195,6 +5249,58 @@ extension FieldType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum HashPurpose {
+    
+    case serverAuthorization
+    case localAuthorization
+}
+
+public struct FfiConverterTypeHashPurpose: FfiConverterRustBuffer {
+    typealias SwiftType = HashPurpose
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HashPurpose {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .serverAuthorization
+        
+        case 2: return .localAuthorization
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: HashPurpose, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .serverAuthorization:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .localAuthorization:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+public func FfiConverterTypeHashPurpose_lift(_ buf: RustBuffer) throws -> HashPurpose {
+    return try FfiConverterTypeHashPurpose.lift(buf)
+}
+
+public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffer {
+    return FfiConverterTypeHashPurpose.lower(value)
+}
+
+
+extension HashPurpose: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum InitUserCryptoMethod {
     
     case password(
@@ -5212,6 +5318,16 @@ public enum InitUserCryptoMethod {
          * The user's decrypted encryption key, obtained using `get_user_encryption_key`
          */
         decryptedUserKey: String
+    )
+    case pin(
+        /**
+         * The user's PIN
+         */
+        pin: String, 
+        /**
+         * The user's symmetric crypto key, encrypted with the PIN. Use `derive_pin_key` to obtain this.
+         */
+        pinProtectedUserKey: EncString
     )
 }
 
@@ -5231,6 +5347,11 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             decryptedUserKey: try FfiConverterString.read(from: &buf)
         )
         
+        case 3: return .pin(
+            pin: try FfiConverterString.read(from: &buf), 
+            pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -5248,6 +5369,12 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case let .decryptedKey(decryptedUserKey):
             writeInt(&buf, Int32(2))
             FfiConverterString.write(decryptedUserKey, into: &buf)
+            
+        
+        case let .pin(pin,pinProtectedUserKey):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(pin, into: &buf)
+            FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
             
         }
     }
