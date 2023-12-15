@@ -382,6 +382,21 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
 fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     typealias SwiftType = Date
 
@@ -524,7 +539,7 @@ public struct AttachmentView {
     public let size: String?
     public let sizeName: String?
     public let fileName: String?
-    public let key: String?
+    public let key: Data?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -534,7 +549,7 @@ public struct AttachmentView {
         size: String?, 
         sizeName: String?, 
         fileName: String?, 
-        key: String?) {
+        key: Data?) {
         self.id = id
         self.url = url
         self.size = size
@@ -588,7 +603,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
                 size: FfiConverterOptionString.read(from: &buf), 
                 sizeName: FfiConverterOptionString.read(from: &buf), 
                 fileName: FfiConverterOptionString.read(from: &buf), 
-                key: FfiConverterOptionString.read(from: &buf)
+                key: FfiConverterOptionData.read(from: &buf)
         )
     }
 
@@ -598,7 +613,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.size, into: &buf)
         FfiConverterOptionString.write(value.sizeName, into: &buf)
         FfiConverterOptionString.write(value.fileName, into: &buf)
-        FfiConverterOptionString.write(value.key, into: &buf)
+        FfiConverterOptionData.write(value.key, into: &buf)
     }
 }
 
@@ -5718,6 +5733,27 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
+    typealias SwiftType = Data?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterData.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
