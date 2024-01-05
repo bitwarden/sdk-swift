@@ -585,7 +585,7 @@ public protocol ClientAuthProtocol : AnyObject {
     func passwordStrength(password: String, email: String, additionalInputs: [String]) async  -> UInt8
     
     /**
-     * **API Draft:** Evaluate if the provided password satisfies the provided policy
+     * Evaluate if the provided password satisfies the provided policy
      */
     func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool
     
@@ -687,7 +687,7 @@ public class ClientAuth:
 
     
     /**
-     * **API Draft:** Evaluate if the provided password satisfies the provided policy
+     * Evaluate if the provided password satisfies the provided policy
      */
     public func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool {
         return try!  await uniffiRustCallAsync(
@@ -1489,6 +1489,11 @@ public protocol ClientGeneratorsProtocol : AnyObject {
      */
     func password(settings: PasswordGeneratorRequest) async throws  -> String
     
+    /**
+     * **API Draft:** Generate Username
+     */
+    func username(settings: UsernameGeneratorRequest) async throws  -> String
+    
 }
 public class ClientGenerators:
     ClientGeneratorsProtocol {
@@ -1538,6 +1543,26 @@ public class ClientGenerators:
                 uniffi_bitwarden_uniffi_fn_method_clientgenerators_password(
                     self.pointer,
                     FfiConverterTypePasswordGeneratorRequest_lower(settings)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * **API Draft:** Generate Username
+     */
+    public func username(settings: UsernameGeneratorRequest) async throws  -> String {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientgenerators_username(
+                    self.pointer,
+                    FfiConverterTypeUsernameGeneratorRequest_lower(settings)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -1716,9 +1741,14 @@ public func FfiConverterTypeClientPasswordHistory_lower(_ value: ClientPasswordH
 public protocol ClientPlatformProtocol : AnyObject {
     
     /**
-     * Fingerprint
+     * Fingerprint (public key)
      */
     func fingerprint(req: FingerprintRequest) async throws  -> String
+    
+    /**
+     * Fingerprint using logged in user's public key
+     */
+    func userFingerprint(fingerprintMaterial: String) async throws  -> String
     
 }
 public class ClientPlatform:
@@ -1741,7 +1771,7 @@ public class ClientPlatform:
     
     
     /**
-     * Fingerprint
+     * Fingerprint (public key)
      */
     public func fingerprint(req: FingerprintRequest) async throws  -> String {
         return try  await uniffiRustCallAsync(
@@ -1749,6 +1779,26 @@ public class ClientPlatform:
                 uniffi_bitwarden_uniffi_fn_method_clientplatform_fingerprint(
                     self.pointer,
                     FfiConverterTypeFingerprintRequest_lower(req)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Fingerprint using logged in user's public key
+     */
+    public func userFingerprint(fingerprintMaterial: String) async throws  -> String {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientplatform_user_fingerprint(
+                    self.pointer,
+                    FfiConverterString.lower(fingerprintMaterial)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -2633,6 +2683,8 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -2734,7 +2786,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 4133) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 6917) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 15280) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password() != 33585) {
@@ -2788,13 +2840,19 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 45238) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_username() != 12389) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 13786) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_encrypt() != 60400) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fingerprint() != 64688) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fingerprint() != 53022) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_user_fingerprint() != 57261) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientsends_decrypt() != 62017) {

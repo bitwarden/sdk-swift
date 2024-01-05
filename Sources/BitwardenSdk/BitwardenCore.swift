@@ -382,21 +382,6 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
-fileprivate struct FfiConverterData: FfiConverterRustBuffer {
-    typealias SwiftType = Data
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
-        let len: Int32 = try readInt(&buf)
-        return Data(try readBytes(&buf, count: Int(len)))
-    }
-
-    public static func write(_ value: Data, into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        writeBytes(&buf, value)
-    }
-}
-
 fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     typealias SwiftType = Date
 
@@ -539,7 +524,7 @@ public struct AttachmentView {
     public let size: String?
     public let sizeName: String?
     public let fileName: String?
-    public let key: Data?
+    public let key: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -549,7 +534,7 @@ public struct AttachmentView {
         size: String?, 
         sizeName: String?, 
         fileName: String?, 
-        key: Data?) {
+        key: EncString?) {
         self.id = id
         self.url = url
         self.size = size
@@ -603,7 +588,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
                 size: FfiConverterOptionString.read(from: &buf), 
                 sizeName: FfiConverterOptionString.read(from: &buf), 
                 fileName: FfiConverterOptionString.read(from: &buf), 
-                key: FfiConverterOptionData.read(from: &buf)
+                key: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
@@ -613,7 +598,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.size, into: &buf)
         FfiConverterOptionString.write(value.sizeName, into: &buf)
         FfiConverterOptionString.write(value.fileName, into: &buf)
-        FfiConverterOptionData.write(value.key, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
     }
 }
 
@@ -1632,7 +1617,7 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 
 
 public struct Collection {
-    public let id: Uuid
+    public let id: Uuid?
     public let organizationId: Uuid
     public let name: EncString
     public let externalId: String?
@@ -1642,7 +1627,7 @@ public struct Collection {
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
+        id: Uuid?, 
         organizationId: Uuid, 
         name: EncString, 
         externalId: String?, 
@@ -1696,7 +1681,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Collection {
         return
             try Collection(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 organizationId: FfiConverterTypeUuid.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
@@ -1706,7 +1691,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: Collection, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterTypeUuid.write(value.organizationId, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.externalId, into: &buf)
@@ -1726,7 +1711,7 @@ public func FfiConverterTypeCollection_lower(_ value: Collection) -> RustBuffer 
 
 
 public struct CollectionView {
-    public let id: Uuid
+    public let id: Uuid?
     public let organizationId: Uuid
     public let name: String
     public let externalId: String?
@@ -1736,7 +1721,7 @@ public struct CollectionView {
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
+        id: Uuid?, 
         organizationId: Uuid, 
         name: String, 
         externalId: String?, 
@@ -1790,7 +1775,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CollectionView {
         return
             try CollectionView(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 organizationId: FfiConverterTypeUuid.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
@@ -1800,7 +1785,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: CollectionView, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterTypeUuid.write(value.organizationId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.externalId, into: &buf)
@@ -2100,14 +2085,14 @@ public func FfiConverterTypeFingerprintRequest_lower(_ value: FingerprintRequest
 
 
 public struct Folder {
-    public let id: Uuid
+    public let id: Uuid?
     public let name: EncString
     public let revisionDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
+        id: Uuid?, 
         name: EncString, 
         revisionDate: DateTime) {
         self.id = id
@@ -2143,14 +2128,14 @@ public struct FfiConverterTypeFolder: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Folder {
         return
             try Folder(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: Folder, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
     }
@@ -2167,14 +2152,14 @@ public func FfiConverterTypeFolder_lower(_ value: Folder) -> RustBuffer {
 
 
 public struct FolderView {
-    public let id: Uuid
+    public let id: Uuid?
     public let name: String
     public let revisionDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
+        id: Uuid?, 
         name: String, 
         revisionDate: DateTime) {
         self.id = id
@@ -2210,14 +2195,14 @@ public struct FfiConverterTypeFolderView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FolderView {
         return
             try FolderView(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: FolderView, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
     }
@@ -2641,7 +2626,7 @@ public struct InitOrgCryptoRequest {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
-    public let organizationKeys: [Uuid: EncString]
+    public let organizationKeys: [Uuid: AsymmEncString]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -2649,7 +2634,7 @@ public struct InitOrgCryptoRequest {
         /**
          * The encryption keys for all the organizations the user is a part of
          */
-        organizationKeys: [Uuid: EncString]) {
+        organizationKeys: [Uuid: AsymmEncString]) {
         self.organizationKeys = organizationKeys
     }
 }
@@ -2673,12 +2658,12 @@ public struct FfiConverterTypeInitOrgCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitOrgCryptoRequest {
         return
             try InitOrgCryptoRequest(
-                organizationKeys: FfiConverterDictionaryTypeUuidTypeEncString.read(from: &buf)
+                organizationKeys: FfiConverterDictionaryTypeUuidTypeAsymmEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: InitOrgCryptoRequest, into buf: inout [UInt8]) {
-        FfiConverterDictionaryTypeUuidTypeEncString.write(value.organizationKeys, into: &buf)
+        FfiConverterDictionaryTypeUuidTypeAsymmEncString.write(value.organizationKeys, into: &buf)
     }
 }
 
@@ -3987,8 +3972,8 @@ public func FfiConverterTypeSecureNoteView_lower(_ value: SecureNoteView) -> Rus
 
 
 public struct Send {
-    public let id: Uuid
-    public let accessId: String
+    public let id: Uuid?
+    public let accessId: String?
     public let name: EncString
     public let notes: EncString?
     public let key: EncString
@@ -4007,8 +3992,8 @@ public struct Send {
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
-        accessId: String, 
+        id: Uuid?, 
+        accessId: String?, 
         name: EncString, 
         notes: EncString?, 
         key: EncString, 
@@ -4121,8 +4106,8 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Send {
         return
             try Send(
-                id: FfiConverterTypeUuid.read(from: &buf), 
-                accessId: FfiConverterString.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 notes: FfiConverterOptionTypeEncString.read(from: &buf), 
                 key: FfiConverterTypeEncString.read(from: &buf), 
@@ -4141,8 +4126,8 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: Send, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
-        FfiConverterString.write(value.accessId, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionTypeEncString.write(value.notes, into: &buf)
         FfiConverterTypeEncString.write(value.key, into: &buf)
@@ -4335,8 +4320,8 @@ public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuf
 
 
 public struct SendListView {
-    public let id: Uuid
-    public let accessId: String
+    public let id: Uuid?
+    public let accessId: String?
     public let name: String
     public let type: SendType
     public let disabled: Bool
@@ -4347,8 +4332,8 @@ public struct SendListView {
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
-        accessId: String, 
+        id: Uuid?, 
+        accessId: String?, 
         name: String, 
         type: SendType, 
         disabled: Bool, 
@@ -4413,8 +4398,8 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendListView {
         return
             try SendListView(
-                id: FfiConverterTypeUuid.read(from: &buf), 
-                accessId: FfiConverterString.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
                 disabled: FfiConverterBool.read(from: &buf), 
@@ -4425,8 +4410,8 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SendListView, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
-        FfiConverterString.write(value.accessId, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
         FfiConverterBool.write(value.disabled, into: &buf)
@@ -4563,8 +4548,8 @@ public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuf
 
 
 public struct SendView {
-    public let id: Uuid
-    public let accessId: String
+    public let id: Uuid?
+    public let accessId: String?
     public let name: String
     public let notes: String?
     public let key: EncString
@@ -4583,8 +4568,8 @@ public struct SendView {
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: Uuid, 
-        accessId: String, 
+        id: Uuid?, 
+        accessId: String?, 
         name: String, 
         notes: String?, 
         key: EncString, 
@@ -4697,8 +4682,8 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendView {
         return
             try SendView(
-                id: FfiConverterTypeUuid.read(from: &buf), 
-                accessId: FfiConverterString.read(from: &buf), 
+                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
                 key: FfiConverterTypeEncString.read(from: &buf), 
@@ -4717,8 +4702,8 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SendView, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
-        FfiConverterString.write(value.accessId, into: &buf)
+        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
         FfiConverterTypeEncString.write(value.key, into: &buf)
@@ -4814,6 +4799,69 @@ public func FfiConverterTypeTotpResponse_lift(_ buf: RustBuffer) throws -> TotpR
 public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuffer {
     return FfiConverterTypeTotpResponse.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum AppendType {
+    
+    /**
+     * Generates a random string of 8 lowercase characters as part of your username
+     */
+    case random
+    /**
+     * Uses the websitename as part of your username
+     */
+    case websiteName(
+        website: String
+    )
+}
+
+public struct FfiConverterTypeAppendType: FfiConverterRustBuffer {
+    typealias SwiftType = AppendType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AppendType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .random
+        
+        case 2: return .websiteName(
+            website: try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AppendType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .random:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .websiteName(website):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(website, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeAppendType_lift(_ buf: RustBuffer) throws -> AppendType {
+    return try FfiConverterTypeAppendType.lift(buf)
+}
+
+public func FfiConverterTypeAppendType_lower(_ value: AppendType) -> RustBuffer {
+    return FfiConverterTypeAppendType.lower(value)
+}
+
+
+extension AppendType: Equatable, Hashable {}
+
+
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
@@ -5264,6 +5312,133 @@ extension FieldType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Configures the email forwarding service to use.
+ * For instructions on how to configure each service, see the documentation:
+ * <https://bitwarden.com/help/generator/#username-types>
+ */
+public enum ForwarderServiceType {
+    
+    /**
+     * Previously known as "AnonAddy"
+     */
+    case addyIo(
+        apiToken: String, 
+        domain: String, 
+        baseUrl: String
+    )
+    case duckDuckGo(
+        token: String
+    )
+    case firefox(
+        apiToken: String
+    )
+    case fastmail(
+        apiToken: String
+    )
+    case forwardEmail(
+        apiToken: String, 
+        domain: String
+    )
+    case simpleLogin(
+        apiKey: String
+    )
+}
+
+public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
+    typealias SwiftType = ForwarderServiceType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ForwarderServiceType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .addyIo(
+            apiToken: try FfiConverterString.read(from: &buf), 
+            domain: try FfiConverterString.read(from: &buf), 
+            baseUrl: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .duckDuckGo(
+            token: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .firefox(
+            apiToken: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .fastmail(
+            apiToken: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .forwardEmail(
+            apiToken: try FfiConverterString.read(from: &buf), 
+            domain: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .simpleLogin(
+            apiKey: try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ForwarderServiceType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .addyIo(apiToken,domain,baseUrl):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(apiToken, into: &buf)
+            FfiConverterString.write(domain, into: &buf)
+            FfiConverterString.write(baseUrl, into: &buf)
+            
+        
+        case let .duckDuckGo(token):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(token, into: &buf)
+            
+        
+        case let .firefox(apiToken):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(apiToken, into: &buf)
+            
+        
+        case let .fastmail(apiToken):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(apiToken, into: &buf)
+            
+        
+        case let .forwardEmail(apiToken,domain):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(apiToken, into: &buf)
+            FfiConverterString.write(domain, into: &buf)
+            
+        
+        case let .simpleLogin(apiKey):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(apiKey, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeForwarderServiceType_lift(_ buf: RustBuffer) throws -> ForwarderServiceType {
+    return try FfiConverterTypeForwarderServiceType.lift(buf)
+}
+
+public func FfiConverterTypeForwarderServiceType_lower(_ value: ForwarderServiceType) -> RustBuffer {
+    return FfiConverterTypeForwarderServiceType.lower(value)
+}
+
+
+extension ForwarderServiceType: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum HashPurpose {
     
     case serverAuthorization
@@ -5654,6 +5829,138 @@ extension UriMatchType: Equatable, Hashable {}
 
 
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum UsernameGeneratorRequest {
+    
+    /**
+     * Generates a single word username
+     */
+    case word(
+        /**
+         * Capitalize the first letter of the word
+         */
+        capitalize: Bool, 
+        /**
+         * Include a 4 digit number at the end of the word
+         */
+        includeNumber: Bool
+    )
+    /**
+     * Generates an email using your provider's subaddressing capabilities.
+     * Note that not all providers support this functionality.
+     * This will generate an address of the format `youremail+generated@domain.tld`
+     */
+    case subaddress(
+        /**
+         * The type of subaddress to add to the base email
+         */
+        type: AppendType, 
+        /**
+         * The full email address to use as the base for the subaddress
+         */
+        email: String
+    )
+    case catchall(
+        /**
+         * The type of username to use with the catchall email domain
+         */
+        type: AppendType, 
+        /**
+         * The domain to use for the catchall email address
+         */
+        domain: String
+    )
+    case forwarded(
+        /**
+         * The email forwarding service to use, see [ForwarderServiceType]
+         * for instructions on how to configure each
+         */
+        service: ForwarderServiceType, 
+        /**
+         * The website for which the email address is being generated
+         * This is not used in all services, and is only used for display purposes
+         */
+        website: String?
+    )
+}
+
+public struct FfiConverterTypeUsernameGeneratorRequest: FfiConverterRustBuffer {
+    typealias SwiftType = UsernameGeneratorRequest
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UsernameGeneratorRequest {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .word(
+            capitalize: try FfiConverterBool.read(from: &buf), 
+            includeNumber: try FfiConverterBool.read(from: &buf)
+        )
+        
+        case 2: return .subaddress(
+            type: try FfiConverterTypeAppendType.read(from: &buf), 
+            email: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .catchall(
+            type: try FfiConverterTypeAppendType.read(from: &buf), 
+            domain: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .forwarded(
+            service: try FfiConverterTypeForwarderServiceType.read(from: &buf), 
+            website: try FfiConverterOptionString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UsernameGeneratorRequest, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .word(capitalize,includeNumber):
+            writeInt(&buf, Int32(1))
+            FfiConverterBool.write(capitalize, into: &buf)
+            FfiConverterBool.write(includeNumber, into: &buf)
+            
+        
+        case let .subaddress(type,email):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeAppendType.write(type, into: &buf)
+            FfiConverterString.write(email, into: &buf)
+            
+        
+        case let .catchall(type,domain):
+            writeInt(&buf, Int32(3))
+            FfiConverterTypeAppendType.write(type, into: &buf)
+            FfiConverterString.write(domain, into: &buf)
+            
+        
+        case let .forwarded(service,website):
+            writeInt(&buf, Int32(4))
+            FfiConverterTypeForwarderServiceType.write(service, into: &buf)
+            FfiConverterOptionString.write(website, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeUsernameGeneratorRequest_lift(_ buf: RustBuffer) throws -> UsernameGeneratorRequest {
+    return try FfiConverterTypeUsernameGeneratorRequest.lift(buf)
+}
+
+public func FfiConverterTypeUsernameGeneratorRequest_lower(_ value: UsernameGeneratorRequest) -> RustBuffer {
+    return FfiConverterTypeUsernameGeneratorRequest.lower(value)
+}
+
+
+extension UsernameGeneratorRequest: Equatable, Hashable {}
+
+
+
 fileprivate struct FfiConverterOptionUInt8: FfiConverterRustBuffer {
     typealias SwiftType = UInt8?
 
@@ -5733,27 +6040,6 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterString.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
-    typealias SwiftType = Data?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterData.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterData.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -6524,27 +6810,60 @@ fileprivate struct FfiConverterSequenceTypeUuid: FfiConverterRustBuffer {
     }
 }
 
-fileprivate struct FfiConverterDictionaryTypeUuidTypeEncString: FfiConverterRustBuffer {
-    public static func write(_ value: [Uuid: EncString], into buf: inout [UInt8]) {
+fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmEncString: FfiConverterRustBuffer {
+    public static func write(_ value: [Uuid: AsymmEncString], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for (key, value) in value {
             FfiConverterTypeUuid.write(key, into: &buf)
-            FfiConverterTypeEncString.write(value, into: &buf)
+            FfiConverterTypeAsymmEncString.write(value, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: EncString] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: AsymmEncString] {
         let len: Int32 = try readInt(&buf)
-        var dict = [Uuid: EncString]()
+        var dict = [Uuid: AsymmEncString]()
         dict.reserveCapacity(Int(len))
         for _ in 0..<len {
             let key = try FfiConverterTypeUuid.read(from: &buf)
-            let value = try FfiConverterTypeEncString.read(from: &buf)
+            let value = try FfiConverterTypeAsymmEncString.read(from: &buf)
             dict[key] = value
         }
         return dict
     }
+}
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias AsymmEncString = String
+public struct FfiConverterTypeAsymmEncString: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmEncString {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: AsymmEncString, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> AsymmEncString {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: AsymmEncString) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+public func FfiConverterTypeAsymmEncString_lift(_ value: RustBuffer) throws -> AsymmEncString {
+    return try FfiConverterTypeAsymmEncString.lift(value)
+}
+
+public func FfiConverterTypeAsymmEncString_lower(_ value: AsymmEncString) -> RustBuffer {
+    return FfiConverterTypeAsymmEncString.lower(value)
 }
 
 
