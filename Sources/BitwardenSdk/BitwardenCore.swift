@@ -4156,24 +4156,24 @@ public func FfiConverterTypeSend_lower(_ value: Send) -> RustBuffer {
 
 
 public struct SendFile {
-    public let id: String
+    public let id: String?
     public let fileName: EncString
-    public let size: String
+    public let size: String?
     /**
      * Readable size, ex: "4.2 KB" or "1.43 GB"
      */
-    public let sizeName: String
+    public let sizeName: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: String, 
+        id: String?, 
         fileName: EncString, 
-        size: String, 
+        size: String?, 
         /**
          * Readable size, ex: "4.2 KB" or "1.43 GB"
          */
-        sizeName: String) {
+        sizeName: String?) {
         self.id = id
         self.fileName = fileName
         self.size = size
@@ -4212,18 +4212,18 @@ public struct FfiConverterTypeSendFile: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFile {
         return
             try SendFile(
-                id: FfiConverterString.read(from: &buf), 
+                id: FfiConverterOptionString.read(from: &buf), 
                 fileName: FfiConverterTypeEncString.read(from: &buf), 
-                size: FfiConverterString.read(from: &buf), 
-                sizeName: FfiConverterString.read(from: &buf)
+                size: FfiConverterOptionString.read(from: &buf), 
+                sizeName: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendFile, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.id, into: &buf)
         FfiConverterTypeEncString.write(value.fileName, into: &buf)
-        FfiConverterString.write(value.size, into: &buf)
-        FfiConverterString.write(value.sizeName, into: &buf)
+        FfiConverterOptionString.write(value.size, into: &buf)
+        FfiConverterOptionString.write(value.sizeName, into: &buf)
     }
 }
 
@@ -4238,24 +4238,24 @@ public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
 
 
 public struct SendFileView {
-    public let id: String
+    public let id: String?
     public let fileName: String
-    public let size: String
+    public let size: String?
     /**
      * Readable size, ex: "4.2 KB" or "1.43 GB"
      */
-    public let sizeName: String
+    public let sizeName: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
-        id: String, 
+        id: String?, 
         fileName: String, 
-        size: String, 
+        size: String?, 
         /**
          * Readable size, ex: "4.2 KB" or "1.43 GB"
          */
-        sizeName: String) {
+        sizeName: String?) {
         self.id = id
         self.fileName = fileName
         self.size = size
@@ -4294,18 +4294,18 @@ public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFileView {
         return
             try SendFileView(
-                id: FfiConverterString.read(from: &buf), 
+                id: FfiConverterOptionString.read(from: &buf), 
                 fileName: FfiConverterString.read(from: &buf), 
-                size: FfiConverterString.read(from: &buf), 
-                sizeName: FfiConverterString.read(from: &buf)
+                size: FfiConverterOptionString.read(from: &buf), 
+                sizeName: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendFileView, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.id, into: &buf)
         FfiConverterString.write(value.fileName, into: &buf)
-        FfiConverterString.write(value.size, into: &buf)
-        FfiConverterString.write(value.sizeName, into: &buf)
+        FfiConverterOptionString.write(value.size, into: &buf)
+        FfiConverterOptionString.write(value.sizeName, into: &buf)
     }
 }
 
@@ -4552,7 +4552,10 @@ public struct SendView {
     public let accessId: String?
     public let name: String
     public let notes: String?
-    public let key: EncString
+    /**
+     * Base64 encoded key
+     */
+    public let key: String?
     public let password: String?
     public let type: SendType
     public let file: SendFileView?
@@ -4572,7 +4575,10 @@ public struct SendView {
         accessId: String?, 
         name: String, 
         notes: String?, 
-        key: EncString, 
+        /**
+         * Base64 encoded key
+         */
+        key: String?, 
         password: String?, 
         type: SendType, 
         file: SendFileView?, 
@@ -4686,7 +4692,7 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
                 accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
-                key: FfiConverterTypeEncString.read(from: &buf), 
+                key: FfiConverterOptionString.read(from: &buf), 
                 password: FfiConverterOptionString.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
                 file: FfiConverterOptionTypeSendFileView.read(from: &buf), 
@@ -4706,7 +4712,7 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
-        FfiConverterTypeEncString.write(value.key, into: &buf)
+        FfiConverterOptionString.write(value.key, into: &buf)
         FfiConverterOptionString.write(value.password, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
         FfiConverterOptionTypeSendFileView.write(value.file, into: &buf)
