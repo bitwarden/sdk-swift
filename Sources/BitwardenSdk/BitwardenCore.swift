@@ -4556,7 +4556,17 @@ public struct SendView {
      * Base64 encoded key
      */
     public let key: String?
-    public let password: String?
+    /**
+     * Replace or add a password to an existing send. The SDK will always return None when
+     * decrypting a [Send]
+     * TODO: We should revisit this, one variant is to have `[Create, Update]SendView` DTOs.
+     */
+    public let newPassword: String?
+    /**
+     * Denote if an existing send has a password. The SDK will ignore this value when creating or
+     * updating sends.
+     */
+    public let hasPassword: Bool
     public let type: SendType
     public let file: SendFileView?
     public let text: SendTextView?
@@ -4579,7 +4589,17 @@ public struct SendView {
          * Base64 encoded key
          */
         key: String?, 
-        password: String?, 
+        /**
+         * Replace or add a password to an existing send. The SDK will always return None when
+         * decrypting a [Send]
+         * TODO: We should revisit this, one variant is to have `[Create, Update]SendView` DTOs.
+         */
+        newPassword: String?, 
+        /**
+         * Denote if an existing send has a password. The SDK will ignore this value when creating or
+         * updating sends.
+         */
+        hasPassword: Bool, 
         type: SendType, 
         file: SendFileView?, 
         text: SendTextView?, 
@@ -4595,7 +4615,8 @@ public struct SendView {
         self.name = name
         self.notes = notes
         self.key = key
-        self.password = password
+        self.newPassword = newPassword
+        self.hasPassword = hasPassword
         self.type = type
         self.file = file
         self.text = text
@@ -4627,7 +4648,10 @@ extension SendView: Equatable, Hashable {
         if lhs.key != rhs.key {
             return false
         }
-        if lhs.password != rhs.password {
+        if lhs.newPassword != rhs.newPassword {
+            return false
+        }
+        if lhs.hasPassword != rhs.hasPassword {
             return false
         }
         if lhs.type != rhs.type {
@@ -4669,7 +4693,8 @@ extension SendView: Equatable, Hashable {
         hasher.combine(name)
         hasher.combine(notes)
         hasher.combine(key)
-        hasher.combine(password)
+        hasher.combine(newPassword)
+        hasher.combine(hasPassword)
         hasher.combine(type)
         hasher.combine(file)
         hasher.combine(text)
@@ -4693,7 +4718,8 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
                 key: FfiConverterOptionString.read(from: &buf), 
-                password: FfiConverterOptionString.read(from: &buf), 
+                newPassword: FfiConverterOptionString.read(from: &buf), 
+                hasPassword: FfiConverterBool.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
                 file: FfiConverterOptionTypeSendFileView.read(from: &buf), 
                 text: FfiConverterOptionTypeSendTextView.read(from: &buf), 
@@ -4713,7 +4739,8 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
         FfiConverterOptionString.write(value.key, into: &buf)
-        FfiConverterOptionString.write(value.password, into: &buf)
+        FfiConverterOptionString.write(value.newPassword, into: &buf)
+        FfiConverterBool.write(value.hasPassword, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
         FfiConverterOptionTypeSendFileView.write(value.file, into: &buf)
         FfiConverterOptionTypeSendTextView.write(value.text, into: &buf)
