@@ -1805,13 +1805,25 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 
 
 public struct DerivePinKeyResponse {
+    /**
+     * [UserKey] protected by PIN
+     */
     public let pinProtectedUserKey: EncString
+    /**
+     * PIN protected by [UserKey]
+     */
     public let encryptedPin: EncString
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
+        /**
+         * [UserKey] protected by PIN
+         */
         pinProtectedUserKey: EncString, 
+        /**
+         * PIN protected by [UserKey]
+         */
         encryptedPin: EncString) {
         self.pinProtectedUserKey = pinProtectedUserKey
         self.encryptedPin = encryptedPin
@@ -3803,76 +3815,6 @@ public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyRespon
 }
 
 
-public struct RsaKeyPair {
-    /**
-     * Base64 encoded DER representation of the public key
-     */
-    public let `public`: String
-    /**
-     * Encrypted PKCS8 private key
-     */
-    public let `private`: EncString
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * Base64 encoded DER representation of the public key
-         */
-        `public`: String, 
-        /**
-         * Encrypted PKCS8 private key
-         */
-        `private`: EncString) {
-        self.`public` = `public`
-        self.`private` = `private`
-    }
-}
-
-
-extension RsaKeyPair: Equatable, Hashable {
-    public static func ==(lhs: RsaKeyPair, rhs: RsaKeyPair) -> Bool {
-        if lhs.`public` != rhs.`public` {
-            return false
-        }
-        if lhs.`private` != rhs.`private` {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(`public`)
-        hasher.combine(`private`)
-    }
-}
-
-
-public struct FfiConverterTypeRsaKeyPair: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RsaKeyPair {
-        return
-            try RsaKeyPair(
-                public: FfiConverterString.read(from: &buf), 
-                private: FfiConverterTypeEncString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: RsaKeyPair, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.`public`, into: &buf)
-        FfiConverterTypeEncString.write(value.`private`, into: &buf)
-    }
-}
-
-
-public func FfiConverterTypeRsaKeyPair_lift(_ buf: RustBuffer) throws -> RsaKeyPair {
-    return try FfiConverterTypeRsaKeyPair.lift(buf)
-}
-
-public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer {
-    return FfiConverterTypeRsaKeyPair.lower(value)
-}
-
-
 public struct SecureNote {
     public let type: SecureNoteType
 
@@ -5472,58 +5414,6 @@ extension ForwarderServiceType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-public enum HashPurpose {
-    
-    case serverAuthorization
-    case localAuthorization
-}
-
-public struct FfiConverterTypeHashPurpose: FfiConverterRustBuffer {
-    typealias SwiftType = HashPurpose
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HashPurpose {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .serverAuthorization
-        
-        case 2: return .localAuthorization
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: HashPurpose, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case .serverAuthorization:
-            writeInt(&buf, Int32(1))
-        
-        
-        case .localAuthorization:
-            writeInt(&buf, Int32(2))
-        
-        }
-    }
-}
-
-
-public func FfiConverterTypeHashPurpose_lift(_ buf: RustBuffer) throws -> HashPurpose {
-    return try FfiConverterTypeHashPurpose.lift(buf)
-}
-
-public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffer {
-    return FfiConverterTypeHashPurpose.lower(value)
-}
-
-
-extension HashPurpose: Equatable, Hashable {}
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum InitUserCryptoMethod {
     
     case password(
@@ -5614,74 +5504,6 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 
 
 extension InitUserCryptoMethod: Equatable, Hashable {}
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-public enum Kdf {
-    
-    case pbkdf2(
-        iterations: NonZeroU32
-    )
-    case argon2id(
-        iterations: NonZeroU32, 
-        memory: NonZeroU32, 
-        parallelism: NonZeroU32
-    )
-}
-
-public struct FfiConverterTypeKdf: FfiConverterRustBuffer {
-    typealias SwiftType = Kdf
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Kdf {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .pbkdf2(
-            iterations: try FfiConverterTypeNonZeroU32.read(from: &buf)
-        )
-        
-        case 2: return .argon2id(
-            iterations: try FfiConverterTypeNonZeroU32.read(from: &buf), 
-            memory: try FfiConverterTypeNonZeroU32.read(from: &buf), 
-            parallelism: try FfiConverterTypeNonZeroU32.read(from: &buf)
-        )
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: Kdf, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case let .pbkdf2(iterations):
-            writeInt(&buf, Int32(1))
-            FfiConverterTypeNonZeroU32.write(iterations, into: &buf)
-            
-        
-        case let .argon2id(iterations,memory,parallelism):
-            writeInt(&buf, Int32(2))
-            FfiConverterTypeNonZeroU32.write(iterations, into: &buf)
-            FfiConverterTypeNonZeroU32.write(memory, into: &buf)
-            FfiConverterTypeNonZeroU32.write(parallelism, into: &buf)
-            
-        }
-    }
-}
-
-
-public func FfiConverterTypeKdf_lift(_ buf: RustBuffer) throws -> Kdf {
-    return try FfiConverterTypeKdf.lift(buf)
-}
-
-public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
-    return FfiConverterTypeKdf.lower(value)
-}
-
-
-extension Kdf: Equatable, Hashable {}
 
 
 
@@ -6561,27 +6383,6 @@ fileprivate struct FfiConverterOptionSequenceTypePasswordHistoryView: FfiConvert
     }
 }
 
-fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
-    typealias SwiftType = DateTime?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeDateTime.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeDateTime.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
 fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     typealias SwiftType = EncString?
 
@@ -6598,6 +6399,27 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
+    typealias SwiftType = DateTime?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDateTime.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDateTime.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -6867,6 +6689,12 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmEncString: FfiConverte
 }
 
 
+
+
+
+
+
+
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -6937,39 +6765,6 @@ public func FfiConverterTypeDateTime_lower(_ value: DateTime) -> RustBuffer {
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias EncString = String
-public struct FfiConverterTypeEncString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncString {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: EncString, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> EncString {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: EncString) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-public func FfiConverterTypeEncString_lift(_ value: RustBuffer) throws -> EncString {
-    return try FfiConverterTypeEncString.lift(value)
-}
-
-public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
-    return FfiConverterTypeEncString.lower(value)
-}
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias LinkedIdType = UInt32
 public struct FfiConverterTypeLinkedIdType: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LinkedIdType {
@@ -6996,39 +6791,6 @@ public func FfiConverterTypeLinkedIdType_lift(_ value: UInt32) throws -> LinkedI
 
 public func FfiConverterTypeLinkedIdType_lower(_ value: LinkedIdType) -> UInt32 {
     return FfiConverterTypeLinkedIdType.lower(value)
-}
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
-public typealias NonZeroU32 = UInt32
-public struct FfiConverterTypeNonZeroU32: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NonZeroU32 {
-        return try FfiConverterUInt32.read(from: &buf)
-    }
-
-    public static func write(_ value: NonZeroU32, into buf: inout [UInt8]) {
-        return FfiConverterUInt32.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: UInt32) throws -> NonZeroU32 {
-        return try FfiConverterUInt32.lift(value)
-    }
-
-    public static func lower(_ value: NonZeroU32) -> UInt32 {
-        return FfiConverterUInt32.lower(value)
-    }
-}
-
-
-public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU32 {
-    return try FfiConverterTypeNonZeroU32.lift(value)
-}
-
-public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
-    return FfiConverterTypeNonZeroU32.lower(value)
 }
 
 

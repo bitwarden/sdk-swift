@@ -1050,6 +1050,11 @@ public protocol ClientCryptoProtocol : AnyObject {
     func derivePinKey(pin: String) async throws  -> DerivePinKeyResponse
     
     /**
+     * Derives the pin protected user key from encrypted pin. Used when pin requires master password on first unlock.
+     */
+    func derivePinUserKey(encryptedPin: EncString) async throws  -> EncString
+    
+    /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
@@ -1101,6 +1106,26 @@ public class ClientCrypto:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeDerivePinKeyResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Derives the pin protected user key from encrypted pin. Used when pin requires master password on first unlock.
+     */
+    public func derivePinUserKey(encryptedPin: EncString) async throws  -> EncString {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_derive_pin_user_key(
+                    self.pointer,
+                    FfiConverterTypeEncString_lower(encryptedPin)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeEncString_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -2685,6 +2710,8 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -2777,10 +2804,10 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 18969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 48320) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 52800) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 52737) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 17783) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 4133) {
@@ -2808,6 +2835,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 6374) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_user_key() != 24432) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 28516) {
