@@ -382,6 +382,21 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
 fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     typealias SwiftType = Date
 
@@ -515,6 +530,64 @@ public func FfiConverterTypeAttachment_lift(_ buf: RustBuffer) throws -> Attachm
 
 public func FfiConverterTypeAttachment_lower(_ value: Attachment) -> RustBuffer {
     return FfiConverterTypeAttachment.lower(value)
+}
+
+
+public struct AttachmentEncryptResult {
+    public let attachment: Attachment
+    public let contents: Data
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        attachment: Attachment, 
+        contents: Data) {
+        self.attachment = attachment
+        self.contents = contents
+    }
+}
+
+
+extension AttachmentEncryptResult: Equatable, Hashable {
+    public static func ==(lhs: AttachmentEncryptResult, rhs: AttachmentEncryptResult) -> Bool {
+        if lhs.attachment != rhs.attachment {
+            return false
+        }
+        if lhs.contents != rhs.contents {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(attachment)
+        hasher.combine(contents)
+    }
+}
+
+
+public struct FfiConverterTypeAttachmentEncryptResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AttachmentEncryptResult {
+        return
+            try AttachmentEncryptResult(
+                attachment: FfiConverterTypeAttachment.read(from: &buf), 
+                contents: FfiConverterData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AttachmentEncryptResult, into buf: inout [UInt8]) {
+        FfiConverterTypeAttachment.write(value.attachment, into: &buf)
+        FfiConverterData.write(value.contents, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeAttachmentEncryptResult_lift(_ buf: RustBuffer) throws -> AttachmentEncryptResult {
+    return try FfiConverterTypeAttachmentEncryptResult.lift(buf)
+}
+
+public func FfiConverterTypeAttachmentEncryptResult_lower(_ value: AttachmentEncryptResult) -> RustBuffer {
+    return FfiConverterTypeAttachmentEncryptResult.lower(value)
 }
 
 
@@ -2638,7 +2711,7 @@ public struct InitOrgCryptoRequest {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
-    public let organizationKeys: [Uuid: AsymmEncString]
+    public let organizationKeys: [Uuid: AsymmetricEncString]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -2646,7 +2719,7 @@ public struct InitOrgCryptoRequest {
         /**
          * The encryption keys for all the organizations the user is a part of
          */
-        organizationKeys: [Uuid: AsymmEncString]) {
+        organizationKeys: [Uuid: AsymmetricEncString]) {
         self.organizationKeys = organizationKeys
     }
 }
@@ -2670,12 +2743,12 @@ public struct FfiConverterTypeInitOrgCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitOrgCryptoRequest {
         return
             try InitOrgCryptoRequest(
-                organizationKeys: FfiConverterDictionaryTypeUuidTypeAsymmEncString.read(from: &buf)
+                organizationKeys: FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: InitOrgCryptoRequest, into buf: inout [UInt8]) {
-        FfiConverterDictionaryTypeUuidTypeAsymmEncString.write(value.organizationKeys, into: &buf)
+        FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.write(value.organizationKeys, into: &buf)
     }
 }
 
@@ -6665,23 +6738,23 @@ fileprivate struct FfiConverterSequenceTypeUuid: FfiConverterRustBuffer {
     }
 }
 
-fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmEncString: FfiConverterRustBuffer {
-    public static func write(_ value: [Uuid: AsymmEncString], into buf: inout [UInt8]) {
+fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiConverterRustBuffer {
+    public static func write(_ value: [Uuid: AsymmetricEncString], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for (key, value) in value {
             FfiConverterTypeUuid.write(key, into: &buf)
-            FfiConverterTypeAsymmEncString.write(value, into: &buf)
+            FfiConverterTypeAsymmetricEncString.write(value, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: AsymmEncString] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: AsymmetricEncString] {
         let len: Int32 = try readInt(&buf)
-        var dict = [Uuid: AsymmEncString]()
+        var dict = [Uuid: AsymmetricEncString]()
         dict.reserveCapacity(Int(len))
         for _ in 0..<len {
             let key = try FfiConverterTypeUuid.read(from: &buf)
-            let value = try FfiConverterTypeAsymmEncString.read(from: &buf)
+            let value = try FfiConverterTypeAsymmetricEncString.read(from: &buf)
             dict[key] = value
         }
         return dict
@@ -6699,32 +6772,32 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmEncString: FfiConverte
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias AsymmEncString = String
-public struct FfiConverterTypeAsymmEncString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmEncString {
+public typealias AsymmetricEncString = String
+public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmetricEncString {
         return try FfiConverterString.read(from: &buf)
     }
 
-    public static func write(_ value: AsymmEncString, into buf: inout [UInt8]) {
+    public static func write(_ value: AsymmetricEncString, into buf: inout [UInt8]) {
         return FfiConverterString.write(value, into: &buf)
     }
 
-    public static func lift(_ value: RustBuffer) throws -> AsymmEncString {
+    public static func lift(_ value: RustBuffer) throws -> AsymmetricEncString {
         return try FfiConverterString.lift(value)
     }
 
-    public static func lower(_ value: AsymmEncString) -> RustBuffer {
+    public static func lower(_ value: AsymmetricEncString) -> RustBuffer {
         return FfiConverterString.lower(value)
     }
 }
 
 
-public func FfiConverterTypeAsymmEncString_lift(_ value: RustBuffer) throws -> AsymmEncString {
-    return try FfiConverterTypeAsymmEncString.lift(value)
+public func FfiConverterTypeAsymmetricEncString_lift(_ value: RustBuffer) throws -> AsymmetricEncString {
+    return try FfiConverterTypeAsymmetricEncString.lift(value)
 }
 
-public func FfiConverterTypeAsymmEncString_lower(_ value: AsymmEncString) -> RustBuffer {
-    return FfiConverterTypeAsymmEncString.lower(value)
+public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncString) -> RustBuffer {
+    return FfiConverterTypeAsymmetricEncString.lower(value)
 }
 
 

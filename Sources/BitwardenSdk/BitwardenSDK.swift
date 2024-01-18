@@ -567,6 +567,184 @@ public func FfiConverterTypeClient_lower(_ value: Client) -> UnsafeMutableRawPoi
 
 
 
+public protocol ClientAttachmentsProtocol : AnyObject {
+    
+    /**
+     * Decrypt an attachment file in memory
+     */
+    func decryptBuffer(cipher: Cipher, attachment: Attachment, buffer: Data) async throws  -> Data
+    
+    /**
+     * Decrypt an attachment file located in the file system
+     */
+    func decryptFile(cipher: Cipher, attachment: Attachment, encryptedFilePath: String, decryptedFilePath: String) async throws 
+    
+    /**
+     * Encrypt an attachment file in memory
+     */
+    func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data) async throws  -> AttachmentEncryptResult
+    
+    /**
+     * Encrypt an attachment file located in the file system
+     */
+    func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String) async throws  -> Attachment
+    
+}
+public class ClientAttachments:
+    ClientAttachmentsProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientattachments(pointer, $0) }
+    }
+
+    
+
+    
+    
+    /**
+     * Decrypt an attachment file in memory
+     */
+    public func decryptBuffer(cipher: Cipher, attachment: Attachment, buffer: Data) async throws  -> Data {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientattachments_decrypt_buffer(
+                    self.pointer,
+                    FfiConverterTypeCipher_lower(cipher),
+                    FfiConverterTypeAttachment_lower(attachment),
+                    FfiConverterData.lower(buffer)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterData.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Decrypt an attachment file located in the file system
+     */
+    public func decryptFile(cipher: Cipher, attachment: Attachment, encryptedFilePath: String, decryptedFilePath: String) async throws  {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientattachments_decrypt_file(
+                    self.pointer,
+                    FfiConverterTypeCipher_lower(cipher),
+                    FfiConverterTypeAttachment_lower(attachment),
+                    FfiConverterString.lower(encryptedFilePath),
+                    FfiConverterString.lower(decryptedFilePath)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Encrypt an attachment file in memory
+     */
+    public func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data) async throws  -> AttachmentEncryptResult {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientattachments_encrypt_buffer(
+                    self.pointer,
+                    FfiConverterTypeCipher_lower(cipher),
+                    FfiConverterTypeAttachmentView_lower(attachment),
+                    FfiConverterData.lower(buffer)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAttachmentEncryptResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Encrypt an attachment file located in the file system
+     */
+    public func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String) async throws  -> Attachment {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientattachments_encrypt_file(
+                    self.pointer,
+                    FfiConverterTypeCipher_lower(cipher),
+                    FfiConverterTypeAttachmentView_lower(attachment),
+                    FfiConverterString.lower(decryptedFilePath),
+                    FfiConverterString.lower(encryptedFilePath)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAttachment_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+
+}
+
+public struct FfiConverterTypeClientAttachments: FfiConverter {
+
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = ClientAttachments
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientAttachments {
+        return ClientAttachments(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: ClientAttachments) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientAttachments {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: ClientAttachments, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+}
+
+
+public func FfiConverterTypeClientAttachments_lift(_ pointer: UnsafeMutableRawPointer) throws -> ClientAttachments {
+    return try FfiConverterTypeClientAttachments.lift(pointer)
+}
+
+public func FfiConverterTypeClientAttachments_lower(_ value: ClientAttachments) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeClientAttachments.lower(value)
+}
+
+
+
+
 public protocol ClientAuthProtocol : AnyObject {
     
     /**
@@ -2133,6 +2311,11 @@ public func FfiConverterTypeClientSends_lower(_ value: ClientSends) -> UnsafeMut
 public protocol ClientVaultProtocol : AnyObject {
     
     /**
+     * Attachment file operations
+     */
+    func attachments()  -> ClientAttachments
+    
+    /**
      * Ciphers operations
      */
     func ciphers()  -> ClientCiphers
@@ -2187,6 +2370,19 @@ public class ClientVault:
 
     
     
+    /**
+     * Attachment file operations
+     */
+    public func attachments()  -> ClientAttachments {
+        return try!  FfiConverterTypeClientAttachments.lift(
+            try! 
+    rustCall() {
+    
+    uniffi_bitwarden_uniffi_fn_method_clientvault_attachments(self.pointer, $0
+    )
+}
+        )
+    }
     /**
      * Ciphers operations
      */
@@ -2712,6 +2908,12 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -2802,6 +3004,18 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 18969) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_decrypt_buffer() != 40773) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_decrypt_file() != 1404) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_encrypt_buffer() != 37987) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_encrypt_file() != 39444) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 52800) {
@@ -2904,6 +3118,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientsends_encrypt_file() != 11058) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_attachments() != 15952) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_ciphers() != 3759) {
