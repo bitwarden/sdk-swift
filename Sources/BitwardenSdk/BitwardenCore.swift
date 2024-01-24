@@ -685,6 +685,108 @@ public func FfiConverterTypeAttachmentView_lower(_ value: AttachmentView) -> Rus
 }
 
 
+public struct AuthRequestResponse {
+    /**
+     * Base64 encoded private key
+     * This key is temporarily passed back and will most likely not be available in the future
+     */
+    public let privateKey: String
+    /**
+     * Base64 encoded public key
+     */
+    public let publicKey: String
+    /**
+     * Fingerprint of the public key
+     */
+    public let fingerprint: String
+    /**
+     * Access code
+     */
+    public let accessCode: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Base64 encoded private key
+         * This key is temporarily passed back and will most likely not be available in the future
+         */
+        privateKey: String, 
+        /**
+         * Base64 encoded public key
+         */
+        publicKey: String, 
+        /**
+         * Fingerprint of the public key
+         */
+        fingerprint: String, 
+        /**
+         * Access code
+         */
+        accessCode: String) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.fingerprint = fingerprint
+        self.accessCode = accessCode
+    }
+}
+
+
+extension AuthRequestResponse: Equatable, Hashable {
+    public static func ==(lhs: AuthRequestResponse, rhs: AuthRequestResponse) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.fingerprint != rhs.fingerprint {
+            return false
+        }
+        if lhs.accessCode != rhs.accessCode {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(fingerprint)
+        hasher.combine(accessCode)
+    }
+}
+
+
+public struct FfiConverterTypeAuthRequestResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthRequestResponse {
+        return
+            try AuthRequestResponse(
+                privateKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf), 
+                accessCode: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuthRequestResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
+        FfiConverterString.write(value.accessCode, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeAuthRequestResponse_lift(_ buf: RustBuffer) throws -> AuthRequestResponse {
+    return try FfiConverterTypeAuthRequestResponse.lift(buf)
+}
+
+public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestResponse) -> RustBuffer {
+    return FfiConverterTypeAuthRequestResponse.lower(value)
+}
+
+
 public struct Card {
     public let cardholderName: EncString?
     public let expMonth: EncString?
@@ -879,7 +981,8 @@ public struct Cipher {
     public let folderId: Uuid?
     public let collectionIds: [Uuid]
     /**
-     * More recent ciphers uses individual encryption keys to encrypt the other fields of the Cipher.
+     * More recent ciphers uses individual encryption keys to encrypt the other fields of the
+     * Cipher.
      */
     public let key: EncString?
     public let name: EncString
@@ -910,7 +1013,8 @@ public struct Cipher {
         folderId: Uuid?, 
         collectionIds: [Uuid], 
         /**
-         * More recent ciphers uses individual encryption keys to encrypt the other fields of the Cipher.
+         * More recent ciphers uses individual encryption keys to encrypt the other fields of the
+         * Cipher.
          */
         key: EncString?, 
         name: EncString, 
@@ -1573,8 +1677,8 @@ public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer 
 
 
 /**
- * Basic client behavior settings. These settings specify the various targets and behavior of the Bitwarden Client.
- * They are optional and uneditable once the client is initialized.
+ * Basic client behavior settings. These settings specify the various targets and behavior of the
+ * Bitwarden Client. They are optional and uneditable once the client is initialized.
  *
  * Defaults to
  *
@@ -3395,316 +3499,6 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 }
 
 
-/**
- * Passphrase generator request options.
- */
-public struct PassphraseGeneratorRequest {
-    /**
-     * Number of words in the generated passphrase.
-     * This value must be between 3 and 20.
-     */
-    public let numWords: UInt8
-    /**
-     * Character separator between words in the generated passphrase. The value cannot be empty.
-     */
-    public let wordSeparator: String
-    /**
-     * When set to true, capitalize the first letter of each word in the generated passphrase.
-     */
-    public let capitalize: Bool
-    /**
-     * When set to true, include a number at the end of one of the words in the generated passphrase.
-     */
-    public let includeNumber: Bool
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * Number of words in the generated passphrase.
-         * This value must be between 3 and 20.
-         */
-        numWords: UInt8, 
-        /**
-         * Character separator between words in the generated passphrase. The value cannot be empty.
-         */
-        wordSeparator: String, 
-        /**
-         * When set to true, capitalize the first letter of each word in the generated passphrase.
-         */
-        capitalize: Bool, 
-        /**
-         * When set to true, include a number at the end of one of the words in the generated passphrase.
-         */
-        includeNumber: Bool) {
-        self.numWords = numWords
-        self.wordSeparator = wordSeparator
-        self.capitalize = capitalize
-        self.includeNumber = includeNumber
-    }
-}
-
-
-extension PassphraseGeneratorRequest: Equatable, Hashable {
-    public static func ==(lhs: PassphraseGeneratorRequest, rhs: PassphraseGeneratorRequest) -> Bool {
-        if lhs.numWords != rhs.numWords {
-            return false
-        }
-        if lhs.wordSeparator != rhs.wordSeparator {
-            return false
-        }
-        if lhs.capitalize != rhs.capitalize {
-            return false
-        }
-        if lhs.includeNumber != rhs.includeNumber {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(numWords)
-        hasher.combine(wordSeparator)
-        hasher.combine(capitalize)
-        hasher.combine(includeNumber)
-    }
-}
-
-
-public struct FfiConverterTypePassphraseGeneratorRequest: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassphraseGeneratorRequest {
-        return
-            try PassphraseGeneratorRequest(
-                numWords: FfiConverterUInt8.read(from: &buf), 
-                wordSeparator: FfiConverterString.read(from: &buf), 
-                capitalize: FfiConverterBool.read(from: &buf), 
-                includeNumber: FfiConverterBool.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: PassphraseGeneratorRequest, into buf: inout [UInt8]) {
-        FfiConverterUInt8.write(value.numWords, into: &buf)
-        FfiConverterString.write(value.wordSeparator, into: &buf)
-        FfiConverterBool.write(value.capitalize, into: &buf)
-        FfiConverterBool.write(value.includeNumber, into: &buf)
-    }
-}
-
-
-public func FfiConverterTypePassphraseGeneratorRequest_lift(_ buf: RustBuffer) throws -> PassphraseGeneratorRequest {
-    return try FfiConverterTypePassphraseGeneratorRequest.lift(buf)
-}
-
-public func FfiConverterTypePassphraseGeneratorRequest_lower(_ value: PassphraseGeneratorRequest) -> RustBuffer {
-    return FfiConverterTypePassphraseGeneratorRequest.lower(value)
-}
-
-
-/**
- * Password generator request options.
- */
-public struct PasswordGeneratorRequest {
-    /**
-     * Include lowercase characters (a-z).
-     */
-    public let lowercase: Bool
-    /**
-     * Include uppercase characters (A-Z).
-     */
-    public let uppercase: Bool
-    /**
-     * Include numbers (0-9).
-     */
-    public let numbers: Bool
-    /**
-     * Include special characters: ! @ # $ % ^ & *
-     */
-    public let special: Bool
-    /**
-     * The length of the generated password.
-     * Note that the password length must be greater than the sum of all the minimums.
-     */
-    public let length: UInt8
-    /**
-     * When set to true, the generated password will not contain ambiguous characters.
-     * The ambiguous characters are: I, O, l, 0, 1
-     */
-    public let avoidAmbiguous: Bool
-    /**
-     * The minimum number of lowercase characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
-     */
-    public let minLowercase: UInt8?
-    /**
-     * The minimum number of uppercase characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is uppercase is false  
-     */
-    public let minUppercase: UInt8?
-    /**
-     * The minimum number of numbers in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is numbers is false
-     */
-    public let minNumber: UInt8?
-    /**
-     * The minimum number of special characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is special is false
-     */
-    public let minSpecial: UInt8?
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * Include lowercase characters (a-z).
-         */
-        lowercase: Bool, 
-        /**
-         * Include uppercase characters (A-Z).
-         */
-        uppercase: Bool, 
-        /**
-         * Include numbers (0-9).
-         */
-        numbers: Bool, 
-        /**
-         * Include special characters: ! @ # $ % ^ & *
-         */
-        special: Bool, 
-        /**
-         * The length of the generated password.
-         * Note that the password length must be greater than the sum of all the minimums.
-         */
-        length: UInt8, 
-        /**
-         * When set to true, the generated password will not contain ambiguous characters.
-         * The ambiguous characters are: I, O, l, 0, 1
-         */
-        avoidAmbiguous: Bool, 
-        /**
-         * The minimum number of lowercase characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
-         */
-        minLowercase: UInt8?, 
-        /**
-         * The minimum number of uppercase characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is uppercase is false  
-         */
-        minUppercase: UInt8?, 
-        /**
-         * The minimum number of numbers in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is numbers is false
-         */
-        minNumber: UInt8?, 
-        /**
-         * The minimum number of special characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is special is false
-         */
-        minSpecial: UInt8?) {
-        self.lowercase = lowercase
-        self.uppercase = uppercase
-        self.numbers = numbers
-        self.special = special
-        self.length = length
-        self.avoidAmbiguous = avoidAmbiguous
-        self.minLowercase = minLowercase
-        self.minUppercase = minUppercase
-        self.minNumber = minNumber
-        self.minSpecial = minSpecial
-    }
-}
-
-
-extension PasswordGeneratorRequest: Equatable, Hashable {
-    public static func ==(lhs: PasswordGeneratorRequest, rhs: PasswordGeneratorRequest) -> Bool {
-        if lhs.lowercase != rhs.lowercase {
-            return false
-        }
-        if lhs.uppercase != rhs.uppercase {
-            return false
-        }
-        if lhs.numbers != rhs.numbers {
-            return false
-        }
-        if lhs.special != rhs.special {
-            return false
-        }
-        if lhs.length != rhs.length {
-            return false
-        }
-        if lhs.avoidAmbiguous != rhs.avoidAmbiguous {
-            return false
-        }
-        if lhs.minLowercase != rhs.minLowercase {
-            return false
-        }
-        if lhs.minUppercase != rhs.minUppercase {
-            return false
-        }
-        if lhs.minNumber != rhs.minNumber {
-            return false
-        }
-        if lhs.minSpecial != rhs.minSpecial {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(lowercase)
-        hasher.combine(uppercase)
-        hasher.combine(numbers)
-        hasher.combine(special)
-        hasher.combine(length)
-        hasher.combine(avoidAmbiguous)
-        hasher.combine(minLowercase)
-        hasher.combine(minUppercase)
-        hasher.combine(minNumber)
-        hasher.combine(minSpecial)
-    }
-}
-
-
-public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordGeneratorRequest {
-        return
-            try PasswordGeneratorRequest(
-                lowercase: FfiConverterBool.read(from: &buf), 
-                uppercase: FfiConverterBool.read(from: &buf), 
-                numbers: FfiConverterBool.read(from: &buf), 
-                special: FfiConverterBool.read(from: &buf), 
-                length: FfiConverterUInt8.read(from: &buf), 
-                avoidAmbiguous: FfiConverterBool.read(from: &buf), 
-                minLowercase: FfiConverterOptionUInt8.read(from: &buf), 
-                minUppercase: FfiConverterOptionUInt8.read(from: &buf), 
-                minNumber: FfiConverterOptionUInt8.read(from: &buf), 
-                minSpecial: FfiConverterOptionUInt8.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: PasswordGeneratorRequest, into buf: inout [UInt8]) {
-        FfiConverterBool.write(value.lowercase, into: &buf)
-        FfiConverterBool.write(value.uppercase, into: &buf)
-        FfiConverterBool.write(value.numbers, into: &buf)
-        FfiConverterBool.write(value.special, into: &buf)
-        FfiConverterUInt8.write(value.length, into: &buf)
-        FfiConverterBool.write(value.avoidAmbiguous, into: &buf)
-        FfiConverterOptionUInt8.write(value.minLowercase, into: &buf)
-        FfiConverterOptionUInt8.write(value.minUppercase, into: &buf)
-        FfiConverterOptionUInt8.write(value.minNumber, into: &buf)
-        FfiConverterOptionUInt8.write(value.minSpecial, into: &buf)
-    }
-}
-
-
-public func FfiConverterTypePasswordGeneratorRequest_lift(_ buf: RustBuffer) throws -> PasswordGeneratorRequest {
-    return try FfiConverterTypePasswordGeneratorRequest.lift(buf)
-}
-
-public func FfiConverterTypePasswordGeneratorRequest_lower(_ value: PasswordGeneratorRequest) -> RustBuffer {
-    return FfiConverterTypePasswordGeneratorRequest.lower(value)
-}
-
-
 public struct PasswordHistory {
     public let password: EncString
     public let lastUsedDate: DateTime
@@ -4850,69 +4644,6 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-public enum AppendType {
-    
-    /**
-     * Generates a random string of 8 lowercase characters as part of your username
-     */
-    case random
-    /**
-     * Uses the websitename as part of your username
-     */
-    case websiteName(
-        website: String
-    )
-}
-
-public struct FfiConverterTypeAppendType: FfiConverterRustBuffer {
-    typealias SwiftType = AppendType
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AppendType {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .random
-        
-        case 2: return .websiteName(
-            website: try FfiConverterString.read(from: &buf)
-        )
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: AppendType, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case .random:
-            writeInt(&buf, Int32(1))
-        
-        
-        case let .websiteName(website):
-            writeInt(&buf, Int32(2))
-            FfiConverterString.write(website, into: &buf)
-            
-        }
-    }
-}
-
-
-public func FfiConverterTypeAppendType_lift(_ buf: RustBuffer) throws -> AppendType {
-    return try FfiConverterTypeAppendType.lift(buf)
-}
-
-public func FfiConverterTypeAppendType_lower(_ value: AppendType) -> RustBuffer {
-    return FfiConverterTypeAppendType.lower(value)
-}
-
-
-extension AppendType: Equatable, Hashable {}
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum CipherRepromptType {
     
     case none
@@ -5360,133 +5091,6 @@ extension FieldType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-/**
- * Configures the email forwarding service to use.
- * For instructions on how to configure each service, see the documentation:
- * <https://bitwarden.com/help/generator/#username-types>
- */
-public enum ForwarderServiceType {
-    
-    /**
-     * Previously known as "AnonAddy"
-     */
-    case addyIo(
-        apiToken: String, 
-        domain: String, 
-        baseUrl: String
-    )
-    case duckDuckGo(
-        token: String
-    )
-    case firefox(
-        apiToken: String
-    )
-    case fastmail(
-        apiToken: String
-    )
-    case forwardEmail(
-        apiToken: String, 
-        domain: String
-    )
-    case simpleLogin(
-        apiKey: String
-    )
-}
-
-public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
-    typealias SwiftType = ForwarderServiceType
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ForwarderServiceType {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .addyIo(
-            apiToken: try FfiConverterString.read(from: &buf), 
-            domain: try FfiConverterString.read(from: &buf), 
-            baseUrl: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 2: return .duckDuckGo(
-            token: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 3: return .firefox(
-            apiToken: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 4: return .fastmail(
-            apiToken: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 5: return .forwardEmail(
-            apiToken: try FfiConverterString.read(from: &buf), 
-            domain: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 6: return .simpleLogin(
-            apiKey: try FfiConverterString.read(from: &buf)
-        )
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: ForwarderServiceType, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case let .addyIo(apiToken,domain,baseUrl):
-            writeInt(&buf, Int32(1))
-            FfiConverterString.write(apiToken, into: &buf)
-            FfiConverterString.write(domain, into: &buf)
-            FfiConverterString.write(baseUrl, into: &buf)
-            
-        
-        case let .duckDuckGo(token):
-            writeInt(&buf, Int32(2))
-            FfiConverterString.write(token, into: &buf)
-            
-        
-        case let .firefox(apiToken):
-            writeInt(&buf, Int32(3))
-            FfiConverterString.write(apiToken, into: &buf)
-            
-        
-        case let .fastmail(apiToken):
-            writeInt(&buf, Int32(4))
-            FfiConverterString.write(apiToken, into: &buf)
-            
-        
-        case let .forwardEmail(apiToken,domain):
-            writeInt(&buf, Int32(5))
-            FfiConverterString.write(apiToken, into: &buf)
-            FfiConverterString.write(domain, into: &buf)
-            
-        
-        case let .simpleLogin(apiKey):
-            writeInt(&buf, Int32(6))
-            FfiConverterString.write(apiKey, into: &buf)
-            
-        }
-    }
-}
-
-
-public func FfiConverterTypeForwarderServiceType_lift(_ buf: RustBuffer) throws -> ForwarderServiceType {
-    return try FfiConverterTypeForwarderServiceType.lift(buf)
-}
-
-public func FfiConverterTypeForwarderServiceType_lower(_ value: ForwarderServiceType) -> RustBuffer {
-    return FfiConverterTypeForwarderServiceType.lower(value)
-}
-
-
-extension ForwarderServiceType: Equatable, Hashable {}
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum InitUserCryptoMethod {
     
     case password(
@@ -5511,9 +5115,20 @@ public enum InitUserCryptoMethod {
          */
         pin: String, 
         /**
-         * The user's symmetric crypto key, encrypted with the PIN. Use `derive_pin_key` to obtain this.
+         * The user's symmetric crypto key, encrypted with the PIN. Use `derive_pin_key` to obtain
+         * this.
          */
         pinProtectedUserKey: EncString
+    )
+    case authRequest(
+        /**
+         * Private Key generated by the `crate::auth::new_auth_request`.
+         */
+        requestPrivateKey: String, 
+        /**
+         * User Key protected by the private key provided in `AuthRequestResponse`.
+         */
+        protectedUserKey: AsymmetricEncString
     )
 }
 
@@ -5536,6 +5151,11 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 3: return .pin(
             pin: try FfiConverterString.read(from: &buf), 
             pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        case 4: return .authRequest(
+            requestPrivateKey: try FfiConverterString.read(from: &buf), 
+            protectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -5561,6 +5181,12 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
             FfiConverterString.write(pin, into: &buf)
             FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
+            
+        
+        case let .authRequest(requestPrivateKey,protectedUserKey):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(requestPrivateKey, into: &buf)
+            FfiConverterTypeAsymmetricEncString.write(protectedUserKey, into: &buf)
             
         }
     }
@@ -5756,159 +5382,6 @@ public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuf
 extension UriMatchType: Equatable, Hashable {}
 
 
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-public enum UsernameGeneratorRequest {
-    
-    /**
-     * Generates a single word username
-     */
-    case word(
-        /**
-         * Capitalize the first letter of the word
-         */
-        capitalize: Bool, 
-        /**
-         * Include a 4 digit number at the end of the word
-         */
-        includeNumber: Bool
-    )
-    /**
-     * Generates an email using your provider's subaddressing capabilities.
-     * Note that not all providers support this functionality.
-     * This will generate an address of the format `youremail+generated@domain.tld`
-     */
-    case subaddress(
-        /**
-         * The type of subaddress to add to the base email
-         */
-        type: AppendType, 
-        /**
-         * The full email address to use as the base for the subaddress
-         */
-        email: String
-    )
-    case catchall(
-        /**
-         * The type of username to use with the catchall email domain
-         */
-        type: AppendType, 
-        /**
-         * The domain to use for the catchall email address
-         */
-        domain: String
-    )
-    case forwarded(
-        /**
-         * The email forwarding service to use, see [ForwarderServiceType]
-         * for instructions on how to configure each
-         */
-        service: ForwarderServiceType, 
-        /**
-         * The website for which the email address is being generated
-         * This is not used in all services, and is only used for display purposes
-         */
-        website: String?
-    )
-}
-
-public struct FfiConverterTypeUsernameGeneratorRequest: FfiConverterRustBuffer {
-    typealias SwiftType = UsernameGeneratorRequest
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UsernameGeneratorRequest {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .word(
-            capitalize: try FfiConverterBool.read(from: &buf), 
-            includeNumber: try FfiConverterBool.read(from: &buf)
-        )
-        
-        case 2: return .subaddress(
-            type: try FfiConverterTypeAppendType.read(from: &buf), 
-            email: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 3: return .catchall(
-            type: try FfiConverterTypeAppendType.read(from: &buf), 
-            domain: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 4: return .forwarded(
-            service: try FfiConverterTypeForwarderServiceType.read(from: &buf), 
-            website: try FfiConverterOptionString.read(from: &buf)
-        )
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: UsernameGeneratorRequest, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case let .word(capitalize,includeNumber):
-            writeInt(&buf, Int32(1))
-            FfiConverterBool.write(capitalize, into: &buf)
-            FfiConverterBool.write(includeNumber, into: &buf)
-            
-        
-        case let .subaddress(type,email):
-            writeInt(&buf, Int32(2))
-            FfiConverterTypeAppendType.write(type, into: &buf)
-            FfiConverterString.write(email, into: &buf)
-            
-        
-        case let .catchall(type,domain):
-            writeInt(&buf, Int32(3))
-            FfiConverterTypeAppendType.write(type, into: &buf)
-            FfiConverterString.write(domain, into: &buf)
-            
-        
-        case let .forwarded(service,website):
-            writeInt(&buf, Int32(4))
-            FfiConverterTypeForwarderServiceType.write(service, into: &buf)
-            FfiConverterOptionString.write(website, into: &buf)
-            
-        }
-    }
-}
-
-
-public func FfiConverterTypeUsernameGeneratorRequest_lift(_ buf: RustBuffer) throws -> UsernameGeneratorRequest {
-    return try FfiConverterTypeUsernameGeneratorRequest.lift(buf)
-}
-
-public func FfiConverterTypeUsernameGeneratorRequest_lower(_ value: UsernameGeneratorRequest) -> RustBuffer {
-    return FfiConverterTypeUsernameGeneratorRequest.lower(value)
-}
-
-
-extension UsernameGeneratorRequest: Equatable, Hashable {}
-
-
-
-fileprivate struct FfiConverterOptionUInt8: FfiConverterRustBuffer {
-    typealias SwiftType = UInt8?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterUInt8.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterUInt8.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
 
 fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
     typealias SwiftType = UInt32?

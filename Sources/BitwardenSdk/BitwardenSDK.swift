@@ -748,6 +748,11 @@ public func FfiConverterTypeClientAttachments_lower(_ value: ClientAttachments) 
 public protocol ClientAuthProtocol : AnyObject {
     
     /**
+     * Approve an auth request
+     */
+    func approveAuthRequest(publicKey: String) async throws  -> AsymmetricEncString
+    
+    /**
      * Hash the user password
      */
     func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String
@@ -756,6 +761,11 @@ public protocol ClientAuthProtocol : AnyObject {
      * Generate keys needed for registration process
      */
     func makeRegisterKeys(email: String, password: String, kdf: Kdf) async throws  -> RegisterKeyResponse
+    
+    /**
+     * Initialize a new auth request
+     */
+    func newAuthRequest(email: String) async throws  -> AuthRequestResponse
     
     /**
      * **API Draft:** Calculate Password Strength
@@ -797,6 +807,26 @@ public class ClientAuth:
     
     
     /**
+     * Approve an auth request
+     */
+    public func approveAuthRequest(publicKey: String) async throws  -> AsymmetricEncString {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_approve_auth_request(
+                    self.pointer,
+                    FfiConverterString.lower(publicKey)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAsymmetricEncString_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
      * Hash the user password
      */
     public func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String {
@@ -836,6 +866,26 @@ public class ClientAuth:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeRegisterKeyResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Initialize a new auth request
+     */
+    public func newAuthRequest(email: String) async throws  -> AuthRequestResponse {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_new_auth_request(
+                    self.pointer,
+                    FfiConverterString.lower(email)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuthRequestResponse_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -1222,13 +1272,15 @@ public func FfiConverterTypeClientCollections_lower(_ value: ClientCollections) 
 public protocol ClientCryptoProtocol : AnyObject {
     
     /**
-     * Generates a PIN protected user key from the provided PIN. The result can be stored and later used
-     * to initialize another client instance by using the PIN and the PIN key with `initialize_user_crypto`.
+     * Generates a PIN protected user key from the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`.
      */
     func derivePinKey(pin: String) async throws  -> DerivePinKeyResponse
     
     /**
-     * Derives the pin protected user key from encrypted pin. Used when pin requires master password on first unlock.
+     * Derives the pin protected user key from encrypted pin. Used when pin requires master
+     * password on first unlock.
      */
     func derivePinUserKey(encryptedPin: EncString) async throws  -> EncString
     
@@ -1239,12 +1291,14 @@ public protocol ClientCryptoProtocol : AnyObject {
     func getUserEncryptionKey() async throws  -> String
     
     /**
-     * Initialization method for the organization crypto. Needs to be called after `initialize_user_crypto` but before any other crypto operations.
+     * Initialization method for the organization crypto. Needs to be called after
+     * `initialize_user_crypto` but before any other crypto operations.
      */
     func initializeOrgCrypto(req: InitOrgCryptoRequest) async throws 
     
     /**
-     * Initialization method for the user crypto. Needs to be called before any other crypto operations.
+     * Initialization method for the user crypto. Needs to be called before any other crypto
+     * operations.
      */
     func initializeUserCrypto(req: InitUserCryptoRequest) async throws 
     
@@ -1269,8 +1323,9 @@ public class ClientCrypto:
     
     
     /**
-     * Generates a PIN protected user key from the provided PIN. The result can be stored and later used
-     * to initialize another client instance by using the PIN and the PIN key with `initialize_user_crypto`.
+     * Generates a PIN protected user key from the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`.
      */
     public func derivePinKey(pin: String) async throws  -> DerivePinKeyResponse {
         return try  await uniffiRustCallAsync(
@@ -1290,7 +1345,8 @@ public class ClientCrypto:
 
     
     /**
-     * Derives the pin protected user key from encrypted pin. Used when pin requires master password on first unlock.
+     * Derives the pin protected user key from encrypted pin. Used when pin requires master
+     * password on first unlock.
      */
     public func derivePinUserKey(encryptedPin: EncString) async throws  -> EncString {
         return try  await uniffiRustCallAsync(
@@ -1330,7 +1386,8 @@ public class ClientCrypto:
 
     
     /**
-     * Initialization method for the organization crypto. Needs to be called after `initialize_user_crypto` but before any other crypto operations.
+     * Initialization method for the organization crypto. Needs to be called after
+     * `initialize_user_crypto` but before any other crypto operations.
      */
     public func initializeOrgCrypto(req: InitOrgCryptoRequest) async throws  {
         return try  await uniffiRustCallAsync(
@@ -1350,7 +1407,8 @@ public class ClientCrypto:
 
     
     /**
-     * Initialization method for the user crypto. Needs to be called before any other crypto operations.
+     * Initialization method for the user crypto. Needs to be called before any other crypto
+     * operations.
      */
     public func initializeUserCrypto(req: InitUserCryptoRequest) async throws  {
         return try  await uniffiRustCallAsync(
@@ -2914,6 +2972,10 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -3018,10 +3080,16 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_encrypt_file() != 39444) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_approve_auth_request() != 26193) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 52800) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 17783) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_new_auth_request() != 46948) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 4133) {
@@ -3048,19 +3116,19 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 50770) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 6374) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 2970) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_user_key() != 24432) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_user_key() != 1370) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 28516) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 38980) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 61950) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_user_crypto() != 38742) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_user_crypto() != 39625) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 19185) {
@@ -3078,13 +3146,13 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt() != 61456) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 11634) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 39281) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 45238) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 1368) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_username() != 12389) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_username() != 15844) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 13786) {
