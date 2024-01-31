@@ -1685,10 +1685,10 @@ public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer 
  * ```
  * # use bitwarden::client::client_settings::{ClientSettings, DeviceType};
  * let settings = ClientSettings {
- *     identity_url: "https://identity.bitwarden.com".to_string(),
- *     api_url: "https://api.bitwarden.com".to_string(),
- *     user_agent: "Bitwarden Rust-SDK".to_string(),
- *     device_type: DeviceType::SDK,
+ * identity_url: "https://identity.bitwarden.com".to_string(),
+ * api_url: "https://api.bitwarden.com".to_string(),
+ * user_agent: "Bitwarden Rust-SDK".to_string(),
+ * device_type: DeviceType::SDK,
  * };
  * let default = ClientSettings::default();
  * ```
@@ -4642,6 +4642,76 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
     return FfiConverterTypeTotpResponse.lower(value)
 }
 
+
+public struct UpdatePasswordResponse {
+    /**
+     * Hash of the new password
+     */
+    public let passwordHash: String
+    /**
+     * User key, encrypted with the new password
+     */
+    public let newKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Hash of the new password
+         */
+        passwordHash: String, 
+        /**
+         * User key, encrypted with the new password
+         */
+        newKey: EncString) {
+        self.passwordHash = passwordHash
+        self.newKey = newKey
+    }
+}
+
+
+extension UpdatePasswordResponse: Equatable, Hashable {
+    public static func ==(lhs: UpdatePasswordResponse, rhs: UpdatePasswordResponse) -> Bool {
+        if lhs.passwordHash != rhs.passwordHash {
+            return false
+        }
+        if lhs.newKey != rhs.newKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(passwordHash)
+        hasher.combine(newKey)
+    }
+}
+
+
+public struct FfiConverterTypeUpdatePasswordResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UpdatePasswordResponse {
+        return
+            try UpdatePasswordResponse(
+                passwordHash: FfiConverterString.read(from: &buf), 
+                newKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UpdatePasswordResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.passwordHash, into: &buf)
+        FfiConverterTypeEncString.write(value.newKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeUpdatePasswordResponse_lift(_ buf: RustBuffer) throws -> UpdatePasswordResponse {
+    return try FfiConverterTypeUpdatePasswordResponse.lift(buf)
+}
+
+public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePasswordResponse) -> RustBuffer {
+    return FfiConverterTypeUpdatePasswordResponse.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum CipherRepromptType {
@@ -6274,6 +6344,7 @@ public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncStri
 }
 
 
+
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -6305,6 +6376,7 @@ public func FfiConverterTypeDateTime_lift(_ value: RustBuffer) throws -> DateTim
 public func FfiConverterTypeDateTime_lower(_ value: DateTime) -> RustBuffer {
     return FfiConverterTypeDateTime.lower(value)
 }
+
 
 
 /**
@@ -6340,6 +6412,7 @@ public func FfiConverterTypeLinkedIdType_lower(_ value: LinkedIdType) -> UInt32 
 }
 
 
+
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -6371,6 +6444,7 @@ public func FfiConverterTypeUuid_lift(_ value: RustBuffer) throws -> Uuid {
 public func FfiConverterTypeUuid_lower(_ value: Uuid) -> RustBuffer {
     return FfiConverterTypeUuid.lower(value)
 }
+
 
 private enum InitializationResult {
     case ok

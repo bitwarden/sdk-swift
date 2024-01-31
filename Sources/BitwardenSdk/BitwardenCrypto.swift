@@ -577,6 +577,7 @@ public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
 }
 
 
+
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -608,6 +609,7 @@ public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU3
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
 }
+
 
 private enum InitializationResult {
     case ok
