@@ -796,6 +796,16 @@ public protocol ClientAuthProtocol : AnyObject {
      */
     func validatePassword(password: String, passwordHash: String) async throws  -> Bool
     
+    /**
+     * Validate the user password without knowing the password hash
+     *
+     * Used for accounts that we know have master passwords but that have not logged in with a
+     * password. Some example are login with device or TDE.
+     *
+     * This works by comparing the provided password against the encrypted user key.
+     */
+    func validatePasswordUserKey(password: String, encryptedUserKey: String) async throws  -> String
+    
 }
 
 public class ClientAuth:
@@ -972,6 +982,32 @@ public class ClientAuth:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
             liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Validate the user password without knowing the password hash
+     *
+     * Used for accounts that we know have master passwords but that have not logged in with a
+     * password. Some example are login with device or TDE.
+     *
+     * This works by comparing the provided password against the encrypted user key.
+     */
+    public func validatePasswordUserKey(password: String, encryptedUserKey: String) async throws  -> String {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_validate_password_user_key(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(password),
+                    FfiConverterString.lower(encryptedUserKey)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -3193,6 +3229,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password() != 44745) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password_user_key() != 38366) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 17124) {
