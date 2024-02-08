@@ -5102,7 +5102,6 @@ public enum ExportFormat {
     
     case csv
     case json
-    case accountEncryptedJson
     case encryptedJson(
         password: String
     )
@@ -5119,9 +5118,7 @@ public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
         
         case 2: return .json
         
-        case 3: return .accountEncryptedJson
-        
-        case 4: return .encryptedJson(
+        case 3: return .encryptedJson(
             password: try FfiConverterString.read(from: &buf)
         )
         
@@ -5141,12 +5138,8 @@ public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         
         
-        case .accountEncryptedJson:
-            writeInt(&buf, Int32(3))
-        
-        
         case let .encryptedJson(password):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
             FfiConverterString.write(password, into: &buf)
             
         }
