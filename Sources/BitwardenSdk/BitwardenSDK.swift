@@ -405,6 +405,11 @@ public protocol ClientProtocol : AnyObject {
     func echo(msg: String)  -> String
     
     /**
+     * Exporters
+     */
+    func exporters()  -> ClientExporters
+    
+    /**
      * Generator operations
      */
     func generators()  -> ClientGenerators
@@ -486,6 +491,19 @@ public class Client:
     
     uniffi_bitwarden_uniffi_fn_method_client_echo(self.uniffiClonePointer(), 
         FfiConverterString.lower(msg),$0
+    )
+}
+        )
+    }
+    /**
+     * Exporters
+     */
+    public func exporters()  -> ClientExporters {
+        return try!  FfiConverterTypeClientExporters.lift(
+            try! 
+    rustCall() {
+    
+    uniffi_bitwarden_uniffi_fn_method_client_exporters(self.uniffiClonePointer(), $0
     )
 }
         )
@@ -788,6 +806,11 @@ public protocol ClientAuthProtocol : AnyObject {
     func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) async  -> Bool
     
     /**
+     * Trust the current device
+     */
+    func t() async throws  -> TrustDeviceResponse
+    
+    /**
      * Validate the user password
      *
      * To retrieve the user's password hash, use [`ClientAuth::hash_password`] with
@@ -958,6 +981,25 @@ public class ClientAuth:
             liftFunc: FfiConverterBool.lift,
             errorHandler: nil
             
+        )
+    }
+
+    
+    /**
+     * Trust the current device
+     */
+    public func t() async throws  -> TrustDeviceResponse {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_t(
+                    self.uniffiClonePointer()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTrustDeviceResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
 
@@ -3106,6 +3148,8 @@ fileprivate struct FfiConverterSequenceTypeSendListView: FfiConverterRustBuffer 
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -3189,6 +3233,9 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 57048) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_exporters() != 13095) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 50372) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3210,7 +3257,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientattachments_encrypt_file() != 25144) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_approve_auth_request() != 25845) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_approve_auth_request() != 47791) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 59447) {
@@ -3226,6 +3273,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 43941) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_t() != 11141) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password() != 44745) {

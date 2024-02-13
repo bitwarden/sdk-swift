@@ -5264,6 +5264,20 @@ public enum InitUserCryptoMethod {
         requestPrivateKey: String, 
         method: AuthRequestMethod
     )
+    case deviceKey(
+        /**
+         * The device's DeviceKey
+         */
+        deviceKey: String, 
+        /**
+         * The Device Private Key
+         */
+        protectedDevicePrivateKey: EncString, 
+        /**
+         * The user's symmetric crypto key, encrypted with the Device Key.
+         */
+        deviceProtectedUserKey: AsymmetricEncString
+    )
 }
 
 public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
@@ -5290,6 +5304,12 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 4: return .authRequest(
             requestPrivateKey: try FfiConverterString.read(from: &buf), 
             method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        )
+        
+        case 5: return .deviceKey(
+            deviceKey: try FfiConverterString.read(from: &buf), 
+            protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), 
+            deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -5321,6 +5341,13 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
             FfiConverterString.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
+            
+        
+        case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(deviceKey, into: &buf)
+            FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
+            FfiConverterTypeAsymmetricEncString.write(deviceProtectedUserKey, into: &buf)
             
         }
     }
@@ -6374,38 +6401,6 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiCon
 
 
 
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
-public typealias AsymmetricEncString = String
-public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmetricEncString {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: AsymmetricEncString, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> AsymmetricEncString {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: AsymmetricEncString) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-public func FfiConverterTypeAsymmetricEncString_lift(_ value: RustBuffer) throws -> AsymmetricEncString {
-    return try FfiConverterTypeAsymmetricEncString.lift(value)
-}
-
-public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncString) -> RustBuffer {
-    return FfiConverterTypeAsymmetricEncString.lower(value)
-}
 
 
 

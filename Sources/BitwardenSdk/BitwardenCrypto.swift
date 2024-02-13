@@ -423,6 +423,106 @@ public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer 
     return FfiConverterTypeRsaKeyPair.lower(value)
 }
 
+
+public struct TrustDeviceResponse {
+    /**
+     * Base64 encoded device key
+     */
+    public let deviceKey: String
+    /**
+     * UserKey encrypted with DevicePublicKey
+     */
+    public let protectedUserKey: AsymmetricEncString
+    /**
+     * DevicePrivateKey encrypted with [DeviceKey]
+     */
+    public let protectedDevicePrivateKey: EncString
+    /**
+     * DevicePublicKey encrypted with [UserKey](super::UserKey)
+     */
+    public let protectedDevicePublicKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Base64 encoded device key
+         */
+        deviceKey: String, 
+        /**
+         * UserKey encrypted with DevicePublicKey
+         */
+        protectedUserKey: AsymmetricEncString, 
+        /**
+         * DevicePrivateKey encrypted with [DeviceKey]
+         */
+        protectedDevicePrivateKey: EncString, 
+        /**
+         * DevicePublicKey encrypted with [UserKey](super::UserKey)
+         */
+        protectedDevicePublicKey: EncString) {
+        self.deviceKey = deviceKey
+        self.protectedUserKey = protectedUserKey
+        self.protectedDevicePrivateKey = protectedDevicePrivateKey
+        self.protectedDevicePublicKey = protectedDevicePublicKey
+    }
+}
+
+
+extension TrustDeviceResponse: Equatable, Hashable {
+    public static func ==(lhs: TrustDeviceResponse, rhs: TrustDeviceResponse) -> Bool {
+        if lhs.deviceKey != rhs.deviceKey {
+            return false
+        }
+        if lhs.protectedUserKey != rhs.protectedUserKey {
+            return false
+        }
+        if lhs.protectedDevicePrivateKey != rhs.protectedDevicePrivateKey {
+            return false
+        }
+        if lhs.protectedDevicePublicKey != rhs.protectedDevicePublicKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(deviceKey)
+        hasher.combine(protectedUserKey)
+        hasher.combine(protectedDevicePrivateKey)
+        hasher.combine(protectedDevicePublicKey)
+    }
+}
+
+
+public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceResponse {
+        return
+            try TrustDeviceResponse(
+                deviceKey: FfiConverterString.read(from: &buf), 
+                protectedUserKey: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
+                protectedDevicePrivateKey: FfiConverterTypeEncString.read(from: &buf), 
+                protectedDevicePublicKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TrustDeviceResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.deviceKey, into: &buf)
+        FfiConverterTypeAsymmetricEncString.write(value.protectedUserKey, into: &buf)
+        FfiConverterTypeEncString.write(value.protectedDevicePrivateKey, into: &buf)
+        FfiConverterTypeEncString.write(value.protectedDevicePublicKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeTrustDeviceResponse_lift(_ buf: RustBuffer) throws -> TrustDeviceResponse {
+    return try FfiConverterTypeTrustDeviceResponse.lift(buf)
+}
+
+public func FfiConverterTypeTrustDeviceResponse_lower(_ value: TrustDeviceResponse) -> RustBuffer {
+    return FfiConverterTypeTrustDeviceResponse.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum HashPurpose {
@@ -541,6 +641,40 @@ public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
 
 extension Kdf: Equatable, Hashable {}
 
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias AsymmetricEncString = String
+public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmetricEncString {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: AsymmetricEncString, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> AsymmetricEncString {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: AsymmetricEncString) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+public func FfiConverterTypeAsymmetricEncString_lift(_ value: RustBuffer) throws -> AsymmetricEncString {
+    return try FfiConverterTypeAsymmetricEncString.lift(value)
+}
+
+public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncString) -> RustBuffer {
+    return FfiConverterTypeAsymmetricEncString.lower(value)
+}
 
 
 
