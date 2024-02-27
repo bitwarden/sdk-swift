@@ -1387,6 +1387,8 @@ public protocol ClientCryptoProtocol : AnyObject {
      */
     func derivePinUserKey(encryptedPin: EncString) async throws  -> EncString
     
+    func enrollAdminPasswordReset(publicKey: String) async throws  -> AsymmetricEncString
+    
     /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
@@ -1474,6 +1476,23 @@ public class ClientCrypto:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeEncString_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    public func enrollAdminPasswordReset(publicKey: String) async throws  -> AsymmetricEncString {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientcrypto_enroll_admin_password_reset(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(publicKey)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAsymmetricEncString_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -3303,6 +3322,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_user_key() != 60758) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_enroll_admin_password_reset() != 37196) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 5136) {
