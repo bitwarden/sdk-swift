@@ -27,8 +27,8 @@ let package = Package(
             swiftSettings: [.unsafeFlags(["-suppress-warnings"])]),
         .binaryTarget(
             name: "BitwardenFFI",
-            url: "https://bwlivefronttest.blob.core.windows.net/sdk/aad7014-BitwardenFFI.xcframework.zip",
-            checksum: "6989d30712b8dcd2261a7d0a8b688b5628532b7793d6b955a6792c6fd73ea72a"),
+            url: "https://bwlivefronttest.blob.core.windows.net/sdk/aaa6466-BitwardenFFI.xcframework.zip",
+            checksum: "efd6dafe90287b15cc4f30f07ebd8a287d6d73bb3bc790029cd18049fccbb595"),
         .testTarget(
             name: "BitwardenSdkTests",
             dependencies: ["BitwardenSdk"])

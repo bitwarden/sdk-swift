@@ -2051,6 +2051,163 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
 }
 
 
+public struct Fido2Credential {
+    public let credentialId: EncString
+    public let keyType: EncString
+    public let keyAlgorithm: EncString
+    public let keyCurve: EncString
+    public let keyValue: EncString
+    public let rpId: EncString
+    public let userHandle: EncString?
+    public let userName: EncString?
+    public let counter: EncString
+    public let rpName: EncString?
+    public let userDisplayName: EncString?
+    public let discoverable: EncString
+    public let creationDate: DateTime
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        credentialId: EncString, 
+        keyType: EncString, 
+        keyAlgorithm: EncString, 
+        keyCurve: EncString, 
+        keyValue: EncString, 
+        rpId: EncString, 
+        userHandle: EncString?, 
+        userName: EncString?, 
+        counter: EncString, 
+        rpName: EncString?, 
+        userDisplayName: EncString?, 
+        discoverable: EncString, 
+        creationDate: DateTime) {
+        self.credentialId = credentialId
+        self.keyType = keyType
+        self.keyAlgorithm = keyAlgorithm
+        self.keyCurve = keyCurve
+        self.keyValue = keyValue
+        self.rpId = rpId
+        self.userHandle = userHandle
+        self.userName = userName
+        self.counter = counter
+        self.rpName = rpName
+        self.userDisplayName = userDisplayName
+        self.discoverable = discoverable
+        self.creationDate = creationDate
+    }
+}
+
+
+extension Fido2Credential: Equatable, Hashable {
+    public static func ==(lhs: Fido2Credential, rhs: Fido2Credential) -> Bool {
+        if lhs.credentialId != rhs.credentialId {
+            return false
+        }
+        if lhs.keyType != rhs.keyType {
+            return false
+        }
+        if lhs.keyAlgorithm != rhs.keyAlgorithm {
+            return false
+        }
+        if lhs.keyCurve != rhs.keyCurve {
+            return false
+        }
+        if lhs.keyValue != rhs.keyValue {
+            return false
+        }
+        if lhs.rpId != rhs.rpId {
+            return false
+        }
+        if lhs.userHandle != rhs.userHandle {
+            return false
+        }
+        if lhs.userName != rhs.userName {
+            return false
+        }
+        if lhs.counter != rhs.counter {
+            return false
+        }
+        if lhs.rpName != rhs.rpName {
+            return false
+        }
+        if lhs.userDisplayName != rhs.userDisplayName {
+            return false
+        }
+        if lhs.discoverable != rhs.discoverable {
+            return false
+        }
+        if lhs.creationDate != rhs.creationDate {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(credentialId)
+        hasher.combine(keyType)
+        hasher.combine(keyAlgorithm)
+        hasher.combine(keyCurve)
+        hasher.combine(keyValue)
+        hasher.combine(rpId)
+        hasher.combine(userHandle)
+        hasher.combine(userName)
+        hasher.combine(counter)
+        hasher.combine(rpName)
+        hasher.combine(userDisplayName)
+        hasher.combine(discoverable)
+        hasher.combine(creationDate)
+    }
+}
+
+
+public struct FfiConverterTypeFido2Credential: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2Credential {
+        return
+            try Fido2Credential(
+                credentialId: FfiConverterTypeEncString.read(from: &buf), 
+                keyType: FfiConverterTypeEncString.read(from: &buf), 
+                keyAlgorithm: FfiConverterTypeEncString.read(from: &buf), 
+                keyCurve: FfiConverterTypeEncString.read(from: &buf), 
+                keyValue: FfiConverterTypeEncString.read(from: &buf), 
+                rpId: FfiConverterTypeEncString.read(from: &buf), 
+                userHandle: FfiConverterOptionTypeEncString.read(from: &buf), 
+                userName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                counter: FfiConverterTypeEncString.read(from: &buf), 
+                rpName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                userDisplayName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                discoverable: FfiConverterTypeEncString.read(from: &buf), 
+                creationDate: FfiConverterTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Fido2Credential, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.credentialId, into: &buf)
+        FfiConverterTypeEncString.write(value.keyType, into: &buf)
+        FfiConverterTypeEncString.write(value.keyAlgorithm, into: &buf)
+        FfiConverterTypeEncString.write(value.keyCurve, into: &buf)
+        FfiConverterTypeEncString.write(value.keyValue, into: &buf)
+        FfiConverterTypeEncString.write(value.rpId, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.userHandle, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.userName, into: &buf)
+        FfiConverterTypeEncString.write(value.counter, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.rpName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.userDisplayName, into: &buf)
+        FfiConverterTypeEncString.write(value.discoverable, into: &buf)
+        FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeFido2Credential_lift(_ buf: RustBuffer) throws -> Fido2Credential {
+    return try FfiConverterTypeFido2Credential.lift(buf)
+}
+
+public func FfiConverterTypeFido2Credential_lower(_ value: Fido2Credential) -> RustBuffer {
+    return FfiConverterTypeFido2Credential.lower(value)
+}
+
+
 public struct Field {
     public let name: EncString?
     public let value: EncString?
@@ -3089,6 +3246,7 @@ public struct Login {
     public let uris: [LoginUri]?
     public let totp: EncString?
     public let autofillOnPageLoad: Bool?
+    public let fido2Credentials: [Fido2Credential]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -3098,13 +3256,15 @@ public struct Login {
         passwordRevisionDate: DateTime?, 
         uris: [LoginUri]?, 
         totp: EncString?, 
-        autofillOnPageLoad: Bool?) {
+        autofillOnPageLoad: Bool?, 
+        fido2Credentials: [Fido2Credential]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
         self.uris = uris
         self.totp = totp
         self.autofillOnPageLoad = autofillOnPageLoad
+        self.fido2Credentials = fido2Credentials
     }
 }
 
@@ -3129,6 +3289,9 @@ extension Login: Equatable, Hashable {
         if lhs.autofillOnPageLoad != rhs.autofillOnPageLoad {
             return false
         }
+        if lhs.fido2Credentials != rhs.fido2Credentials {
+            return false
+        }
         return true
     }
 
@@ -3139,6 +3302,7 @@ extension Login: Equatable, Hashable {
         hasher.combine(uris)
         hasher.combine(totp)
         hasher.combine(autofillOnPageLoad)
+        hasher.combine(fido2Credentials)
     }
 }
 
@@ -3152,7 +3316,8 @@ public struct FfiConverterTypeLogin: FfiConverterRustBuffer {
                 passwordRevisionDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 uris: FfiConverterOptionSequenceTypeLoginUri.read(from: &buf), 
                 totp: FfiConverterOptionTypeEncString.read(from: &buf), 
-                autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf)
+                autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
         )
     }
 
@@ -3163,6 +3328,7 @@ public struct FfiConverterTypeLogin: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUri.write(value.uris, into: &buf)
         FfiConverterOptionTypeEncString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
+        FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
     }
 }
 
@@ -3299,6 +3465,7 @@ public struct LoginView {
     public let uris: [LoginUriView]?
     public let totp: String?
     public let autofillOnPageLoad: Bool?
+    public let fido2Credentials: [Fido2Credential]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -3308,13 +3475,15 @@ public struct LoginView {
         passwordRevisionDate: DateTime?, 
         uris: [LoginUriView]?, 
         totp: String?, 
-        autofillOnPageLoad: Bool?) {
+        autofillOnPageLoad: Bool?, 
+        fido2Credentials: [Fido2Credential]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
         self.uris = uris
         self.totp = totp
         self.autofillOnPageLoad = autofillOnPageLoad
+        self.fido2Credentials = fido2Credentials
     }
 }
 
@@ -3339,6 +3508,9 @@ extension LoginView: Equatable, Hashable {
         if lhs.autofillOnPageLoad != rhs.autofillOnPageLoad {
             return false
         }
+        if lhs.fido2Credentials != rhs.fido2Credentials {
+            return false
+        }
         return true
     }
 
@@ -3349,6 +3521,7 @@ extension LoginView: Equatable, Hashable {
         hasher.combine(uris)
         hasher.combine(totp)
         hasher.combine(autofillOnPageLoad)
+        hasher.combine(fido2Credentials)
     }
 }
 
@@ -3362,7 +3535,8 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
                 passwordRevisionDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf), 
                 totp: FfiConverterOptionString.read(from: &buf), 
-                autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf)
+                autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
         )
     }
 
@@ -3373,6 +3547,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
         FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
+        FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
     }
 }
 
@@ -5964,6 +6139,27 @@ fileprivate struct FfiConverterOptionSequenceTypeAttachmentView: FfiConverterRus
     }
 }
 
+fileprivate struct FfiConverterOptionSequenceTypeFido2Credential: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2Credential]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeFido2Credential.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeFido2Credential.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 fileprivate struct FfiConverterOptionSequenceTypeField: FfiConverterRustBuffer {
     typealias SwiftType = [Field]?
 
@@ -6213,6 +6409,28 @@ fileprivate struct FfiConverterSequenceTypeAttachmentView: FfiConverterRustBuffe
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeAttachmentView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2Credential]
+
+    public static func write(_ value: [Fido2Credential], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFido2Credential.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2Credential] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Fido2Credential]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFido2Credential.read(from: &buf))
         }
         return seq
     }
