@@ -3345,14 +3345,17 @@ public func FfiConverterTypeLogin_lower(_ value: Login) -> RustBuffer {
 public struct LoginUri {
     public let uri: EncString?
     public let match: UriMatchType?
+    public let uriChecksum: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         uri: EncString?, 
-        match: UriMatchType?) {
+        match: UriMatchType?, 
+        uriChecksum: EncString?) {
         self.uri = uri
         self.match = match
+        self.uriChecksum = uriChecksum
     }
 }
 
@@ -3365,12 +3368,16 @@ extension LoginUri: Equatable, Hashable {
         if lhs.match != rhs.match {
             return false
         }
+        if lhs.uriChecksum != rhs.uriChecksum {
+            return false
+        }
         return true
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(uri)
         hasher.combine(match)
+        hasher.combine(uriChecksum)
     }
 }
 
@@ -3380,13 +3387,15 @@ public struct FfiConverterTypeLoginUri: FfiConverterRustBuffer {
         return
             try LoginUri(
                 uri: FfiConverterOptionTypeEncString.read(from: &buf), 
-                match: FfiConverterOptionTypeUriMatchType.read(from: &buf)
+                match: FfiConverterOptionTypeUriMatchType.read(from: &buf), 
+                uriChecksum: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginUri, into buf: inout [UInt8]) {
         FfiConverterOptionTypeEncString.write(value.uri, into: &buf)
         FfiConverterOptionTypeUriMatchType.write(value.match, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.uriChecksum, into: &buf)
     }
 }
 
@@ -3403,14 +3412,17 @@ public func FfiConverterTypeLoginUri_lower(_ value: LoginUri) -> RustBuffer {
 public struct LoginUriView {
     public let uri: String?
     public let match: UriMatchType?
+    public let uriChecksum: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         uri: String?, 
-        match: UriMatchType?) {
+        match: UriMatchType?, 
+        uriChecksum: String?) {
         self.uri = uri
         self.match = match
+        self.uriChecksum = uriChecksum
     }
 }
 
@@ -3423,12 +3435,16 @@ extension LoginUriView: Equatable, Hashable {
         if lhs.match != rhs.match {
             return false
         }
+        if lhs.uriChecksum != rhs.uriChecksum {
+            return false
+        }
         return true
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(uri)
         hasher.combine(match)
+        hasher.combine(uriChecksum)
     }
 }
 
@@ -3438,13 +3454,15 @@ public struct FfiConverterTypeLoginUriView: FfiConverterRustBuffer {
         return
             try LoginUriView(
                 uri: FfiConverterOptionString.read(from: &buf), 
-                match: FfiConverterOptionTypeUriMatchType.read(from: &buf)
+                match: FfiConverterOptionTypeUriMatchType.read(from: &buf), 
+                uriChecksum: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginUriView, into buf: inout [UInt8]) {
         FfiConverterOptionString.write(value.uri, into: &buf)
         FfiConverterOptionTypeUriMatchType.write(value.match, into: &buf)
+        FfiConverterOptionString.write(value.uriChecksum, into: &buf)
     }
 }
 
@@ -3854,6 +3872,82 @@ public func FfiConverterTypeRegisterKeyResponse_lift(_ buf: RustBuffer) throws -
 
 public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyResponse) -> RustBuffer {
     return FfiConverterTypeRegisterKeyResponse.lower(value)
+}
+
+
+public struct RegisterTdeKeyResponse {
+    public let privateKey: EncString
+    public let publicKey: String
+    public let adminReset: AsymmetricEncString
+    public let deviceKey: TrustDeviceResponse?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        privateKey: EncString, 
+        publicKey: String, 
+        adminReset: AsymmetricEncString, 
+        deviceKey: TrustDeviceResponse?) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.adminReset = adminReset
+        self.deviceKey = deviceKey
+    }
+}
+
+
+extension RegisterTdeKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: RegisterTdeKeyResponse, rhs: RegisterTdeKeyResponse) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.adminReset != rhs.adminReset {
+            return false
+        }
+        if lhs.deviceKey != rhs.deviceKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(adminReset)
+        hasher.combine(deviceKey)
+    }
+}
+
+
+public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterTdeKeyResponse {
+        return
+            try RegisterTdeKeyResponse(
+                privateKey: FfiConverterTypeEncString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                adminReset: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
+                deviceKey: FfiConverterOptionTypeTrustDeviceResponse.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RegisterTdeKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeAsymmetricEncString.write(value.adminReset, into: &buf)
+        FfiConverterOptionTypeTrustDeviceResponse.write(value.deviceKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeRegisterTdeKeyResponse_lift(_ buf: RustBuffer) throws -> RegisterTdeKeyResponse {
+    return try FfiConverterTypeRegisterTdeKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKeyResponse) -> RustBuffer {
+    return FfiConverterTypeRegisterTdeKeyResponse.lower(value)
 }
 
 
@@ -6307,6 +6401,27 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     }
 }
 
+fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBuffer {
+    typealias SwiftType = TrustDeviceResponse?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTrustDeviceResponse.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTrustDeviceResponse.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
     typealias SwiftType = DateTime?
 
@@ -6612,6 +6727,8 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiCon
         return dict
     }
 }
+
+
 
 
 

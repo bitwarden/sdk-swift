@@ -791,6 +791,11 @@ public protocol ClientAuthProtocol : AnyObject {
     func makeRegisterKeys(email: String, password: String, kdf: Kdf) async throws  -> RegisterKeyResponse
     
     /**
+     * Generate keys needed for TDE process
+     */
+    func makeRegisterTdeKeys(orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse
+    
+    /**
      * Initialize a new auth request
      */
     func newAuthRequest(email: String) async throws  -> AuthRequestResponse
@@ -914,6 +919,27 @@ public class ClientAuth:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeRegisterKeyResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Generate keys needed for TDE process
+     */
+    public func makeRegisterTdeKeys(orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientauth_make_register_tde_keys(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(orgPublicKey),
+                    FfiConverterBool.lower(rememberDevice)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeRegisterTdeKeyResponse_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -3217,6 +3243,8 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -3331,6 +3359,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 41498) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_tde_keys() != 53051) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_new_auth_request() != 22873) {
