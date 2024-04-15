@@ -424,11 +424,64 @@ public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer 
 }
 
 
+/**
+ * Uniffi doesn't seem to be generating the SensitiveString unless it's being used by
+ * a record somewhere. This is a workaround to make sure the type is generated.
+ */
+public struct SupportSensitiveString {
+    public let sensitiveString: SensitiveString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        sensitiveString: SensitiveString) {
+        self.sensitiveString = sensitiveString
+    }
+}
+
+
+extension SupportSensitiveString: Equatable, Hashable {
+    public static func ==(lhs: SupportSensitiveString, rhs: SupportSensitiveString) -> Bool {
+        if lhs.sensitiveString != rhs.sensitiveString {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(sensitiveString)
+    }
+}
+
+
+public struct FfiConverterTypeSupportSensitiveString: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SupportSensitiveString {
+        return
+            try SupportSensitiveString(
+                sensitiveString: FfiConverterTypeSensitiveString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SupportSensitiveString, into buf: inout [UInt8]) {
+        FfiConverterTypeSensitiveString.write(value.sensitiveString, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSupportSensitiveString_lift(_ buf: RustBuffer) throws -> SupportSensitiveString {
+    return try FfiConverterTypeSupportSensitiveString.lift(buf)
+}
+
+public func FfiConverterTypeSupportSensitiveString_lower(_ value: SupportSensitiveString) -> RustBuffer {
+    return FfiConverterTypeSupportSensitiveString.lower(value)
+}
+
+
 public struct TrustDeviceResponse {
     /**
      * Base64 encoded device key
      */
-    public let deviceKey: String
+    public let deviceKey: SensitiveString
     /**
      * UserKey encrypted with DevicePublicKey
      */
@@ -448,7 +501,7 @@ public struct TrustDeviceResponse {
         /**
          * Base64 encoded device key
          */
-        deviceKey: String, 
+        deviceKey: SensitiveString, 
         /**
          * UserKey encrypted with DevicePublicKey
          */
@@ -499,7 +552,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceResponse {
         return
             try TrustDeviceResponse(
-                deviceKey: FfiConverterString.read(from: &buf), 
+                deviceKey: FfiConverterTypeSensitiveString.read(from: &buf), 
                 protectedUserKey: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
                 protectedDevicePrivateKey: FfiConverterTypeEncString.read(from: &buf), 
                 protectedDevicePublicKey: FfiConverterTypeEncString.read(from: &buf)
@@ -507,7 +560,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: TrustDeviceResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.deviceKey, into: &buf)
+        FfiConverterTypeSensitiveString.write(value.deviceKey, into: &buf)
         FfiConverterTypeAsymmetricEncString.write(value.protectedUserKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePrivateKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePublicKey, into: &buf)
@@ -742,6 +795,40 @@ public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU3
 
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias SensitiveString = String
+public struct FfiConverterTypeSensitiveString: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SensitiveString {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: SensitiveString, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> SensitiveString {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: SensitiveString) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+public func FfiConverterTypeSensitiveString_lift(_ value: RustBuffer) throws -> SensitiveString {
+    return try FfiConverterTypeSensitiveString.lift(value)
+}
+
+public func FfiConverterTypeSensitiveString_lower(_ value: SensitiveString) -> RustBuffer {
+    return FfiConverterTypeSensitiveString.lower(value)
 }
 
 
