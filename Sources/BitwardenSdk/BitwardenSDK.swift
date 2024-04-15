@@ -793,7 +793,7 @@ public protocol ClientAuthProtocol : AnyObject {
     /**
      * Generate keys needed for TDE process
      */
-    func makeRegisterTdeKeys(orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse
+    func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse
     
     /**
      * Initialize a new auth request
@@ -927,11 +927,12 @@ public class ClientAuth:
     /**
      * Generate keys needed for TDE process
      */
-    public func makeRegisterTdeKeys(orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse {
+    public func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool) async throws  -> RegisterTdeKeyResponse {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientauth_make_register_tde_keys(
                     self.uniffiClonePointer(),
+                    FfiConverterString.lower(email),
                     FfiConverterString.lower(orgPublicKey),
                     FfiConverterBool.lower(rememberDevice)
                 )
@@ -1144,6 +1145,11 @@ public protocol ClientCiphersProtocol : AnyObject {
      */
     func encrypt(cipherView: CipherView) async throws  -> Cipher
     
+    /**
+     * Move a cipher to an organization, reencrypting the cipher key if necessary
+     */
+    func moveToOrganization(cipher: CipherView, organizationId: Uuid) async throws  -> CipherView
+    
 }
 
 public class ClientCiphers:
@@ -1224,6 +1230,27 @@ public class ClientCiphers:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeCipher_lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+    }
+
+    
+    /**
+     * Move a cipher to an organization, reencrypting the cipher key if necessary
+     */
+    public func moveToOrganization(cipher: CipherView, organizationId: Uuid) async throws  -> CipherView {
+        return try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientciphers_move_to_organization(
+                    self.uniffiClonePointer(),
+                    FfiConverterTypeCipherView_lower(cipher),
+                    FfiConverterTypeUuid_lower(organizationId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -1419,7 +1446,7 @@ public protocol ClientCryptoProtocol : AnyObject {
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
-    func getUserEncryptionKey() async throws  -> String
+    func getUserEncryptionKey() async throws  -> SensitiveString
     
     /**
      * Initialization method for the organization crypto. Needs to be called after
@@ -1528,7 +1555,7 @@ public class ClientCrypto:
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
-    public func getUserEncryptionKey() async throws  -> String {
+    public func getUserEncryptionKey() async throws  -> SensitiveString {
         return try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientcrypto_get_user_encryption_key(
@@ -1538,7 +1565,7 @@ public class ClientCrypto:
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterString.lift,
+            liftFunc: FfiConverterTypeSensitiveString_lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
     }
@@ -3245,6 +3272,10 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -3361,7 +3392,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 41498) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_tde_keys() != 53051) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_tde_keys() != 49812) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_new_auth_request() != 22873) {
@@ -3391,6 +3422,9 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_encrypt() != 12793) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_move_to_organization() != 21012) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt() != 43923) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -3406,7 +3440,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_enroll_admin_password_reset() != 37196) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 5136) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 2002) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 35897) {
