@@ -501,6 +501,11 @@ public protocol ClientProtocol : AnyObject {
     func platform()  -> ClientPlatform
     
     /**
+     * Sends operations
+     */
+    func sends()  -> ClientSends
+    
+    /**
      * Vault item operations
      */
     func vault()  -> ClientVault
@@ -613,6 +618,16 @@ open func generators() -> ClientGenerators {
 open func platform() -> ClientPlatform {
     return try!  FfiConverterTypeClientPlatform.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_platform(self.uniffiClonePointer(),$0
+    )
+})
+}
+    
+    /**
+     * Sends operations
+     */
+open func sends() -> ClientSends {
+    return try!  FfiConverterTypeClientSends.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_sends(self.uniffiClonePointer(),$0
     )
 })
 }
@@ -3357,11 +3372,6 @@ public protocol ClientVaultProtocol : AnyObject {
      */
     func passwordHistory()  -> ClientPasswordHistory
     
-    /**
-     * Sends operations
-     */
-    func sends()  -> ClientSends
-    
 }
 
 open class ClientVault:
@@ -3476,16 +3486,6 @@ open func generateTotp(key: String, time: DateTime?)async throws  -> TotpRespons
 open func passwordHistory() -> ClientPasswordHistory {
     return try!  FfiConverterTypeClientPasswordHistory.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_clientvault_password_history(self.uniffiClonePointer(),$0
-    )
-})
-}
-    
-    /**
-     * Sends operations
-     */
-open func sends() -> ClientSends {
-    return try!  FfiConverterTypeClientSends.lift(try! rustCall() {
-    uniffi_bitwarden_uniffi_fn_method_clientvault_sends(self.uniffiClonePointer(),$0
     )
 })
 }
@@ -4877,6 +4877,9 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 32492) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 47933) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 54396) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -5061,9 +5064,6 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 59154) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_sends() != 7895) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_credentialstore_find_credentials() != 26220) {
