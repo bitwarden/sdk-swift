@@ -687,12 +687,12 @@ public struct AttachmentView {
     public let url: String?
     public let size: String?
     public let sizeName: String?
-    public let fileName: SensitiveString?
+    public let fileName: String?
     public let key: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String?, url: String?, size: String?, sizeName: String?, fileName: SensitiveString?, key: EncString?) {
+    public init(id: String?, url: String?, size: String?, sizeName: String?, fileName: String?, key: EncString?) {
         self.id = id
         self.url = url
         self.size = size
@@ -746,7 +746,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
                 url: FfiConverterOptionString.read(from: &buf), 
                 size: FfiConverterOptionString.read(from: &buf), 
                 sizeName: FfiConverterOptionString.read(from: &buf), 
-                fileName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                fileName: FfiConverterOptionString.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
@@ -756,7 +756,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.url, into: &buf)
         FfiConverterOptionString.write(value.size, into: &buf)
         FfiConverterOptionString.write(value.sizeName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.fileName, into: &buf)
+        FfiConverterOptionString.write(value.fileName, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
     }
 }
@@ -776,7 +776,7 @@ public struct AuthRequestResponse {
      * Base64 encoded private key
      * This key is temporarily passed back and will most likely not be available in the future
      */
-    public let privateKey: SensitiveString
+    public let privateKey: String
     /**
      * Base64 encoded public key
      */
@@ -796,7 +796,7 @@ public struct AuthRequestResponse {
         /**
          * Base64 encoded private key
          * This key is temporarily passed back and will most likely not be available in the future
-         */privateKey: SensitiveString, 
+         */privateKey: String, 
         /**
          * Base64 encoded public key
          */publicKey: String, 
@@ -845,7 +845,7 @@ public struct FfiConverterTypeAuthRequestResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthRequestResponse {
         return
             try AuthRequestResponse(
-                privateKey: FfiConverterTypeSensitiveString.read(from: &buf), 
+                privateKey: FfiConverterString.read(from: &buf), 
                 publicKey: FfiConverterString.read(from: &buf), 
                 fingerprint: FfiConverterString.read(from: &buf), 
                 accessCode: FfiConverterString.read(from: &buf)
@@ -853,7 +853,7 @@ public struct FfiConverterTypeAuthRequestResponse: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: AuthRequestResponse, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.privateKey, into: &buf)
         FfiConverterString.write(value.publicKey, into: &buf)
         FfiConverterString.write(value.fingerprint, into: &buf)
         FfiConverterString.write(value.accessCode, into: &buf)
@@ -1122,16 +1122,16 @@ public func FfiConverterTypeCard_lower(_ value: Card) -> RustBuffer {
 
 
 public struct CardView {
-    public let cardholderName: SensitiveString?
-    public let expMonth: SensitiveString?
-    public let expYear: SensitiveString?
-    public let code: SensitiveString?
-    public let brand: SensitiveString?
-    public let number: SensitiveString?
+    public let cardholderName: String?
+    public let expMonth: String?
+    public let expYear: String?
+    public let code: String?
+    public let brand: String?
+    public let number: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(cardholderName: SensitiveString?, expMonth: SensitiveString?, expYear: SensitiveString?, code: SensitiveString?, brand: SensitiveString?, number: SensitiveString?) {
+    public init(cardholderName: String?, expMonth: String?, expYear: String?, code: String?, brand: String?, number: String?) {
         self.cardholderName = cardholderName
         self.expMonth = expMonth
         self.expYear = expYear
@@ -1181,22 +1181,22 @@ public struct FfiConverterTypeCardView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CardView {
         return
             try CardView(
-                cardholderName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                expMonth: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                expYear: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                code: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                brand: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                number: FfiConverterOptionTypeSensitiveString.read(from: &buf)
+                cardholderName: FfiConverterOptionString.read(from: &buf), 
+                expMonth: FfiConverterOptionString.read(from: &buf), 
+                expYear: FfiConverterOptionString.read(from: &buf), 
+                code: FfiConverterOptionString.read(from: &buf), 
+                brand: FfiConverterOptionString.read(from: &buf), 
+                number: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: CardView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.cardholderName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.expMonth, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.expYear, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.code, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.brand, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.number, into: &buf)
+        FfiConverterOptionString.write(value.cardholderName, into: &buf)
+        FfiConverterOptionString.write(value.expMonth, into: &buf)
+        FfiConverterOptionString.write(value.expYear, into: &buf)
+        FfiConverterOptionString.write(value.code, into: &buf)
+        FfiConverterOptionString.write(value.brand, into: &buf)
+        FfiConverterOptionString.write(value.number, into: &buf)
     }
 }
 
@@ -1207,6 +1207,63 @@ public func FfiConverterTypeCardView_lift(_ buf: RustBuffer) throws -> CardView 
 
 public func FfiConverterTypeCardView_lower(_ value: CardView) -> RustBuffer {
     return FfiConverterTypeCardView.lower(value)
+}
+
+
+public struct CheckUserOptions {
+    public let requirePresence: Bool
+    public let requireVerification: Verification
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(requirePresence: Bool, requireVerification: Verification) {
+        self.requirePresence = requirePresence
+        self.requireVerification = requireVerification
+    }
+}
+
+
+
+extension CheckUserOptions: Equatable, Hashable {
+    public static func ==(lhs: CheckUserOptions, rhs: CheckUserOptions) -> Bool {
+        if lhs.requirePresence != rhs.requirePresence {
+            return false
+        }
+        if lhs.requireVerification != rhs.requireVerification {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(requirePresence)
+        hasher.combine(requireVerification)
+    }
+}
+
+
+public struct FfiConverterTypeCheckUserOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CheckUserOptions {
+        return
+            try CheckUserOptions(
+                requirePresence: FfiConverterBool.read(from: &buf), 
+                requireVerification: FfiConverterTypeVerification.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CheckUserOptions, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.requirePresence, into: &buf)
+        FfiConverterTypeVerification.write(value.requireVerification, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeCheckUserOptions_lift(_ buf: RustBuffer) throws -> CheckUserOptions {
+    return try FfiConverterTypeCheckUserOptions.lift(buf)
+}
+
+public func FfiConverterTypeCheckUserOptions_lower(_ value: CheckUserOptions) -> RustBuffer {
+    return FfiConverterTypeCheckUserOptions.lower(value)
 }
 
 
@@ -1456,8 +1513,8 @@ public struct CipherListView {
     public let organizationId: Uuid?
     public let folderId: Uuid?
     public let collectionIds: [Uuid]
-    public let name: SensitiveString
-    public let subTitle: SensitiveString
+    public let name: String
+    public let subTitle: String
     public let type: CipherType
     public let favorite: Bool
     public let reprompt: CipherRepromptType
@@ -1473,7 +1530,7 @@ public struct CipherListView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], name: SensitiveString, subTitle: SensitiveString, type: CipherType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
+    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], name: String, subTitle: String, type: CipherType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1575,8 +1632,8 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 organizationId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
-                subTitle: FfiConverterTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                subTitle: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeCipherType.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
@@ -1594,8 +1651,8 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.organizationId, into: &buf)
         FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.subTitle, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.subTitle, into: &buf)
         FfiConverterTypeCipherType.write(value.type, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
@@ -1624,8 +1681,8 @@ public struct CipherView {
     public let folderId: Uuid?
     public let collectionIds: [Uuid]
     public let key: EncString?
-    public let name: SensitiveString
-    public let notes: SensitiveString?
+    public let name: String
+    public let notes: String?
     public let type: CipherType
     public let login: LoginView?
     public let identity: IdentityView?
@@ -1646,7 +1703,7 @@ public struct CipherView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], key: EncString?, name: SensitiveString, notes: SensitiveString?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1791,8 +1848,8 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
-                notes: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
                 type: FfiConverterTypeCipherType.read(from: &buf), 
                 login: FfiConverterOptionTypeLoginView.read(from: &buf), 
                 identity: FfiConverterOptionTypeIdentityView.read(from: &buf), 
@@ -1819,8 +1876,8 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.notes, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.notes, into: &buf)
         FfiConverterTypeCipherType.write(value.type, into: &buf)
         FfiConverterOptionTypeLoginView.write(value.login, into: &buf)
         FfiConverterOptionTypeIdentityView.write(value.identity, into: &buf)
@@ -1848,6 +1905,55 @@ public func FfiConverterTypeCipherView_lift(_ buf: RustBuffer) throws -> CipherV
 
 public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer {
     return FfiConverterTypeCipherView.lower(value)
+}
+
+
+public struct ClientExtensionResults {
+    public let credProps: CredPropsResult?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(credProps: CredPropsResult?) {
+        self.credProps = credProps
+    }
+}
+
+
+
+extension ClientExtensionResults: Equatable, Hashable {
+    public static func ==(lhs: ClientExtensionResults, rhs: ClientExtensionResults) -> Bool {
+        if lhs.credProps != rhs.credProps {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(credProps)
+    }
+}
+
+
+public struct FfiConverterTypeClientExtensionResults: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientExtensionResults {
+        return
+            try ClientExtensionResults(
+                credProps: FfiConverterOptionTypeCredPropsResult.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ClientExtensionResults, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeCredPropsResult.write(value.credProps, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeClientExtensionResults_lift(_ buf: RustBuffer) throws -> ClientExtensionResults {
+    return try FfiConverterTypeClientExtensionResults.lift(buf)
+}
+
+public func FfiConverterTypeClientExtensionResults_lower(_ value: ClientExtensionResults) -> RustBuffer {
+    return FfiConverterTypeClientExtensionResults.lower(value)
 }
 
 
@@ -2057,14 +2163,14 @@ public func FfiConverterTypeCollection_lower(_ value: Collection) -> RustBuffer 
 public struct CollectionView {
     public let id: Uuid?
     public let organizationId: Uuid
-    public let name: SensitiveString
+    public let name: String
     public let externalId: String?
     public let hidePasswords: Bool
     public let readOnly: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: SensitiveString, externalId: String?, hidePasswords: Bool, readOnly: Bool) {
+    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -2116,7 +2222,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
             try CollectionView(
                 id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 organizationId: FfiConverterTypeUuid.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
                 readOnly: FfiConverterBool.read(from: &buf)
@@ -2126,7 +2232,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
     public static func write(_ value: CollectionView, into buf: inout [UInt8]) {
         FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterTypeUuid.write(value.organizationId, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.externalId, into: &buf)
         FfiConverterBool.write(value.hidePasswords, into: &buf)
         FfiConverterBool.write(value.readOnly, into: &buf)
@@ -2140,6 +2246,63 @@ public func FfiConverterTypeCollectionView_lift(_ buf: RustBuffer) throws -> Col
 
 public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> RustBuffer {
     return FfiConverterTypeCollectionView.lower(value)
+}
+
+
+public struct CredPropsResult {
+    public let rk: Bool?
+    public let authenticatorDisplayName: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(rk: Bool?, authenticatorDisplayName: String?) {
+        self.rk = rk
+        self.authenticatorDisplayName = authenticatorDisplayName
+    }
+}
+
+
+
+extension CredPropsResult: Equatable, Hashable {
+    public static func ==(lhs: CredPropsResult, rhs: CredPropsResult) -> Bool {
+        if lhs.rk != rhs.rk {
+            return false
+        }
+        if lhs.authenticatorDisplayName != rhs.authenticatorDisplayName {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(rk)
+        hasher.combine(authenticatorDisplayName)
+    }
+}
+
+
+public struct FfiConverterTypeCredPropsResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CredPropsResult {
+        return
+            try CredPropsResult(
+                rk: FfiConverterOptionBool.read(from: &buf), 
+                authenticatorDisplayName: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CredPropsResult, into buf: inout [UInt8]) {
+        FfiConverterOptionBool.write(value.rk, into: &buf)
+        FfiConverterOptionString.write(value.authenticatorDisplayName, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeCredPropsResult_lift(_ buf: RustBuffer) throws -> CredPropsResult {
+    return try FfiConverterTypeCredPropsResult.lift(buf)
+}
+
+public func FfiConverterTypeCredPropsResult_lower(_ value: CredPropsResult) -> RustBuffer {
+    return FfiConverterTypeCredPropsResult.lower(value)
 }
 
 
@@ -2357,24 +2520,161 @@ public func FfiConverterTypeFido2Credential_lower(_ value: Fido2Credential) -> R
 }
 
 
-public struct Fido2CredentialView {
-    public let credentialId: SensitiveString
-    public let keyType: SensitiveString
-    public let keyAlgorithm: SensitiveString
-    public let keyCurve: SensitiveString
-    public let keyValue: SensitiveString
-    public let rpId: SensitiveString
-    public let userHandle: SensitiveString?
-    public let userName: SensitiveString?
-    public let counter: SensitiveString
-    public let rpName: SensitiveString?
-    public let userDisplayName: SensitiveString?
-    public let discoverable: SensitiveString
+public struct Fido2CredentialNewView {
+    public let credentialId: String
+    public let keyType: String
+    public let keyAlgorithm: String
+    public let keyCurve: String
+    public let rpId: String
+    public let userHandle: Data?
+    public let userName: String?
+    public let counter: String
+    public let rpName: String?
+    public let userDisplayName: String?
+    public let discoverable: String
     public let creationDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: SensitiveString, keyType: SensitiveString, keyAlgorithm: SensitiveString, keyCurve: SensitiveString, keyValue: SensitiveString, rpId: SensitiveString, userHandle: SensitiveString?, userName: SensitiveString?, counter: SensitiveString, rpName: SensitiveString?, userDisplayName: SensitiveString?, discoverable: SensitiveString, creationDate: DateTime) {
+    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, rpId: String, userHandle: Data?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
+        self.credentialId = credentialId
+        self.keyType = keyType
+        self.keyAlgorithm = keyAlgorithm
+        self.keyCurve = keyCurve
+        self.rpId = rpId
+        self.userHandle = userHandle
+        self.userName = userName
+        self.counter = counter
+        self.rpName = rpName
+        self.userDisplayName = userDisplayName
+        self.discoverable = discoverable
+        self.creationDate = creationDate
+    }
+}
+
+
+
+extension Fido2CredentialNewView: Equatable, Hashable {
+    public static func ==(lhs: Fido2CredentialNewView, rhs: Fido2CredentialNewView) -> Bool {
+        if lhs.credentialId != rhs.credentialId {
+            return false
+        }
+        if lhs.keyType != rhs.keyType {
+            return false
+        }
+        if lhs.keyAlgorithm != rhs.keyAlgorithm {
+            return false
+        }
+        if lhs.keyCurve != rhs.keyCurve {
+            return false
+        }
+        if lhs.rpId != rhs.rpId {
+            return false
+        }
+        if lhs.userHandle != rhs.userHandle {
+            return false
+        }
+        if lhs.userName != rhs.userName {
+            return false
+        }
+        if lhs.counter != rhs.counter {
+            return false
+        }
+        if lhs.rpName != rhs.rpName {
+            return false
+        }
+        if lhs.userDisplayName != rhs.userDisplayName {
+            return false
+        }
+        if lhs.discoverable != rhs.discoverable {
+            return false
+        }
+        if lhs.creationDate != rhs.creationDate {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(credentialId)
+        hasher.combine(keyType)
+        hasher.combine(keyAlgorithm)
+        hasher.combine(keyCurve)
+        hasher.combine(rpId)
+        hasher.combine(userHandle)
+        hasher.combine(userName)
+        hasher.combine(counter)
+        hasher.combine(rpName)
+        hasher.combine(userDisplayName)
+        hasher.combine(discoverable)
+        hasher.combine(creationDate)
+    }
+}
+
+
+public struct FfiConverterTypeFido2CredentialNewView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2CredentialNewView {
+        return
+            try Fido2CredentialNewView(
+                credentialId: FfiConverterString.read(from: &buf), 
+                keyType: FfiConverterString.read(from: &buf), 
+                keyAlgorithm: FfiConverterString.read(from: &buf), 
+                keyCurve: FfiConverterString.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userHandle: FfiConverterOptionData.read(from: &buf), 
+                userName: FfiConverterOptionString.read(from: &buf), 
+                counter: FfiConverterString.read(from: &buf), 
+                rpName: FfiConverterOptionString.read(from: &buf), 
+                userDisplayName: FfiConverterOptionString.read(from: &buf), 
+                discoverable: FfiConverterString.read(from: &buf), 
+                creationDate: FfiConverterTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Fido2CredentialNewView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.credentialId, into: &buf)
+        FfiConverterString.write(value.keyType, into: &buf)
+        FfiConverterString.write(value.keyAlgorithm, into: &buf)
+        FfiConverterString.write(value.keyCurve, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterOptionData.write(value.userHandle, into: &buf)
+        FfiConverterOptionString.write(value.userName, into: &buf)
+        FfiConverterString.write(value.counter, into: &buf)
+        FfiConverterOptionString.write(value.rpName, into: &buf)
+        FfiConverterOptionString.write(value.userDisplayName, into: &buf)
+        FfiConverterString.write(value.discoverable, into: &buf)
+        FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeFido2CredentialNewView_lift(_ buf: RustBuffer) throws -> Fido2CredentialNewView {
+    return try FfiConverterTypeFido2CredentialNewView.lift(buf)
+}
+
+public func FfiConverterTypeFido2CredentialNewView_lower(_ value: Fido2CredentialNewView) -> RustBuffer {
+    return FfiConverterTypeFido2CredentialNewView.lower(value)
+}
+
+
+public struct Fido2CredentialView {
+    public let credentialId: String
+    public let keyType: String
+    public let keyAlgorithm: String
+    public let keyCurve: String
+    public let keyValue: EncString
+    public let rpId: String
+    public let userHandle: Data?
+    public let userName: String?
+    public let counter: String
+    public let rpName: String?
+    public let userDisplayName: String?
+    public let discoverable: String
+    public let creationDate: DateTime
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, keyValue: EncString, rpId: String, userHandle: Data?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
         self.credentialId = credentialId
         self.keyType = keyType
         self.keyAlgorithm = keyAlgorithm
@@ -2459,35 +2759,35 @@ public struct FfiConverterTypeFido2CredentialView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2CredentialView {
         return
             try Fido2CredentialView(
-                credentialId: FfiConverterTypeSensitiveString.read(from: &buf), 
-                keyType: FfiConverterTypeSensitiveString.read(from: &buf), 
-                keyAlgorithm: FfiConverterTypeSensitiveString.read(from: &buf), 
-                keyCurve: FfiConverterTypeSensitiveString.read(from: &buf), 
-                keyValue: FfiConverterTypeSensitiveString.read(from: &buf), 
-                rpId: FfiConverterTypeSensitiveString.read(from: &buf), 
-                userHandle: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                userName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                counter: FfiConverterTypeSensitiveString.read(from: &buf), 
-                rpName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                userDisplayName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                discoverable: FfiConverterTypeSensitiveString.read(from: &buf), 
+                credentialId: FfiConverterString.read(from: &buf), 
+                keyType: FfiConverterString.read(from: &buf), 
+                keyAlgorithm: FfiConverterString.read(from: &buf), 
+                keyCurve: FfiConverterString.read(from: &buf), 
+                keyValue: FfiConverterTypeEncString.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userHandle: FfiConverterOptionData.read(from: &buf), 
+                userName: FfiConverterOptionString.read(from: &buf), 
+                counter: FfiConverterString.read(from: &buf), 
+                rpName: FfiConverterOptionString.read(from: &buf), 
+                userDisplayName: FfiConverterOptionString.read(from: &buf), 
+                discoverable: FfiConverterString.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: Fido2CredentialView, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.credentialId, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.keyType, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.keyAlgorithm, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.keyCurve, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.keyValue, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.rpId, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.userHandle, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.userName, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.counter, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.rpName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.userDisplayName, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.discoverable, into: &buf)
+        FfiConverterString.write(value.credentialId, into: &buf)
+        FfiConverterString.write(value.keyType, into: &buf)
+        FfiConverterString.write(value.keyAlgorithm, into: &buf)
+        FfiConverterString.write(value.keyCurve, into: &buf)
+        FfiConverterTypeEncString.write(value.keyValue, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterOptionData.write(value.userHandle, into: &buf)
+        FfiConverterOptionString.write(value.userName, into: &buf)
+        FfiConverterString.write(value.counter, into: &buf)
+        FfiConverterOptionString.write(value.rpName, into: &buf)
+        FfiConverterOptionString.write(value.userDisplayName, into: &buf)
+        FfiConverterString.write(value.discoverable, into: &buf)
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
     }
 }
@@ -2576,14 +2876,14 @@ public func FfiConverterTypeField_lower(_ value: Field) -> RustBuffer {
 
 
 public struct FieldView {
-    public let name: SensitiveString?
-    public let value: SensitiveString?
+    public let name: String?
+    public let value: String?
     public let type: FieldType
     public let linkedId: LinkedIdType?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(name: SensitiveString?, value: SensitiveString?, type: FieldType, linkedId: LinkedIdType?) {
+    public init(name: String?, value: String?, type: FieldType, linkedId: LinkedIdType?) {
         self.name = name
         self.value = value
         self.type = type
@@ -2623,16 +2923,16 @@ public struct FfiConverterTypeFieldView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FieldView {
         return
             try FieldView(
-                name: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                value: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                value: FfiConverterOptionString.read(from: &buf), 
                 type: FfiConverterTypeFieldType.read(from: &buf), 
                 linkedId: FfiConverterOptionTypeLinkedIdType.read(from: &buf)
         )
     }
 
     public static func write(_ value: FieldView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.name, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.value, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.value, into: &buf)
         FfiConverterTypeFieldType.write(value.type, into: &buf)
         FfiConverterOptionTypeLinkedIdType.write(value.linkedId, into: &buf)
     }
@@ -2784,12 +3084,12 @@ public func FfiConverterTypeFolder_lower(_ value: Folder) -> RustBuffer {
 
 public struct FolderView {
     public let id: Uuid?
-    public let name: SensitiveString
+    public let name: String
     public let revisionDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, name: SensitiveString, revisionDate: DateTime) {
+    public init(id: Uuid?, name: String, revisionDate: DateTime) {
         self.id = id
         self.name = name
         self.revisionDate = revisionDate
@@ -2825,14 +3125,14 @@ public struct FfiConverterTypeFolderView: FfiConverterRustBuffer {
         return
             try FolderView(
                 id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: FolderView, into buf: inout [UInt8]) {
         FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
     }
 }
@@ -2852,11 +3152,11 @@ public struct GetAssertionRequest {
     public let clientDataHash: Data
     public let allowList: [PublicKeyCredentialDescriptor]?
     public let options: Options
-    public let extensions: [String: String]?
+    public let extensions: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(rpId: String, clientDataHash: Data, allowList: [PublicKeyCredentialDescriptor]?, options: Options, extensions: [String: String]?) {
+    public init(rpId: String, clientDataHash: Data, allowList: [PublicKeyCredentialDescriptor]?, options: Options, extensions: String?) {
         self.rpId = rpId
         self.clientDataHash = clientDataHash
         self.allowList = allowList
@@ -2905,7 +3205,7 @@ public struct FfiConverterTypeGetAssertionRequest: FfiConverterRustBuffer {
                 clientDataHash: FfiConverterData.read(from: &buf), 
                 allowList: FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.read(from: &buf), 
                 options: FfiConverterTypeOptions.read(from: &buf), 
-                extensions: FfiConverterOptionDictionaryStringString.read(from: &buf)
+                extensions: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -2914,7 +3214,7 @@ public struct FfiConverterTypeGetAssertionRequest: FfiConverterRustBuffer {
         FfiConverterData.write(value.clientDataHash, into: &buf)
         FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.write(value.allowList, into: &buf)
         FfiConverterTypeOptions.write(value.options, into: &buf)
-        FfiConverterOptionDictionaryStringString.write(value.extensions, into: &buf)
+        FfiConverterOptionString.write(value.extensions, into: &buf)
     }
 }
 
@@ -2933,19 +3233,11 @@ public struct GetAssertionResult {
     public let authenticatorData: Data
     public let signature: Data
     public let userHandle: Data
-    /**
-     * * SDK IMPL NOTE: This is not part of the spec and is not returned by passkey-rs.
-     *      * The SDK needs to add this after the response from passkey-rs is received.
-     */
     public let selectedCredential: SelectedCredential
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: Data, authenticatorData: Data, signature: Data, userHandle: Data, 
-        /**
-         * * SDK IMPL NOTE: This is not part of the spec and is not returned by passkey-rs.
-         *      * The SDK needs to add this after the response from passkey-rs is received.
-         */selectedCredential: SelectedCredential) {
+    public init(credentialId: Data, authenticatorData: Data, signature: Data, userHandle: Data, selectedCredential: SelectedCredential) {
         self.credentialId = credentialId
         self.authenticatorData = authenticatorData
         self.signature = signature
@@ -3203,28 +3495,28 @@ public func FfiConverterTypeIdentity_lower(_ value: Identity) -> RustBuffer {
 
 
 public struct IdentityView {
-    public let title: SensitiveString?
-    public let firstName: SensitiveString?
-    public let middleName: SensitiveString?
-    public let lastName: SensitiveString?
-    public let address1: SensitiveString?
-    public let address2: SensitiveString?
-    public let address3: SensitiveString?
-    public let city: SensitiveString?
-    public let state: SensitiveString?
-    public let postalCode: SensitiveString?
-    public let country: SensitiveString?
-    public let company: SensitiveString?
-    public let email: SensitiveString?
-    public let phone: SensitiveString?
-    public let ssn: SensitiveString?
-    public let username: SensitiveString?
-    public let passportNumber: SensitiveString?
-    public let licenseNumber: SensitiveString?
+    public let title: String?
+    public let firstName: String?
+    public let middleName: String?
+    public let lastName: String?
+    public let address1: String?
+    public let address2: String?
+    public let address3: String?
+    public let city: String?
+    public let state: String?
+    public let postalCode: String?
+    public let country: String?
+    public let company: String?
+    public let email: String?
+    public let phone: String?
+    public let ssn: String?
+    public let username: String?
+    public let passportNumber: String?
+    public let licenseNumber: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(title: SensitiveString?, firstName: SensitiveString?, middleName: SensitiveString?, lastName: SensitiveString?, address1: SensitiveString?, address2: SensitiveString?, address3: SensitiveString?, city: SensitiveString?, state: SensitiveString?, postalCode: SensitiveString?, country: SensitiveString?, company: SensitiveString?, email: SensitiveString?, phone: SensitiveString?, ssn: SensitiveString?, username: SensitiveString?, passportNumber: SensitiveString?, licenseNumber: SensitiveString?) {
+    public init(title: String?, firstName: String?, middleName: String?, lastName: String?, address1: String?, address2: String?, address3: String?, city: String?, state: String?, postalCode: String?, country: String?, company: String?, email: String?, phone: String?, ssn: String?, username: String?, passportNumber: String?, licenseNumber: String?) {
         self.title = title
         self.firstName = firstName
         self.middleName = middleName
@@ -3334,46 +3626,46 @@ public struct FfiConverterTypeIdentityView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> IdentityView {
         return
             try IdentityView(
-                title: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                firstName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                middleName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                lastName: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                address1: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                address2: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                address3: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                city: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                state: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                postalCode: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                country: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                company: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                email: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                phone: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                ssn: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                username: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                passportNumber: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                licenseNumber: FfiConverterOptionTypeSensitiveString.read(from: &buf)
+                title: FfiConverterOptionString.read(from: &buf), 
+                firstName: FfiConverterOptionString.read(from: &buf), 
+                middleName: FfiConverterOptionString.read(from: &buf), 
+                lastName: FfiConverterOptionString.read(from: &buf), 
+                address1: FfiConverterOptionString.read(from: &buf), 
+                address2: FfiConverterOptionString.read(from: &buf), 
+                address3: FfiConverterOptionString.read(from: &buf), 
+                city: FfiConverterOptionString.read(from: &buf), 
+                state: FfiConverterOptionString.read(from: &buf), 
+                postalCode: FfiConverterOptionString.read(from: &buf), 
+                country: FfiConverterOptionString.read(from: &buf), 
+                company: FfiConverterOptionString.read(from: &buf), 
+                email: FfiConverterOptionString.read(from: &buf), 
+                phone: FfiConverterOptionString.read(from: &buf), 
+                ssn: FfiConverterOptionString.read(from: &buf), 
+                username: FfiConverterOptionString.read(from: &buf), 
+                passportNumber: FfiConverterOptionString.read(from: &buf), 
+                licenseNumber: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: IdentityView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.title, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.firstName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.middleName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.lastName, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.address1, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.address2, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.address3, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.city, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.state, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.postalCode, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.country, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.company, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.email, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.phone, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.ssn, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.username, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.passportNumber, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.licenseNumber, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionString.write(value.firstName, into: &buf)
+        FfiConverterOptionString.write(value.middleName, into: &buf)
+        FfiConverterOptionString.write(value.lastName, into: &buf)
+        FfiConverterOptionString.write(value.address1, into: &buf)
+        FfiConverterOptionString.write(value.address2, into: &buf)
+        FfiConverterOptionString.write(value.address3, into: &buf)
+        FfiConverterOptionString.write(value.city, into: &buf)
+        FfiConverterOptionString.write(value.state, into: &buf)
+        FfiConverterOptionString.write(value.postalCode, into: &buf)
+        FfiConverterOptionString.write(value.country, into: &buf)
+        FfiConverterOptionString.write(value.company, into: &buf)
+        FfiConverterOptionString.write(value.email, into: &buf)
+        FfiConverterOptionString.write(value.phone, into: &buf)
+        FfiConverterOptionString.write(value.ssn, into: &buf)
+        FfiConverterOptionString.write(value.username, into: &buf)
+        FfiConverterOptionString.write(value.passportNumber, into: &buf)
+        FfiConverterOptionString.write(value.licenseNumber, into: &buf)
     }
 }
 
@@ -3816,13 +4108,13 @@ public func FfiConverterTypeLoginUri_lower(_ value: LoginUri) -> RustBuffer {
 
 
 public struct LoginUriView {
-    public let uri: SensitiveString?
+    public let uri: String?
     public let match: UriMatchType?
-    public let uriChecksum: SensitiveString?
+    public let uriChecksum: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(uri: SensitiveString?, match: UriMatchType?, uriChecksum: SensitiveString?) {
+    public init(uri: String?, match: UriMatchType?, uriChecksum: String?) {
         self.uri = uri
         self.match = match
         self.uriChecksum = uriChecksum
@@ -3857,16 +4149,16 @@ public struct FfiConverterTypeLoginUriView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoginUriView {
         return
             try LoginUriView(
-                uri: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                uri: FfiConverterOptionString.read(from: &buf), 
                 match: FfiConverterOptionTypeUriMatchType.read(from: &buf), 
-                uriChecksum: FfiConverterOptionTypeSensitiveString.read(from: &buf)
+                uriChecksum: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginUriView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.uri, into: &buf)
+        FfiConverterOptionString.write(value.uri, into: &buf)
         FfiConverterOptionTypeUriMatchType.write(value.match, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.uriChecksum, into: &buf)
+        FfiConverterOptionString.write(value.uriChecksum, into: &buf)
     }
 }
 
@@ -3881,17 +4173,17 @@ public func FfiConverterTypeLoginUriView_lower(_ value: LoginUriView) -> RustBuf
 
 
 public struct LoginView {
-    public let username: SensitiveString?
-    public let password: SensitiveString?
+    public let username: String?
+    public let password: String?
     public let passwordRevisionDate: DateTime?
     public let uris: [LoginUriView]?
-    public let totp: SensitiveString?
+    public let totp: String?
     public let autofillOnPageLoad: Bool?
-    public let fido2Credentials: [Fido2Credential]?
+    public let fido2Credentials: [Fido2CredentialView]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(username: SensitiveString?, password: SensitiveString?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: SensitiveString?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2Credential]?) {
+    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2CredentialView]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
@@ -3946,24 +4238,24 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoginView {
         return
             try LoginView(
-                username: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                password: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                username: FfiConverterOptionString.read(from: &buf), 
+                password: FfiConverterOptionString.read(from: &buf), 
                 passwordRevisionDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf), 
-                totp: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                totp: FfiConverterOptionString.read(from: &buf), 
                 autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
-                fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialView.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.username, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.password, into: &buf)
+        FfiConverterOptionString.write(value.username, into: &buf)
+        FfiConverterOptionString.write(value.password, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.passwordRevisionDate, into: &buf)
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.totp, into: &buf)
+        FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
-        FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
+        FfiConverterOptionSequenceTypeFido2CredentialView.write(value.fido2Credentials, into: &buf)
     }
 }
 
@@ -3983,18 +4275,18 @@ public struct MakeCredentialRequest {
     public let user: PublicKeyCredentialUserEntity
     public let pubKeyCredParams: [PublicKeyCredentialParameters]
     public let excludeList: [PublicKeyCredentialDescriptor]?
-    public let requireResidentKey: Bool
-    public let extensions: [String: String]?
+    public let options: Options
+    public let extensions: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(clientDataHash: Data, rp: PublicKeyCredentialRpEntity, user: PublicKeyCredentialUserEntity, pubKeyCredParams: [PublicKeyCredentialParameters], excludeList: [PublicKeyCredentialDescriptor]?, requireResidentKey: Bool, extensions: [String: String]?) {
+    public init(clientDataHash: Data, rp: PublicKeyCredentialRpEntity, user: PublicKeyCredentialUserEntity, pubKeyCredParams: [PublicKeyCredentialParameters], excludeList: [PublicKeyCredentialDescriptor]?, options: Options, extensions: String?) {
         self.clientDataHash = clientDataHash
         self.rp = rp
         self.user = user
         self.pubKeyCredParams = pubKeyCredParams
         self.excludeList = excludeList
-        self.requireResidentKey = requireResidentKey
+        self.options = options
         self.extensions = extensions
     }
 }
@@ -4018,7 +4310,7 @@ extension MakeCredentialRequest: Equatable, Hashable {
         if lhs.excludeList != rhs.excludeList {
             return false
         }
-        if lhs.requireResidentKey != rhs.requireResidentKey {
+        if lhs.options != rhs.options {
             return false
         }
         if lhs.extensions != rhs.extensions {
@@ -4033,7 +4325,7 @@ extension MakeCredentialRequest: Equatable, Hashable {
         hasher.combine(user)
         hasher.combine(pubKeyCredParams)
         hasher.combine(excludeList)
-        hasher.combine(requireResidentKey)
+        hasher.combine(options)
         hasher.combine(extensions)
     }
 }
@@ -4048,8 +4340,8 @@ public struct FfiConverterTypeMakeCredentialRequest: FfiConverterRustBuffer {
                 user: FfiConverterTypePublicKeyCredentialUserEntity.read(from: &buf), 
                 pubKeyCredParams: FfiConverterSequenceTypePublicKeyCredentialParameters.read(from: &buf), 
                 excludeList: FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.read(from: &buf), 
-                requireResidentKey: FfiConverterBool.read(from: &buf), 
-                extensions: FfiConverterOptionDictionaryStringString.read(from: &buf)
+                options: FfiConverterTypeOptions.read(from: &buf), 
+                extensions: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -4059,8 +4351,8 @@ public struct FfiConverterTypeMakeCredentialRequest: FfiConverterRustBuffer {
         FfiConverterTypePublicKeyCredentialUserEntity.write(value.user, into: &buf)
         FfiConverterSequenceTypePublicKeyCredentialParameters.write(value.pubKeyCredParams, into: &buf)
         FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.write(value.excludeList, into: &buf)
-        FfiConverterBool.write(value.requireResidentKey, into: &buf)
-        FfiConverterOptionDictionaryStringString.write(value.extensions, into: &buf)
+        FfiConverterTypeOptions.write(value.options, into: &buf)
+        FfiConverterOptionString.write(value.extensions, into: &buf)
     }
 }
 
@@ -4075,11 +4367,15 @@ public func FfiConverterTypeMakeCredentialRequest_lower(_ value: MakeCredentialR
 
 
 public struct MakeCredentialResult {
+    public let authenticatorData: Data
+    public let attestedCredentialData: Data
     public let credentialId: Data
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: Data) {
+    public init(authenticatorData: Data, attestedCredentialData: Data, credentialId: Data) {
+        self.authenticatorData = authenticatorData
+        self.attestedCredentialData = attestedCredentialData
         self.credentialId = credentialId
     }
 }
@@ -4088,6 +4384,12 @@ public struct MakeCredentialResult {
 
 extension MakeCredentialResult: Equatable, Hashable {
     public static func ==(lhs: MakeCredentialResult, rhs: MakeCredentialResult) -> Bool {
+        if lhs.authenticatorData != rhs.authenticatorData {
+            return false
+        }
+        if lhs.attestedCredentialData != rhs.attestedCredentialData {
+            return false
+        }
         if lhs.credentialId != rhs.credentialId {
             return false
         }
@@ -4095,6 +4397,8 @@ extension MakeCredentialResult: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
+        hasher.combine(authenticatorData)
+        hasher.combine(attestedCredentialData)
         hasher.combine(credentialId)
     }
 }
@@ -4104,11 +4408,15 @@ public struct FfiConverterTypeMakeCredentialResult: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialResult {
         return
             try MakeCredentialResult(
+                authenticatorData: FfiConverterData.read(from: &buf), 
+                attestedCredentialData: FfiConverterData.read(from: &buf), 
                 credentialId: FfiConverterData.read(from: &buf)
         )
     }
 
     public static func write(_ value: MakeCredentialResult, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.authenticatorData, into: &buf)
+        FfiConverterData.write(value.attestedCredentialData, into: &buf)
         FfiConverterData.write(value.credentialId, into: &buf)
     }
 }
@@ -4345,12 +4653,12 @@ public func FfiConverterTypePasswordHistory_lower(_ value: PasswordHistory) -> R
 
 
 public struct PasswordHistoryView {
-    public let password: SensitiveString
+    public let password: String
     public let lastUsedDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(password: SensitiveString, lastUsedDate: DateTime) {
+    public init(password: String, lastUsedDate: DateTime) {
         self.password = password
         self.lastUsedDate = lastUsedDate
     }
@@ -4380,13 +4688,13 @@ public struct FfiConverterTypePasswordHistoryView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordHistoryView {
         return
             try PasswordHistoryView(
-                password: FfiConverterTypeSensitiveString.read(from: &buf), 
+                password: FfiConverterString.read(from: &buf), 
                 lastUsedDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: PasswordHistoryView, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.password, into: &buf)
+        FfiConverterString.write(value.password, into: &buf)
         FfiConverterTypeDateTime.write(value.lastUsedDate, into: &buf)
     }
 }
@@ -4405,14 +4713,14 @@ public struct PublicKeyCredentialAuthenticatorAssertionResponse {
     public let id: String
     public let rawId: Data
     public let ty: String
-    public let authenticatorAttachment: String
-    public let clientExtensionResults: [String: Bool]
+    public let authenticatorAttachment: String?
+    public let clientExtensionResults: ClientExtensionResults
     public let response: AuthenticatorAssertionResponse
     public let selectedCredential: SelectedCredential
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, rawId: Data, ty: String, authenticatorAttachment: String, clientExtensionResults: [String: Bool], response: AuthenticatorAssertionResponse, selectedCredential: SelectedCredential) {
+    public init(id: String, rawId: Data, ty: String, authenticatorAttachment: String?, clientExtensionResults: ClientExtensionResults, response: AuthenticatorAssertionResponse, selectedCredential: SelectedCredential) {
         self.id = id
         self.rawId = rawId
         self.ty = ty
@@ -4470,8 +4778,8 @@ public struct FfiConverterTypePublicKeyCredentialAuthenticatorAssertionResponse:
                 id: FfiConverterString.read(from: &buf), 
                 rawId: FfiConverterData.read(from: &buf), 
                 ty: FfiConverterString.read(from: &buf), 
-                authenticatorAttachment: FfiConverterString.read(from: &buf), 
-                clientExtensionResults: FfiConverterDictionaryStringBool.read(from: &buf), 
+                authenticatorAttachment: FfiConverterOptionString.read(from: &buf), 
+                clientExtensionResults: FfiConverterTypeClientExtensionResults.read(from: &buf), 
                 response: FfiConverterTypeAuthenticatorAssertionResponse.read(from: &buf), 
                 selectedCredential: FfiConverterTypeSelectedCredential.read(from: &buf)
         )
@@ -4481,8 +4789,8 @@ public struct FfiConverterTypePublicKeyCredentialAuthenticatorAssertionResponse:
         FfiConverterString.write(value.id, into: &buf)
         FfiConverterData.write(value.rawId, into: &buf)
         FfiConverterString.write(value.ty, into: &buf)
-        FfiConverterString.write(value.authenticatorAttachment, into: &buf)
-        FfiConverterDictionaryStringBool.write(value.clientExtensionResults, into: &buf)
+        FfiConverterOptionString.write(value.authenticatorAttachment, into: &buf)
+        FfiConverterTypeClientExtensionResults.write(value.clientExtensionResults, into: &buf)
         FfiConverterTypeAuthenticatorAssertionResponse.write(value.response, into: &buf)
         FfiConverterTypeSelectedCredential.write(value.selectedCredential, into: &buf)
     }
@@ -4502,14 +4810,14 @@ public struct PublicKeyCredentialAuthenticatorAttestationResponse {
     public let id: String
     public let rawId: Data
     public let ty: String
-    public let authenticatorAttachment: String
-    public let clientExtensionResults: [String: Bool]
+    public let authenticatorAttachment: String?
+    public let clientExtensionResults: ClientExtensionResults
     public let response: AuthenticatorAttestationResponse
     public let selectedCredential: SelectedCredential
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, rawId: Data, ty: String, authenticatorAttachment: String, clientExtensionResults: [String: Bool], response: AuthenticatorAttestationResponse, selectedCredential: SelectedCredential) {
+    public init(id: String, rawId: Data, ty: String, authenticatorAttachment: String?, clientExtensionResults: ClientExtensionResults, response: AuthenticatorAttestationResponse, selectedCredential: SelectedCredential) {
         self.id = id
         self.rawId = rawId
         self.ty = ty
@@ -4567,8 +4875,8 @@ public struct FfiConverterTypePublicKeyCredentialAuthenticatorAttestationRespons
                 id: FfiConverterString.read(from: &buf), 
                 rawId: FfiConverterData.read(from: &buf), 
                 ty: FfiConverterString.read(from: &buf), 
-                authenticatorAttachment: FfiConverterString.read(from: &buf), 
-                clientExtensionResults: FfiConverterDictionaryStringBool.read(from: &buf), 
+                authenticatorAttachment: FfiConverterOptionString.read(from: &buf), 
+                clientExtensionResults: FfiConverterTypeClientExtensionResults.read(from: &buf), 
                 response: FfiConverterTypeAuthenticatorAttestationResponse.read(from: &buf), 
                 selectedCredential: FfiConverterTypeSelectedCredential.read(from: &buf)
         )
@@ -4578,8 +4886,8 @@ public struct FfiConverterTypePublicKeyCredentialAuthenticatorAttestationRespons
         FfiConverterString.write(value.id, into: &buf)
         FfiConverterData.write(value.rawId, into: &buf)
         FfiConverterString.write(value.ty, into: &buf)
-        FfiConverterString.write(value.authenticatorAttachment, into: &buf)
-        FfiConverterDictionaryStringBool.write(value.clientExtensionResults, into: &buf)
+        FfiConverterOptionString.write(value.authenticatorAttachment, into: &buf)
+        FfiConverterTypeClientExtensionResults.write(value.clientExtensionResults, into: &buf)
         FfiConverterTypeAuthenticatorAttestationResponse.write(value.response, into: &buf)
         FfiConverterTypeSelectedCredential.write(value.selectedCredential, into: &buf)
     }
@@ -4596,14 +4904,16 @@ public func FfiConverterTypePublicKeyCredentialAuthenticatorAttestationResponse_
 
 
 public struct PublicKeyCredentialDescriptor {
-    public let ty: Int64
+    public let ty: String
     public let id: Data
+    public let transports: [String]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(ty: Int64, id: Data) {
+    public init(ty: String, id: Data, transports: [String]?) {
         self.ty = ty
         self.id = id
+        self.transports = transports
     }
 }
 
@@ -4617,12 +4927,16 @@ extension PublicKeyCredentialDescriptor: Equatable, Hashable {
         if lhs.id != rhs.id {
             return false
         }
+        if lhs.transports != rhs.transports {
+            return false
+        }
         return true
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ty)
         hasher.combine(id)
+        hasher.combine(transports)
     }
 }
 
@@ -4631,14 +4945,16 @@ public struct FfiConverterTypePublicKeyCredentialDescriptor: FfiConverterRustBuf
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PublicKeyCredentialDescriptor {
         return
             try PublicKeyCredentialDescriptor(
-                ty: FfiConverterInt64.read(from: &buf), 
-                id: FfiConverterData.read(from: &buf)
+                ty: FfiConverterString.read(from: &buf), 
+                id: FfiConverterData.read(from: &buf), 
+                transports: FfiConverterOptionSequenceString.read(from: &buf)
         )
     }
 
     public static func write(_ value: PublicKeyCredentialDescriptor, into buf: inout [UInt8]) {
-        FfiConverterInt64.write(value.ty, into: &buf)
+        FfiConverterString.write(value.ty, into: &buf)
         FfiConverterData.write(value.id, into: &buf)
+        FfiConverterOptionSequenceString.write(value.transports, into: &buf)
     }
 }
 
@@ -4832,13 +5148,13 @@ public func FfiConverterTypePublicKeyCredentialUserEntity_lower(_ value: PublicK
 
 
 public struct RegisterKeyResponse {
-    public let masterPasswordHash: SensitiveString
+    public let masterPasswordHash: String
     public let encryptedUserKey: String
     public let keys: RsaKeyPair
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(masterPasswordHash: SensitiveString, encryptedUserKey: String, keys: RsaKeyPair) {
+    public init(masterPasswordHash: String, encryptedUserKey: String, keys: RsaKeyPair) {
         self.masterPasswordHash = masterPasswordHash
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
@@ -4873,14 +5189,14 @@ public struct FfiConverterTypeRegisterKeyResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterKeyResponse {
         return
             try RegisterKeyResponse(
-                masterPasswordHash: FfiConverterTypeSensitiveString.read(from: &buf), 
+                masterPasswordHash: FfiConverterString.read(from: &buf), 
                 encryptedUserKey: FfiConverterString.read(from: &buf), 
                 keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
         )
     }
 
     public static func write(_ value: RegisterKeyResponse, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.masterPasswordHash, into: &buf)
+        FfiConverterString.write(value.masterPasswordHash, into: &buf)
         FfiConverterString.write(value.encryptedUserKey, into: &buf)
         FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
     }
@@ -5069,11 +5385,11 @@ public func FfiConverterTypeSecureNoteView_lower(_ value: SecureNoteView) -> Rus
 
 public struct SelectedCredential {
     public let cipher: CipherView
-    public let credential: Fido2Credential
+    public let credential: Fido2CredentialView
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(cipher: CipherView, credential: Fido2Credential) {
+    public init(cipher: CipherView, credential: Fido2CredentialView) {
         self.cipher = cipher
         self.credential = credential
     }
@@ -5104,13 +5420,13 @@ public struct FfiConverterTypeSelectedCredential: FfiConverterRustBuffer {
         return
             try SelectedCredential(
                 cipher: FfiConverterTypeCipherView.read(from: &buf), 
-                credential: FfiConverterTypeFido2Credential.read(from: &buf)
+                credential: FfiConverterTypeFido2CredentialView.read(from: &buf)
         )
     }
 
     public static func write(_ value: SelectedCredential, into buf: inout [UInt8]) {
         FfiConverterTypeCipherView.write(value.cipher, into: &buf)
-        FfiConverterTypeFido2Credential.write(value.credential, into: &buf)
+        FfiConverterTypeFido2CredentialView.write(value.credential, into: &buf)
     }
 }
 
@@ -5130,7 +5446,7 @@ public struct Send {
     public let name: EncString
     public let notes: EncString?
     public let key: EncString
-    public let password: SensitiveString?
+    public let password: String?
     public let type: SendType
     public let file: SendFile?
     public let text: SendText?
@@ -5144,7 +5460,7 @@ public struct Send {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: SensitiveString?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
+    public init(id: Uuid?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: String?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -5249,7 +5565,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 notes: FfiConverterOptionTypeEncString.read(from: &buf), 
                 key: FfiConverterTypeEncString.read(from: &buf), 
-                password: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                password: FfiConverterOptionString.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
                 file: FfiConverterOptionTypeSendFile.read(from: &buf), 
                 text: FfiConverterOptionTypeSendText.read(from: &buf), 
@@ -5269,7 +5585,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionTypeEncString.write(value.notes, into: &buf)
         FfiConverterTypeEncString.write(value.key, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.password, into: &buf)
+        FfiConverterOptionString.write(value.password, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
         FfiConverterOptionTypeSendFile.write(value.file, into: &buf)
         FfiConverterOptionTypeSendText.write(value.text, into: &buf)
@@ -5374,7 +5690,7 @@ public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
 
 public struct SendFileView {
     public let id: String?
-    public let fileName: SensitiveString
+    public let fileName: String
     public let size: String?
     /**
      * Readable size, ex: "4.2 KB" or "1.43 GB"
@@ -5383,7 +5699,7 @@ public struct SendFileView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String?, fileName: SensitiveString, size: String?, 
+    public init(id: String?, fileName: String, size: String?, 
         /**
          * Readable size, ex: "4.2 KB" or "1.43 GB"
          */sizeName: String?) {
@@ -5427,7 +5743,7 @@ public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
         return
             try SendFileView(
                 id: FfiConverterOptionString.read(from: &buf), 
-                fileName: FfiConverterTypeSensitiveString.read(from: &buf), 
+                fileName: FfiConverterString.read(from: &buf), 
                 size: FfiConverterOptionString.read(from: &buf), 
                 sizeName: FfiConverterOptionString.read(from: &buf)
         )
@@ -5435,7 +5751,7 @@ public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
 
     public static func write(_ value: SendFileView, into buf: inout [UInt8]) {
         FfiConverterOptionString.write(value.id, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.fileName, into: &buf)
+        FfiConverterString.write(value.fileName, into: &buf)
         FfiConverterOptionString.write(value.size, into: &buf)
         FfiConverterOptionString.write(value.sizeName, into: &buf)
     }
@@ -5454,7 +5770,7 @@ public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuf
 public struct SendListView {
     public let id: Uuid?
     public let accessId: String?
-    public let name: SensitiveString
+    public let name: String
     public let type: SendType
     public let disabled: Bool
     public let revisionDate: DateTime
@@ -5463,7 +5779,7 @@ public struct SendListView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: SensitiveString, type: SendType, disabled: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
+    public init(id: Uuid?, accessId: String?, name: String, type: SendType, disabled: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -5525,7 +5841,7 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
             try SendListView(
                 id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 accessId: FfiConverterOptionString.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
                 disabled: FfiConverterBool.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
@@ -5537,7 +5853,7 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     public static func write(_ value: SendListView, into buf: inout [UInt8]) {
         FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterOptionString.write(value.accessId, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
         FfiConverterBool.write(value.disabled, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
@@ -5614,12 +5930,12 @@ public func FfiConverterTypeSendText_lower(_ value: SendText) -> RustBuffer {
 
 
 public struct SendTextView {
-    public let text: SensitiveString?
+    public let text: String?
     public let hidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(text: SensitiveString?, hidden: Bool) {
+    public init(text: String?, hidden: Bool) {
         self.text = text
         self.hidden = hidden
     }
@@ -5649,13 +5965,13 @@ public struct FfiConverterTypeSendTextView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendTextView {
         return
             try SendTextView(
-                text: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                text: FfiConverterOptionString.read(from: &buf), 
                 hidden: FfiConverterBool.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendTextView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeSensitiveString.write(value.text, into: &buf)
+        FfiConverterOptionString.write(value.text, into: &buf)
         FfiConverterBool.write(value.hidden, into: &buf)
     }
 }
@@ -5673,12 +5989,12 @@ public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuf
 public struct SendView {
     public let id: Uuid?
     public let accessId: String?
-    public let name: SensitiveString
-    public let notes: SensitiveString?
+    public let name: String
+    public let notes: String?
     /**
      * Base64 encoded key
      */
-    public let key: SensitiveString?
+    public let key: String?
     /**
      * Replace or add a password to an existing send. The SDK will always return None when
      * decrypting a [Send]
@@ -5703,10 +6019,10 @@ public struct SendView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: SensitiveString, notes: SensitiveString?, 
+    public init(id: Uuid?, accessId: String?, name: String, notes: String?, 
         /**
          * Base64 encoded key
-         */key: SensitiveString?, 
+         */key: String?, 
         /**
          * Replace or add a password to an existing send. The SDK will always return None when
          * decrypting a [Send]
@@ -5822,9 +6138,9 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
             try SendView(
                 id: FfiConverterOptionTypeUuid.read(from: &buf), 
                 accessId: FfiConverterOptionString.read(from: &buf), 
-                name: FfiConverterTypeSensitiveString.read(from: &buf), 
-                notes: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
-                key: FfiConverterOptionTypeSensitiveString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
+                key: FfiConverterOptionString.read(from: &buf), 
                 newPassword: FfiConverterOptionString.read(from: &buf), 
                 hasPassword: FfiConverterBool.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
@@ -5843,9 +6159,9 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     public static func write(_ value: SendView, into buf: inout [UInt8]) {
         FfiConverterOptionTypeUuid.write(value.id, into: &buf)
         FfiConverterOptionString.write(value.accessId, into: &buf)
-        FfiConverterTypeSensitiveString.write(value.name, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.notes, into: &buf)
-        FfiConverterOptionTypeSensitiveString.write(value.key, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.notes, into: &buf)
+        FfiConverterOptionString.write(value.key, into: &buf)
         FfiConverterOptionString.write(value.newPassword, into: &buf)
         FfiConverterBool.write(value.hasPassword, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
@@ -5944,7 +6260,7 @@ public struct UpdatePasswordResponse {
     /**
      * Hash of the new password
      */
-    public let passwordHash: SensitiveString
+    public let passwordHash: String
     /**
      * User key, encrypted with the new password
      */
@@ -5955,7 +6271,7 @@ public struct UpdatePasswordResponse {
     public init(
         /**
          * Hash of the new password
-         */passwordHash: SensitiveString, 
+         */passwordHash: String, 
         /**
          * User key, encrypted with the new password
          */newKey: EncString) {
@@ -5988,13 +6304,13 @@ public struct FfiConverterTypeUpdatePasswordResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UpdatePasswordResponse {
         return
             try UpdatePasswordResponse(
-                passwordHash: FfiConverterTypeSensitiveString.read(from: &buf), 
+                passwordHash: FfiConverterString.read(from: &buf), 
                 newKey: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: UpdatePasswordResponse, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.passwordHash, into: &buf)
+        FfiConverterString.write(value.passwordHash, into: &buf)
         FfiConverterTypeEncString.write(value.newKey, into: &buf)
     }
 }
@@ -6076,67 +6392,6 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 
 
 extension AuthRequestMethod: Equatable, Hashable {}
-
-
-
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-
-public enum CheckUserOptions {
-    
-    case requirePresence(Bool
-    )
-    case requireVerification(Verification
-    )
-}
-
-
-public struct FfiConverterTypeCheckUserOptions: FfiConverterRustBuffer {
-    typealias SwiftType = CheckUserOptions
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CheckUserOptions {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-        
-        case 1: return .requirePresence(try FfiConverterBool.read(from: &buf)
-        )
-        
-        case 2: return .requireVerification(try FfiConverterTypeVerification.read(from: &buf)
-        )
-        
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: CheckUserOptions, into buf: inout [UInt8]) {
-        switch value {
-        
-        
-        case let .requirePresence(v1):
-            writeInt(&buf, Int32(1))
-            FfiConverterBool.write(v1, into: &buf)
-            
-        
-        case let .requireVerification(v1):
-            writeInt(&buf, Int32(2))
-            FfiConverterTypeVerification.write(v1, into: &buf)
-            
-        }
-    }
-}
-
-
-public func FfiConverterTypeCheckUserOptions_lift(_ buf: RustBuffer) throws -> CheckUserOptions {
-    return try FfiConverterTypeCheckUserOptions.lift(buf)
-}
-
-public func FfiConverterTypeCheckUserOptions_lower(_ value: CheckUserOptions) -> RustBuffer {
-    return FfiConverterTypeCheckUserOptions.lower(value)
-}
-
-
-
-extension CheckUserOptions: Equatable, Hashable {}
 
 
 
@@ -6527,7 +6782,7 @@ public enum ExportFormat {
     
     case csv
     case json
-    case encryptedJson(password: SensitiveString
+    case encryptedJson(password: String
     )
 }
 
@@ -6543,7 +6798,7 @@ public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
         
         case 2: return .json
         
-        case 3: return .encryptedJson(password: try FfiConverterTypeSensitiveString.read(from: &buf)
+        case 3: return .encryptedJson(password: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -6564,7 +6819,7 @@ public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
         
         case let .encryptedJson(password):
             writeInt(&buf, Int32(3))
-            FfiConverterTypeSensitiveString.write(password, into: &buf)
+            FfiConverterString.write(password, into: &buf)
             
         }
     }
@@ -6662,7 +6917,7 @@ public enum InitUserCryptoMethod {
     case password(
         /**
          * The user's master password
-         */password: SensitiveString, 
+         */password: String, 
         /**
          * The user's encrypted symmetric crypto key
          */userKey: String
@@ -6670,12 +6925,12 @@ public enum InitUserCryptoMethod {
     case decryptedKey(
         /**
          * The user's decrypted encryption key, obtained using `get_user_encryption_key`
-         */decryptedUserKey: SensitiveString
+         */decryptedUserKey: String
     )
     case pin(
         /**
          * The user's PIN
-         */pin: SensitiveString, 
+         */pin: String, 
         /**
          * The user's symmetric crypto key, encrypted with the PIN. Use `derive_pin_key` to obtain
          * this.
@@ -6684,12 +6939,12 @@ public enum InitUserCryptoMethod {
     case authRequest(
         /**
          * Private Key generated by the `crate::auth::new_auth_request`.
-         */requestPrivateKey: SensitiveString, method: AuthRequestMethod
+         */requestPrivateKey: String, method: AuthRequestMethod
     )
     case deviceKey(
         /**
          * The device's DeviceKey
-         */deviceKey: SensitiveString, 
+         */deviceKey: String, 
         /**
          * The Device Private Key
          */protectedDevicePrivateKey: EncString, 
@@ -6707,19 +6962,19 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .password(password: try FfiConverterTypeSensitiveString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
+        case 1: return .password(password: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .decryptedKey(decryptedUserKey: try FfiConverterTypeSensitiveString.read(from: &buf)
+        case 2: return .decryptedKey(decryptedUserKey: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .pin(pin: try FfiConverterTypeSensitiveString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 4: return .authRequest(requestPrivateKey: try FfiConverterTypeSensitiveString.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        case 4: return .authRequest(requestPrivateKey: try FfiConverterString.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
-        case 5: return .deviceKey(deviceKey: try FfiConverterTypeSensitiveString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -6732,30 +6987,30 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         
         case let .password(password,userKey):
             writeInt(&buf, Int32(1))
-            FfiConverterTypeSensitiveString.write(password, into: &buf)
+            FfiConverterString.write(password, into: &buf)
             FfiConverterString.write(userKey, into: &buf)
             
         
         case let .decryptedKey(decryptedUserKey):
             writeInt(&buf, Int32(2))
-            FfiConverterTypeSensitiveString.write(decryptedUserKey, into: &buf)
+            FfiConverterString.write(decryptedUserKey, into: &buf)
             
         
         case let .pin(pin,pinProtectedUserKey):
             writeInt(&buf, Int32(3))
-            FfiConverterTypeSensitiveString.write(pin, into: &buf)
+            FfiConverterString.write(pin, into: &buf)
             FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
             
         
         case let .authRequest(requestPrivateKey,method):
             writeInt(&buf, Int32(4))
-            FfiConverterTypeSensitiveString.write(requestPrivateKey, into: &buf)
+            FfiConverterString.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
             
         
         case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
             writeInt(&buf, Int32(5))
-            FfiConverterTypeSensitiveString.write(deviceKey, into: &buf)
+            FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
             FfiConverterTypeAsymmetricEncString.write(deviceProtectedUserKey, into: &buf)
             
@@ -7214,6 +7469,27 @@ fileprivate struct FfiConverterOptionTypeCardView: FfiConverterRustBuffer {
     }
 }
 
+fileprivate struct FfiConverterOptionTypeCredPropsResult: FfiConverterRustBuffer {
+    typealias SwiftType = CredPropsResult?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCredPropsResult.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCredPropsResult.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 fileprivate struct FfiConverterOptionTypeIdentity: FfiConverterRustBuffer {
     typealias SwiftType = Identity?
 
@@ -7571,6 +7847,27 @@ fileprivate struct FfiConverterOptionSequenceTypeFido2Credential: FfiConverterRu
     }
 }
 
+fileprivate struct FfiConverterOptionSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialView]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeFido2CredentialView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeFido2CredentialView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 fileprivate struct FfiConverterOptionSequenceTypeField: FfiConverterRustBuffer {
     typealias SwiftType = [Field]?
 
@@ -7718,27 +8015,6 @@ fileprivate struct FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor: 
     }
 }
 
-fileprivate struct FfiConverterOptionDictionaryStringString: FfiConverterRustBuffer {
-    typealias SwiftType = [String: String]?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterDictionaryStringString.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterDictionaryStringString.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
 fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     typealias SwiftType = EncString?
 
@@ -7755,27 +8031,6 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-fileprivate struct FfiConverterOptionTypeSensitiveString: FfiConverterRustBuffer {
-    typealias SwiftType = SensitiveString?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeSensitiveString.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeSensitiveString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -7948,6 +8203,28 @@ fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuff
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2Credential.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+fileprivate struct FfiConverterSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialView]
+
+    public static func write(_ value: [Fido2CredentialView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFido2CredentialView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Fido2CredentialView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFido2CredentialView.read(from: &buf))
         }
         return seq
     }
@@ -8151,52 +8428,6 @@ fileprivate struct FfiConverterSequenceTypeUuid: FfiConverterRustBuffer {
     }
 }
 
-fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
-    public static func write(_ value: [String: Bool], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for (key, value) in value {
-            FfiConverterString.write(key, into: &buf)
-            FfiConverterBool.write(value, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: Bool] {
-        let len: Int32 = try readInt(&buf)
-        var dict = [String: Bool]()
-        dict.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            let key = try FfiConverterString.read(from: &buf)
-            let value = try FfiConverterBool.read(from: &buf)
-            dict[key] = value
-        }
-        return dict
-    }
-}
-
-fileprivate struct FfiConverterDictionaryStringString: FfiConverterRustBuffer {
-    public static func write(_ value: [String: String], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for (key, value) in value {
-            FfiConverterString.write(key, into: &buf)
-            FfiConverterString.write(value, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: String] {
-        let len: Int32 = try readInt(&buf)
-        var dict = [String: String]()
-        dict.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            let key = try FfiConverterString.read(from: &buf)
-            let value = try FfiConverterString.read(from: &buf)
-            dict[key] = value
-        }
-        return dict
-    }
-}
-
 fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiConverterRustBuffer {
     public static func write(_ value: [Uuid: AsymmetricEncString], into buf: inout [UInt8]) {
         let len = Int32(value.count)
@@ -8219,8 +8450,6 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiCon
         return dict
     }
 }
-
-
 
 
 
