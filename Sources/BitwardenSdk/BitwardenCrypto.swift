@@ -511,7 +511,7 @@ public struct TrustDeviceResponse {
     /**
      * Base64 encoded device key
      */
-    public let deviceKey: SensitiveString
+    public let deviceKey: String
     /**
      * UserKey encrypted with DevicePublicKey
      */
@@ -530,7 +530,7 @@ public struct TrustDeviceResponse {
     public init(
         /**
          * Base64 encoded device key
-         */deviceKey: SensitiveString, 
+         */deviceKey: String, 
         /**
          * UserKey encrypted with DevicePublicKey
          */protectedUserKey: AsymmetricEncString, 
@@ -579,7 +579,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceResponse {
         return
             try TrustDeviceResponse(
-                deviceKey: FfiConverterTypeSensitiveString.read(from: &buf), 
+                deviceKey: FfiConverterString.read(from: &buf), 
                 protectedUserKey: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
                 protectedDevicePrivateKey: FfiConverterTypeEncString.read(from: &buf), 
                 protectedDevicePublicKey: FfiConverterTypeEncString.read(from: &buf)
@@ -587,7 +587,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: TrustDeviceResponse, into buf: inout [UInt8]) {
-        FfiConverterTypeSensitiveString.write(value.deviceKey, into: &buf)
+        FfiConverterString.write(value.deviceKey, into: &buf)
         FfiConverterTypeAsymmetricEncString.write(value.protectedUserKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePrivateKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePublicKey, into: &buf)
@@ -826,40 +826,6 @@ public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU3
 
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
-}
-
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
-public typealias SensitiveString = String
-public struct FfiConverterTypeSensitiveString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SensitiveString {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: SensitiveString, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> SensitiveString {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: SensitiveString) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-public func FfiConverterTypeSensitiveString_lift(_ value: RustBuffer) throws -> SensitiveString {
-    return try FfiConverterTypeSensitiveString.lift(value)
-}
-
-public func FfiConverterTypeSensitiveString_lower(_ value: SensitiveString) -> RustBuffer {
-    return FfiConverterTypeSensitiveString.lower(value)
 }
 
 
