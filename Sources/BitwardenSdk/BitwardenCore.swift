@@ -4179,11 +4179,11 @@ public struct LoginView {
     public let uris: [LoginUriView]?
     public let totp: String?
     public let autofillOnPageLoad: Bool?
-    public let fido2Credentials: [Fido2CredentialView]?
+    public let fido2Credentials: [Fido2Credential]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2CredentialView]?) {
+    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2Credential]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
@@ -4244,7 +4244,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf), 
                 totp: FfiConverterOptionString.read(from: &buf), 
                 autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
-                fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialView.read(from: &buf)
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
         )
     }
 
@@ -4255,7 +4255,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
         FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
-        FfiConverterOptionSequenceTypeFido2CredentialView.write(value.fido2Credentials, into: &buf)
+        FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
     }
 }
 
@@ -7847,27 +7847,6 @@ fileprivate struct FfiConverterOptionSequenceTypeFido2Credential: FfiConverterRu
     }
 }
 
-fileprivate struct FfiConverterOptionSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
-    typealias SwiftType = [Fido2CredentialView]?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterSequenceTypeFido2CredentialView.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterSequenceTypeFido2CredentialView.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
 fileprivate struct FfiConverterOptionSequenceTypeField: FfiConverterRustBuffer {
     typealias SwiftType = [Field]?
 
@@ -8203,28 +8182,6 @@ fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuff
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2Credential.read(from: &buf))
-        }
-        return seq
-    }
-}
-
-fileprivate struct FfiConverterSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
-    typealias SwiftType = [Fido2CredentialView]
-
-    public static func write(_ value: [Fido2CredentialView], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for item in value {
-            FfiConverterTypeFido2CredentialView.write(item, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialView] {
-        let len: Int32 = try readInt(&buf)
-        var seq = [Fido2CredentialView]()
-        seq.reserveCapacity(Int(len))
-        for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeFido2CredentialView.read(from: &buf))
         }
         return seq
     }
