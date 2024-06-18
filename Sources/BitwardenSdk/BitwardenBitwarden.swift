@@ -560,7 +560,7 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * Defaults to
  *
  * ```
- * # use bitwarden::client::client_settings::{ClientSettings, DeviceType};
+ * # use bitwarden::{ClientSettings, DeviceType};
  * let settings = ClientSettings {
  * identity_url: "https://identity.bitwarden.com".to_string(),
  * api_url: "https://api.bitwarden.com".to_string(),
