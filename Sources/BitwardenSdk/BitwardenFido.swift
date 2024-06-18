@@ -794,6 +794,87 @@ public func FfiConverterTypeCredPropsResult_lower(_ value: CredPropsResult) -> R
 }
 
 
+public struct Fido2CredentialAutofillView {
+    public let credentialId: Data
+    public let cipherId: Uuid
+    public let rpId: String
+    public let userNameForUi: String?
+    public let userHandle: Data
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(credentialId: Data, cipherId: Uuid, rpId: String, userNameForUi: String?, userHandle: Data) {
+        self.credentialId = credentialId
+        self.cipherId = cipherId
+        self.rpId = rpId
+        self.userNameForUi = userNameForUi
+        self.userHandle = userHandle
+    }
+}
+
+
+
+extension Fido2CredentialAutofillView: Equatable, Hashable {
+    public static func ==(lhs: Fido2CredentialAutofillView, rhs: Fido2CredentialAutofillView) -> Bool {
+        if lhs.credentialId != rhs.credentialId {
+            return false
+        }
+        if lhs.cipherId != rhs.cipherId {
+            return false
+        }
+        if lhs.rpId != rhs.rpId {
+            return false
+        }
+        if lhs.userNameForUi != rhs.userNameForUi {
+            return false
+        }
+        if lhs.userHandle != rhs.userHandle {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(credentialId)
+        hasher.combine(cipherId)
+        hasher.combine(rpId)
+        hasher.combine(userNameForUi)
+        hasher.combine(userHandle)
+    }
+}
+
+
+public struct FfiConverterTypeFido2CredentialAutofillView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2CredentialAutofillView {
+        return
+            try Fido2CredentialAutofillView(
+                credentialId: FfiConverterData.read(from: &buf), 
+                cipherId: FfiConverterTypeUuid.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userNameForUi: FfiConverterOptionString.read(from: &buf), 
+                userHandle: FfiConverterData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Fido2CredentialAutofillView, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterTypeUuid.write(value.cipherId, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterOptionString.write(value.userNameForUi, into: &buf)
+        FfiConverterData.write(value.userHandle, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeFido2CredentialAutofillView_lift(_ buf: RustBuffer) throws -> Fido2CredentialAutofillView {
+    return try FfiConverterTypeFido2CredentialAutofillView.lift(buf)
+}
+
+public func FfiConverterTypeFido2CredentialAutofillView_lower(_ value: Fido2CredentialAutofillView) -> RustBuffer {
+    return FfiConverterTypeFido2CredentialAutofillView.lower(value)
+}
+
+
 public struct GetAssertionRequest {
     public let rpId: String
     public let clientDataHash: Data
@@ -2045,6 +2126,8 @@ fileprivate struct FfiConverterSequenceTypePublicKeyCredentialParameters: FfiCon
         return seq
     }
 }
+
+
 
 
 

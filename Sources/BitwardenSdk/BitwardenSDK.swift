@@ -1813,6 +1813,8 @@ public protocol ClientFido2Protocol : AnyObject {
     
     func client(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore)  -> ClientFido2Client
     
+    func decryptFido2AutofillCredentials(cipherView: CipherView) throws  -> [Fido2CredentialAutofillView]
+    
 }
 
 open class ClientFido2:
@@ -1874,6 +1876,14 @@ open func client(userInterface: Fido2UserInterface, credentialStore: Fido2Creden
 })
 }
     
+open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fido2CredentialAutofillView] {
+    return try  FfiConverterSequenceTypeFido2CredentialAutofillView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientfido2_decrypt_fido2_autofill_credentials(self.uniffiClonePointer(),
+        FfiConverterTypeCipherView_lower(cipherView),$0
+    )
+})
+}
+    
 
 }
 
@@ -1924,11 +1934,13 @@ public func FfiConverterTypeClientFido2_lower(_ value: ClientFido2) -> UnsafeMut
 
 public protocol ClientFido2AuthenticatorProtocol : AnyObject {
     
+    func credentialsForAutofill() async throws  -> [Fido2CredentialAutofillView]
+    
     func getAssertion(request: GetAssertionRequest) async throws  -> GetAssertionResult
     
     func makeCredential(request: MakeCredentialRequest) async throws  -> MakeCredentialResult
     
-    func silentlyDiscoverCredentials(rpId: String) async throws  -> [Fido2CredentialView]
+    func silentlyDiscoverCredentials(rpId: String) async throws  -> [Fido2CredentialAutofillView]
     
 }
 
@@ -1973,6 +1985,23 @@ open class ClientFido2Authenticator:
     
 
     
+open func credentialsForAutofill()async throws  -> [Fido2CredentialAutofillView] {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientfido2authenticator_credentials_for_autofill(
+                    self.uniffiClonePointer()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeFido2CredentialAutofillView.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
+}
+    
 open func getAssertion(request: GetAssertionRequest)async throws  -> GetAssertionResult {
     return
         try  await uniffiRustCallAsync(
@@ -2007,7 +2036,7 @@ open func makeCredential(request: MakeCredentialRequest)async throws  -> MakeCre
         )
 }
     
-open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2CredentialView] {
+open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2CredentialAutofillView] {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2019,7 +2048,7 @@ open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2Creden
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterSequenceTypeFido2CredentialView.lift,
+            liftFunc: FfiConverterSequenceTypeFido2CredentialAutofillView.lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
 }
@@ -3182,6 +3211,8 @@ public protocol Fido2CredentialStore : AnyObject {
     
     func findCredentials(ids: [Data]?, ripId: String) async throws  -> [CipherView]
     
+    func allCredentials() async throws  -> [CipherView]
+    
     func saveCredential(cred: Cipher) async throws 
     
 }
@@ -3244,6 +3275,23 @@ open func findCredentials(ids: [Data]?, ripId: String)async throws  -> [CipherVi
         )
 }
     
+open func allCredentials()async throws  -> [CipherView] {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_fido2credentialstore_all_credentials(
+                    self.uniffiClonePointer()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeCipherView.lift,
+            errorHandler: FfiConverterTypeFido2CallbackError.lift
+        )
+}
+    
 open func saveCredential(cred: Cipher)async throws  {
     return
         try  await uniffiRustCallAsync(
@@ -3293,6 +3341,47 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 return try await uniffiObj.findCredentials(
                      ids: try FfiConverterOptionSequenceData.lift(ids),
                      ripId: try FfiConverterString.lift(ripId)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: [CipherView]) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureStructRustBuffer(
+                        returnValue: FfiConverterSequenceTypeCipherView.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureStructRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            let uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeFido2CallbackError.lower
+            )
+            uniffiOutReturn.pointee = uniffiForeignFuture
+        },
+        allCredentials: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutReturn: UnsafeMutablePointer<UniffiForeignFuture>
+        ) in
+            let makeCall = {
+                () async throws -> [CipherView] in
+                guard let uniffiObj = try? FfiConverterTypeFido2CredentialStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.allCredentials(
                 )
             }
 
@@ -4189,6 +4278,28 @@ fileprivate struct FfiConverterSequenceData: FfiConverterRustBuffer {
     }
 }
 
+fileprivate struct FfiConverterSequenceTypeFido2CredentialAutofillView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialAutofillView]
+
+    public static func write(_ value: [Fido2CredentialAutofillView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFido2CredentialAutofillView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialAutofillView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Fido2CredentialAutofillView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFido2CredentialAutofillView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
 fileprivate struct FfiConverterSequenceTypeSend: FfiConverterRustBuffer {
     typealias SwiftType = [Send]
 
@@ -4573,6 +4684,8 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -4821,13 +4934,19 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_client() != 33583) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_decrypt_fido2_autofill_credentials() != 12395) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_credentials_for_autofill() != 13813) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_get_assertion() != 30) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_make_credential() != 60687) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_silently_discover_credentials() != 9560) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_silently_discover_credentials() != 47262) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_authenticate() != 55420) {
@@ -4914,7 +5033,10 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_find_credentials() != 37125) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 55591) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 34338) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 55817) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user() != 19175) {
