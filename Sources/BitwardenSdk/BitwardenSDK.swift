@@ -3520,7 +3520,7 @@ public protocol Fido2UserInterface : AnyObject {
     
     func pickCredentialForAuthentication(availableCredentials: [CipherView]) async throws  -> CipherViewWrapper
     
-    func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView) async throws  -> CipherViewWrapper
+    func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView) async throws  -> CheckUserAndPickCredentialForCreationResult
     
     func isVerificationEnabled() async  -> Bool
     
@@ -3601,7 +3601,7 @@ open func pickCredentialForAuthentication(availableCredentials: [CipherView])asy
         )
 }
     
-open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView)async throws  -> CipherViewWrapper {
+open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView)async throws  -> CheckUserAndPickCredentialForCreationResult {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3613,7 +3613,7 @@ open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCr
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeCipherViewWrapper.lift,
+            liftFunc: FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lift,
             errorHandler: FfiConverterTypeFido2CallbackError.lift
         )
 }
@@ -3743,7 +3743,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
             uniffiOutReturn: UnsafeMutablePointer<UniffiForeignFuture>
         ) in
             let makeCall = {
-                () async throws -> CipherViewWrapper in
+                () async throws -> CheckUserAndPickCredentialForCreationResult in
                 guard let uniffiObj = try? FfiConverterTypeFido2UserInterface.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
@@ -3753,11 +3753,11 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 )
             }
 
-            let uniffiHandleSuccess = { (returnValue: CipherViewWrapper) in
+            let uniffiHandleSuccess = { (returnValue: CheckUserAndPickCredentialForCreationResult) in
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     UniffiForeignFutureStructRustBuffer(
-                        returnValue: FfiConverterTypeCipherViewWrapper.lower(returnValue),
+                        returnValue: FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lower(returnValue),
                         callStatus: RustCallStatus()
                     )
                 )
@@ -3876,6 +3876,63 @@ public func FfiConverterTypeFido2UserInterface_lift(_ pointer: UnsafeMutableRawP
 
 public func FfiConverterTypeFido2UserInterface_lower(_ value: Fido2UserInterface) -> UnsafeMutableRawPointer {
     return FfiConverterTypeFido2UserInterface.lower(value)
+}
+
+
+public struct CheckUserAndPickCredentialForCreationResult {
+    public let cipher: CipherViewWrapper
+    public let checkUserResult: CheckUserResult
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(cipher: CipherViewWrapper, checkUserResult: CheckUserResult) {
+        self.cipher = cipher
+        self.checkUserResult = checkUserResult
+    }
+}
+
+
+
+extension CheckUserAndPickCredentialForCreationResult: Equatable, Hashable {
+    public static func ==(lhs: CheckUserAndPickCredentialForCreationResult, rhs: CheckUserAndPickCredentialForCreationResult) -> Bool {
+        if lhs.cipher != rhs.cipher {
+            return false
+        }
+        if lhs.checkUserResult != rhs.checkUserResult {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(cipher)
+        hasher.combine(checkUserResult)
+    }
+}
+
+
+public struct FfiConverterTypeCheckUserAndPickCredentialForCreationResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CheckUserAndPickCredentialForCreationResult {
+        return
+            try CheckUserAndPickCredentialForCreationResult(
+                cipher: FfiConverterTypeCipherViewWrapper.read(from: &buf), 
+                checkUserResult: FfiConverterTypeCheckUserResult.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CheckUserAndPickCredentialForCreationResult, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherViewWrapper.write(value.cipher, into: &buf)
+        FfiConverterTypeCheckUserResult.write(value.checkUserResult, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeCheckUserAndPickCredentialForCreationResult_lift(_ buf: RustBuffer) throws -> CheckUserAndPickCredentialForCreationResult {
+    return try FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lift(buf)
+}
+
+public func FfiConverterTypeCheckUserAndPickCredentialForCreationResult_lower(_ value: CheckUserAndPickCredentialForCreationResult) -> RustBuffer {
+    return FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lower(value)
 }
 
 
@@ -4856,19 +4913,19 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 58719) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 19256) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 4847) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_tde_keys() != 56463) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_tde_keys() != 58720) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_new_auth_request() != 56264) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_new_auth_request() != 57627) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_password_strength() != 16282) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 49350) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_satisfies_policy() != 49223) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_trust_device() != 36124) {
@@ -4901,7 +4958,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 34441) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 61457) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 33793) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_user_key() != 34017) {
@@ -4913,19 +4970,19 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_get_user_encryption_key() != 5136) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 51836) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_org_crypto() != 7197) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_user_crypto() != 38745) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_initialize_user_crypto() != 33028) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_update_password() != 34062) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_update_password() != 10481) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 36423) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 49791) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 30653) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 27241) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_authenticator() != 50893) {
@@ -4982,7 +5039,7 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fido2() != 37766) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fingerprint() != 23203) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_fingerprint() != 43559) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientplatform_load_flags() != 15151) {
@@ -5045,13 +5102,13 @@ private var initializationResult: InitializationResult {
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_pick_credential_for_authentication() != 7910) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user_and_pick_credential_for_creation() != 58476) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user_and_pick_credential_for_creation() != 20994) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_is_verification_enabled() != 40866) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 27271) {
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 59311) {
         return InitializationResult.apiChecksumMismatch
     }
 

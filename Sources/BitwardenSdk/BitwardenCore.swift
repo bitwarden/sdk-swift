@@ -381,6 +381,40 @@ fileprivate class UniffiHandleMap<T> {
 // Public interface members begin here.
 
 
+fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
+    typealias FfiType = UInt8
+    typealias SwiftType = UInt8
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
+
+    public static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
+    }
+
+    public static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Bool, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -455,6 +489,754 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
+public struct AuthRequestResponse {
+    /**
+     * Base64 encoded private key
+     * This key is temporarily passed back and will most likely not be available in the future
+     */
+    public let privateKey: String
+    /**
+     * Base64 encoded public key
+     */
+    public let publicKey: String
+    /**
+     * Fingerprint of the public key
+     */
+    public let fingerprint: String
+    /**
+     * Access code
+     */
+    public let accessCode: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Base64 encoded private key
+         * This key is temporarily passed back and will most likely not be available in the future
+         */privateKey: String, 
+        /**
+         * Base64 encoded public key
+         */publicKey: String, 
+        /**
+         * Fingerprint of the public key
+         */fingerprint: String, 
+        /**
+         * Access code
+         */accessCode: String) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.fingerprint = fingerprint
+        self.accessCode = accessCode
+    }
+}
+
+
+
+extension AuthRequestResponse: Equatable, Hashable {
+    public static func ==(lhs: AuthRequestResponse, rhs: AuthRequestResponse) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.fingerprint != rhs.fingerprint {
+            return false
+        }
+        if lhs.accessCode != rhs.accessCode {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(fingerprint)
+        hasher.combine(accessCode)
+    }
+}
+
+
+public struct FfiConverterTypeAuthRequestResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthRequestResponse {
+        return
+            try AuthRequestResponse(
+                privateKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf), 
+                accessCode: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuthRequestResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
+        FfiConverterString.write(value.accessCode, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeAuthRequestResponse_lift(_ buf: RustBuffer) throws -> AuthRequestResponse {
+    return try FfiConverterTypeAuthRequestResponse.lift(buf)
+}
+
+public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestResponse) -> RustBuffer {
+    return FfiConverterTypeAuthRequestResponse.lower(value)
+}
+
+
+/**
+ * Basic client behavior settings. These settings specify the various targets and behavior of the
+ * Bitwarden Client. They are optional and uneditable once the client is initialized.
+ *
+ * Defaults to
+ *
+ * ```
+ * # use bitwarden_core::{ClientSettings, DeviceType};
+ * let settings = ClientSettings {
+ * identity_url: "https://identity.bitwarden.com".to_string(),
+ * api_url: "https://api.bitwarden.com".to_string(),
+ * user_agent: "Bitwarden Rust-SDK".to_string(),
+ * device_type: DeviceType::SDK,
+ * };
+ * let default = ClientSettings::default();
+ * ```
+ */
+public struct ClientSettings {
+    /**
+     * The identity url of the targeted Bitwarden instance. Defaults to `https://identity.bitwarden.com`
+     */
+    public let identityUrl: String
+    /**
+     * The api url of the targeted Bitwarden instance. Defaults to `https://api.bitwarden.com`
+     */
+    public let apiUrl: String
+    /**
+     * The user_agent to sent to Bitwarden. Defaults to `Bitwarden Rust-SDK`
+     */
+    public let userAgent: String
+    /**
+     * Device type to send to Bitwarden. Defaults to SDK
+     */
+    public let deviceType: DeviceType
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The identity url of the targeted Bitwarden instance. Defaults to `https://identity.bitwarden.com`
+         */identityUrl: String, 
+        /**
+         * The api url of the targeted Bitwarden instance. Defaults to `https://api.bitwarden.com`
+         */apiUrl: String, 
+        /**
+         * The user_agent to sent to Bitwarden. Defaults to `Bitwarden Rust-SDK`
+         */userAgent: String, 
+        /**
+         * Device type to send to Bitwarden. Defaults to SDK
+         */deviceType: DeviceType) {
+        self.identityUrl = identityUrl
+        self.apiUrl = apiUrl
+        self.userAgent = userAgent
+        self.deviceType = deviceType
+    }
+}
+
+
+
+extension ClientSettings: Equatable, Hashable {
+    public static func ==(lhs: ClientSettings, rhs: ClientSettings) -> Bool {
+        if lhs.identityUrl != rhs.identityUrl {
+            return false
+        }
+        if lhs.apiUrl != rhs.apiUrl {
+            return false
+        }
+        if lhs.userAgent != rhs.userAgent {
+            return false
+        }
+        if lhs.deviceType != rhs.deviceType {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(identityUrl)
+        hasher.combine(apiUrl)
+        hasher.combine(userAgent)
+        hasher.combine(deviceType)
+    }
+}
+
+
+public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientSettings {
+        return
+            try ClientSettings(
+                identityUrl: FfiConverterString.read(from: &buf), 
+                apiUrl: FfiConverterString.read(from: &buf), 
+                userAgent: FfiConverterString.read(from: &buf), 
+                deviceType: FfiConverterTypeDeviceType.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ClientSettings, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.identityUrl, into: &buf)
+        FfiConverterString.write(value.apiUrl, into: &buf)
+        FfiConverterString.write(value.userAgent, into: &buf)
+        FfiConverterTypeDeviceType.write(value.deviceType, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeClientSettings_lift(_ buf: RustBuffer) throws -> ClientSettings {
+    return try FfiConverterTypeClientSettings.lift(buf)
+}
+
+public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> RustBuffer {
+    return FfiConverterTypeClientSettings.lower(value)
+}
+
+
+public struct DerivePinKeyResponse {
+    /**
+     * [UserKey](bitwarden_crypto::UserKey) protected by PIN
+     */
+    public let pinProtectedUserKey: EncString
+    /**
+     * PIN protected by [UserKey](bitwarden_crypto::UserKey)
+     */
+    public let encryptedPin: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * [UserKey](bitwarden_crypto::UserKey) protected by PIN
+         */pinProtectedUserKey: EncString, 
+        /**
+         * PIN protected by [UserKey](bitwarden_crypto::UserKey)
+         */encryptedPin: EncString) {
+        self.pinProtectedUserKey = pinProtectedUserKey
+        self.encryptedPin = encryptedPin
+    }
+}
+
+
+
+extension DerivePinKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: DerivePinKeyResponse, rhs: DerivePinKeyResponse) -> Bool {
+        if lhs.pinProtectedUserKey != rhs.pinProtectedUserKey {
+            return false
+        }
+        if lhs.encryptedPin != rhs.encryptedPin {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pinProtectedUserKey)
+        hasher.combine(encryptedPin)
+    }
+}
+
+
+public struct FfiConverterTypeDerivePinKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DerivePinKeyResponse {
+        return
+            try DerivePinKeyResponse(
+                pinProtectedUserKey: FfiConverterTypeEncString.read(from: &buf), 
+                encryptedPin: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DerivePinKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.pinProtectedUserKey, into: &buf)
+        FfiConverterTypeEncString.write(value.encryptedPin, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeDerivePinKeyResponse_lift(_ buf: RustBuffer) throws -> DerivePinKeyResponse {
+    return try FfiConverterTypeDerivePinKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResponse) -> RustBuffer {
+    return FfiConverterTypeDerivePinKeyResponse.lower(value)
+}
+
+
+public struct FingerprintRequest {
+    /**
+     * The input material, used in the fingerprint generation process.
+     */
+    public let fingerprintMaterial: String
+    /**
+     * The user's public key encoded with base64.
+     */
+    public let publicKey: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The input material, used in the fingerprint generation process.
+         */fingerprintMaterial: String, 
+        /**
+         * The user's public key encoded with base64.
+         */publicKey: String) {
+        self.fingerprintMaterial = fingerprintMaterial
+        self.publicKey = publicKey
+    }
+}
+
+
+
+extension FingerprintRequest: Equatable, Hashable {
+    public static func ==(lhs: FingerprintRequest, rhs: FingerprintRequest) -> Bool {
+        if lhs.fingerprintMaterial != rhs.fingerprintMaterial {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(fingerprintMaterial)
+        hasher.combine(publicKey)
+    }
+}
+
+
+public struct FfiConverterTypeFingerprintRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FingerprintRequest {
+        return
+            try FingerprintRequest(
+                fingerprintMaterial: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FingerprintRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.fingerprintMaterial, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeFingerprintRequest_lift(_ buf: RustBuffer) throws -> FingerprintRequest {
+    return try FfiConverterTypeFingerprintRequest.lift(buf)
+}
+
+public func FfiConverterTypeFingerprintRequest_lower(_ value: FingerprintRequest) -> RustBuffer {
+    return FfiConverterTypeFingerprintRequest.lower(value)
+}
+
+
+public struct InitOrgCryptoRequest {
+    /**
+     * The encryption keys for all the organizations the user is a part of
+     */
+    public let organizationKeys: [Uuid: AsymmetricEncString]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The encryption keys for all the organizations the user is a part of
+         */organizationKeys: [Uuid: AsymmetricEncString]) {
+        self.organizationKeys = organizationKeys
+    }
+}
+
+
+
+extension InitOrgCryptoRequest: Equatable, Hashable {
+    public static func ==(lhs: InitOrgCryptoRequest, rhs: InitOrgCryptoRequest) -> Bool {
+        if lhs.organizationKeys != rhs.organizationKeys {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(organizationKeys)
+    }
+}
+
+
+public struct FfiConverterTypeInitOrgCryptoRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitOrgCryptoRequest {
+        return
+            try InitOrgCryptoRequest(
+                organizationKeys: FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: InitOrgCryptoRequest, into buf: inout [UInt8]) {
+        FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.write(value.organizationKeys, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeInitOrgCryptoRequest_lift(_ buf: RustBuffer) throws -> InitOrgCryptoRequest {
+    return try FfiConverterTypeInitOrgCryptoRequest.lift(buf)
+}
+
+public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoRequest) -> RustBuffer {
+    return FfiConverterTypeInitOrgCryptoRequest.lower(value)
+}
+
+
+public struct InitUserCryptoRequest {
+    /**
+     * The user's KDF parameters, as received from the prelogin request
+     */
+    public let kdfParams: Kdf
+    /**
+     * The user's email address
+     */
+    public let email: String
+    /**
+     * The user's encrypted private key
+     */
+    public let privateKey: String
+    /**
+     * The initialization method to use
+     */
+    public let method: InitUserCryptoMethod
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The user's KDF parameters, as received from the prelogin request
+         */kdfParams: Kdf, 
+        /**
+         * The user's email address
+         */email: String, 
+        /**
+         * The user's encrypted private key
+         */privateKey: String, 
+        /**
+         * The initialization method to use
+         */method: InitUserCryptoMethod) {
+        self.kdfParams = kdfParams
+        self.email = email
+        self.privateKey = privateKey
+        self.method = method
+    }
+}
+
+
+
+extension InitUserCryptoRequest: Equatable, Hashable {
+    public static func ==(lhs: InitUserCryptoRequest, rhs: InitUserCryptoRequest) -> Bool {
+        if lhs.kdfParams != rhs.kdfParams {
+            return false
+        }
+        if lhs.email != rhs.email {
+            return false
+        }
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.method != rhs.method {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(kdfParams)
+        hasher.combine(email)
+        hasher.combine(privateKey)
+        hasher.combine(method)
+    }
+}
+
+
+public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitUserCryptoRequest {
+        return
+            try InitUserCryptoRequest(
+                kdfParams: FfiConverterTypeKdf.read(from: &buf), 
+                email: FfiConverterString.read(from: &buf), 
+                privateKey: FfiConverterString.read(from: &buf), 
+                method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: InitUserCryptoRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
+        FfiConverterString.write(value.email, into: &buf)
+        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterTypeInitUserCryptoMethod.write(value.method, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeInitUserCryptoRequest_lift(_ buf: RustBuffer) throws -> InitUserCryptoRequest {
+    return try FfiConverterTypeInitUserCryptoRequest.lift(buf)
+}
+
+public func FfiConverterTypeInitUserCryptoRequest_lower(_ value: InitUserCryptoRequest) -> RustBuffer {
+    return FfiConverterTypeInitUserCryptoRequest.lower(value)
+}
+
+
+public struct MasterPasswordPolicyOptions {
+    public let minComplexity: UInt8
+    public let minLength: UInt8
+    public let requireUpper: Bool
+    public let requireLower: Bool
+    public let requireNumbers: Bool
+    public let requireSpecial: Bool
+    /**
+     * Flag to indicate if the policy should be enforced on login.
+     * If true, and the user's password does not meet the policy requirements,
+     * the user will be forced to update their password.
+     */
+    public let enforceOnLogin: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(minComplexity: UInt8, minLength: UInt8, requireUpper: Bool, requireLower: Bool, requireNumbers: Bool, requireSpecial: Bool, 
+        /**
+         * Flag to indicate if the policy should be enforced on login.
+         * If true, and the user's password does not meet the policy requirements,
+         * the user will be forced to update their password.
+         */enforceOnLogin: Bool) {
+        self.minComplexity = minComplexity
+        self.minLength = minLength
+        self.requireUpper = requireUpper
+        self.requireLower = requireLower
+        self.requireNumbers = requireNumbers
+        self.requireSpecial = requireSpecial
+        self.enforceOnLogin = enforceOnLogin
+    }
+}
+
+
+
+extension MasterPasswordPolicyOptions: Equatable, Hashable {
+    public static func ==(lhs: MasterPasswordPolicyOptions, rhs: MasterPasswordPolicyOptions) -> Bool {
+        if lhs.minComplexity != rhs.minComplexity {
+            return false
+        }
+        if lhs.minLength != rhs.minLength {
+            return false
+        }
+        if lhs.requireUpper != rhs.requireUpper {
+            return false
+        }
+        if lhs.requireLower != rhs.requireLower {
+            return false
+        }
+        if lhs.requireNumbers != rhs.requireNumbers {
+            return false
+        }
+        if lhs.requireSpecial != rhs.requireSpecial {
+            return false
+        }
+        if lhs.enforceOnLogin != rhs.enforceOnLogin {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(minComplexity)
+        hasher.combine(minLength)
+        hasher.combine(requireUpper)
+        hasher.combine(requireLower)
+        hasher.combine(requireNumbers)
+        hasher.combine(requireSpecial)
+        hasher.combine(enforceOnLogin)
+    }
+}
+
+
+public struct FfiConverterTypeMasterPasswordPolicyOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MasterPasswordPolicyOptions {
+        return
+            try MasterPasswordPolicyOptions(
+                minComplexity: FfiConverterUInt8.read(from: &buf), 
+                minLength: FfiConverterUInt8.read(from: &buf), 
+                requireUpper: FfiConverterBool.read(from: &buf), 
+                requireLower: FfiConverterBool.read(from: &buf), 
+                requireNumbers: FfiConverterBool.read(from: &buf), 
+                requireSpecial: FfiConverterBool.read(from: &buf), 
+                enforceOnLogin: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MasterPasswordPolicyOptions, into buf: inout [UInt8]) {
+        FfiConverterUInt8.write(value.minComplexity, into: &buf)
+        FfiConverterUInt8.write(value.minLength, into: &buf)
+        FfiConverterBool.write(value.requireUpper, into: &buf)
+        FfiConverterBool.write(value.requireLower, into: &buf)
+        FfiConverterBool.write(value.requireNumbers, into: &buf)
+        FfiConverterBool.write(value.requireSpecial, into: &buf)
+        FfiConverterBool.write(value.enforceOnLogin, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeMasterPasswordPolicyOptions_lift(_ buf: RustBuffer) throws -> MasterPasswordPolicyOptions {
+    return try FfiConverterTypeMasterPasswordPolicyOptions.lift(buf)
+}
+
+public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPasswordPolicyOptions) -> RustBuffer {
+    return FfiConverterTypeMasterPasswordPolicyOptions.lower(value)
+}
+
+
+public struct RegisterKeyResponse {
+    public let masterPasswordHash: String
+    public let encryptedUserKey: String
+    public let keys: RsaKeyPair
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(masterPasswordHash: String, encryptedUserKey: String, keys: RsaKeyPair) {
+        self.masterPasswordHash = masterPasswordHash
+        self.encryptedUserKey = encryptedUserKey
+        self.keys = keys
+    }
+}
+
+
+
+extension RegisterKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: RegisterKeyResponse, rhs: RegisterKeyResponse) -> Bool {
+        if lhs.masterPasswordHash != rhs.masterPasswordHash {
+            return false
+        }
+        if lhs.encryptedUserKey != rhs.encryptedUserKey {
+            return false
+        }
+        if lhs.keys != rhs.keys {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(masterPasswordHash)
+        hasher.combine(encryptedUserKey)
+        hasher.combine(keys)
+    }
+}
+
+
+public struct FfiConverterTypeRegisterKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterKeyResponse {
+        return
+            try RegisterKeyResponse(
+                masterPasswordHash: FfiConverterString.read(from: &buf), 
+                encryptedUserKey: FfiConverterString.read(from: &buf), 
+                keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RegisterKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.masterPasswordHash, into: &buf)
+        FfiConverterString.write(value.encryptedUserKey, into: &buf)
+        FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeRegisterKeyResponse_lift(_ buf: RustBuffer) throws -> RegisterKeyResponse {
+    return try FfiConverterTypeRegisterKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyResponse) -> RustBuffer {
+    return FfiConverterTypeRegisterKeyResponse.lower(value)
+}
+
+
+public struct RegisterTdeKeyResponse {
+    public let privateKey: EncString
+    public let publicKey: String
+    public let adminReset: AsymmetricEncString
+    public let deviceKey: TrustDeviceResponse?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(privateKey: EncString, publicKey: String, adminReset: AsymmetricEncString, deviceKey: TrustDeviceResponse?) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.adminReset = adminReset
+        self.deviceKey = deviceKey
+    }
+}
+
+
+
+extension RegisterTdeKeyResponse: Equatable, Hashable {
+    public static func ==(lhs: RegisterTdeKeyResponse, rhs: RegisterTdeKeyResponse) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.adminReset != rhs.adminReset {
+            return false
+        }
+        if lhs.deviceKey != rhs.deviceKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(adminReset)
+        hasher.combine(deviceKey)
+    }
+}
+
+
+public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterTdeKeyResponse {
+        return
+            try RegisterTdeKeyResponse(
+                privateKey: FfiConverterTypeEncString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                adminReset: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
+                deviceKey: FfiConverterOptionTypeTrustDeviceResponse.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RegisterTdeKeyResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeAsymmetricEncString.write(value.adminReset, into: &buf)
+        FfiConverterOptionTypeTrustDeviceResponse.write(value.deviceKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeRegisterTdeKeyResponse_lift(_ buf: RustBuffer) throws -> RegisterTdeKeyResponse {
+    return try FfiConverterTypeRegisterTdeKeyResponse.lift(buf)
+}
+
+public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKeyResponse) -> RustBuffer {
+    return FfiConverterTypeRegisterTdeKeyResponse.lower(value)
+}
+
+
 public struct UniffiConverterDummyRecord {
     public let uuid: Uuid
     public let date: DateTime
@@ -510,6 +1292,519 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lift(_ buf: RustBuffer) t
 public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConverterDummyRecord) -> RustBuffer {
     return FfiConverterTypeUniffiConverterDummyRecord.lower(value)
 }
+
+
+public struct UpdatePasswordResponse {
+    /**
+     * Hash of the new password
+     */
+    public let passwordHash: String
+    /**
+     * User key, encrypted with the new password
+     */
+    public let newKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Hash of the new password
+         */passwordHash: String, 
+        /**
+         * User key, encrypted with the new password
+         */newKey: EncString) {
+        self.passwordHash = passwordHash
+        self.newKey = newKey
+    }
+}
+
+
+
+extension UpdatePasswordResponse: Equatable, Hashable {
+    public static func ==(lhs: UpdatePasswordResponse, rhs: UpdatePasswordResponse) -> Bool {
+        if lhs.passwordHash != rhs.passwordHash {
+            return false
+        }
+        if lhs.newKey != rhs.newKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(passwordHash)
+        hasher.combine(newKey)
+    }
+}
+
+
+public struct FfiConverterTypeUpdatePasswordResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UpdatePasswordResponse {
+        return
+            try UpdatePasswordResponse(
+                passwordHash: FfiConverterString.read(from: &buf), 
+                newKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UpdatePasswordResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.passwordHash, into: &buf)
+        FfiConverterTypeEncString.write(value.newKey, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeUpdatePasswordResponse_lift(_ buf: RustBuffer) throws -> UpdatePasswordResponse {
+    return try FfiConverterTypeUpdatePasswordResponse.lift(buf)
+}
+
+public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePasswordResponse) -> RustBuffer {
+    return FfiConverterTypeUpdatePasswordResponse.lower(value)
+}
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
+public enum AuthRequestMethod {
+    
+    case userKey(
+        /**
+         * User Key protected by the private key provided in `AuthRequestResponse`.
+         */protectedUserKey: AsymmetricEncString
+    )
+    case masterKey(
+        /**
+         * Master Key protected by the private key provided in `AuthRequestResponse`.
+         */protectedMasterKey: AsymmetricEncString, 
+        /**
+         * User Key protected by the MasterKey, provided by the auth response.
+         */authRequestKey: EncString
+    )
+}
+
+
+public struct FfiConverterTypeAuthRequestMethod: FfiConverterRustBuffer {
+    typealias SwiftType = AuthRequestMethod
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthRequestMethod {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .userKey(protectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        )
+        
+        case 2: return .masterKey(protectedMasterKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf), authRequestKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AuthRequestMethod, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .userKey(protectedUserKey):
+            writeInt(&buf, Int32(1))
+            FfiConverterTypeAsymmetricEncString.write(protectedUserKey, into: &buf)
+            
+        
+        case let .masterKey(protectedMasterKey,authRequestKey):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeAsymmetricEncString.write(protectedMasterKey, into: &buf)
+            FfiConverterTypeEncString.write(authRequestKey, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeAuthRequestMethod_lift(_ buf: RustBuffer) throws -> AuthRequestMethod {
+    return try FfiConverterTypeAuthRequestMethod.lift(buf)
+}
+
+public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) -> RustBuffer {
+    return FfiConverterTypeAuthRequestMethod.lower(value)
+}
+
+
+
+extension AuthRequestMethod: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
+public enum DeviceType {
+    
+    case android
+    case iOs
+    case chromeExtension
+    case firefoxExtension
+    case operaExtension
+    case edgeExtension
+    case windowsDesktop
+    case macOsDesktop
+    case linuxDesktop
+    case chromeBrowser
+    case firefoxBrowser
+    case operaBrowser
+    case edgeBrowser
+    case ieBrowser
+    case unknownBrowser
+    case androidAmazon
+    case uwp
+    case safariBrowser
+    case vivaldiBrowser
+    case vivaldiExtension
+    case safariExtension
+    case sdk
+}
+
+
+public struct FfiConverterTypeDeviceType: FfiConverterRustBuffer {
+    typealias SwiftType = DeviceType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .android
+        
+        case 2: return .iOs
+        
+        case 3: return .chromeExtension
+        
+        case 4: return .firefoxExtension
+        
+        case 5: return .operaExtension
+        
+        case 6: return .edgeExtension
+        
+        case 7: return .windowsDesktop
+        
+        case 8: return .macOsDesktop
+        
+        case 9: return .linuxDesktop
+        
+        case 10: return .chromeBrowser
+        
+        case 11: return .firefoxBrowser
+        
+        case 12: return .operaBrowser
+        
+        case 13: return .edgeBrowser
+        
+        case 14: return .ieBrowser
+        
+        case 15: return .unknownBrowser
+        
+        case 16: return .androidAmazon
+        
+        case 17: return .uwp
+        
+        case 18: return .safariBrowser
+        
+        case 19: return .vivaldiBrowser
+        
+        case 20: return .vivaldiExtension
+        
+        case 21: return .safariExtension
+        
+        case 22: return .sdk
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeviceType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .android:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .iOs:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .chromeExtension:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .firefoxExtension:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .operaExtension:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .edgeExtension:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .windowsDesktop:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .macOsDesktop:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .linuxDesktop:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .chromeBrowser:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .firefoxBrowser:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .operaBrowser:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .edgeBrowser:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .ieBrowser:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .unknownBrowser:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .androidAmazon:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .uwp:
+            writeInt(&buf, Int32(17))
+        
+        
+        case .safariBrowser:
+            writeInt(&buf, Int32(18))
+        
+        
+        case .vivaldiBrowser:
+            writeInt(&buf, Int32(19))
+        
+        
+        case .vivaldiExtension:
+            writeInt(&buf, Int32(20))
+        
+        
+        case .safariExtension:
+            writeInt(&buf, Int32(21))
+        
+        
+        case .sdk:
+            writeInt(&buf, Int32(22))
+        
+        }
+    }
+}
+
+
+public func FfiConverterTypeDeviceType_lift(_ buf: RustBuffer) throws -> DeviceType {
+    return try FfiConverterTypeDeviceType.lift(buf)
+}
+
+public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer {
+    return FfiConverterTypeDeviceType.lower(value)
+}
+
+
+
+extension DeviceType: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
+public enum InitUserCryptoMethod {
+    
+    case password(
+        /**
+         * The user's master password
+         */password: String, 
+        /**
+         * The user's encrypted symmetric crypto key
+         */userKey: String
+    )
+    case decryptedKey(
+        /**
+         * The user's decrypted encryption key, obtained using `get_user_encryption_key`
+         */decryptedUserKey: String
+    )
+    case pin(
+        /**
+         * The user's PIN
+         */pin: String, 
+        /**
+         * The user's symmetric crypto key, encrypted with the PIN. Use `derive_pin_key` to obtain
+         * this.
+         */pinProtectedUserKey: EncString
+    )
+    case authRequest(
+        /**
+         * Private Key generated by the `crate::auth::new_auth_request`.
+         */requestPrivateKey: String, method: AuthRequestMethod
+    )
+    case deviceKey(
+        /**
+         * The device's DeviceKey
+         */deviceKey: String, 
+        /**
+         * The Device Private Key
+         */protectedDevicePrivateKey: EncString, 
+        /**
+         * The user's symmetric crypto key, encrypted with the Device Key.
+         */deviceProtectedUserKey: AsymmetricEncString
+    )
+}
+
+
+public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
+    typealias SwiftType = InitUserCryptoMethod
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitUserCryptoMethod {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .password(password: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .decryptedKey(decryptedUserKey: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        case 4: return .authRequest(requestPrivateKey: try FfiConverterString.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        )
+        
+        case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: InitUserCryptoMethod, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .password(password,userKey):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(password, into: &buf)
+            FfiConverterString.write(userKey, into: &buf)
+            
+        
+        case let .decryptedKey(decryptedUserKey):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(decryptedUserKey, into: &buf)
+            
+        
+        case let .pin(pin,pinProtectedUserKey):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(pin, into: &buf)
+            FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
+            
+        
+        case let .authRequest(requestPrivateKey,method):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(requestPrivateKey, into: &buf)
+            FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
+            
+        
+        case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(deviceKey, into: &buf)
+            FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
+            FfiConverterTypeAsymmetricEncString.write(deviceProtectedUserKey, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeInitUserCryptoMethod_lift(_ buf: RustBuffer) throws -> InitUserCryptoMethod {
+    return try FfiConverterTypeInitUserCryptoMethod.lift(buf)
+}
+
+public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMethod) -> RustBuffer {
+    return FfiConverterTypeInitUserCryptoMethod.lower(value)
+}
+
+
+
+extension InitUserCryptoMethod: Equatable, Hashable {}
+
+
+
+fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBuffer {
+    typealias SwiftType = TrustDeviceResponse?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTrustDeviceResponse.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTrustDeviceResponse.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiConverterRustBuffer {
+    public static func write(_ value: [Uuid: AsymmetricEncString], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterTypeUuid.write(key, into: &buf)
+            FfiConverterTypeAsymmetricEncString.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: AsymmetricEncString] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [Uuid: AsymmetricEncString]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterTypeUuid.read(from: &buf)
+            let value = try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 /**
