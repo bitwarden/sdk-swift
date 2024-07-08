@@ -1136,14 +1136,14 @@ public func FfiConverterTypeMakeCredentialRequest_lower(_ value: MakeCredentialR
 
 public struct MakeCredentialResult {
     public let authenticatorData: Data
-    public let attestedCredentialData: Data
+    public let attestationObject: Data
     public let credentialId: Data
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(authenticatorData: Data, attestedCredentialData: Data, credentialId: Data) {
+    public init(authenticatorData: Data, attestationObject: Data, credentialId: Data) {
         self.authenticatorData = authenticatorData
-        self.attestedCredentialData = attestedCredentialData
+        self.attestationObject = attestationObject
         self.credentialId = credentialId
     }
 }
@@ -1155,7 +1155,7 @@ extension MakeCredentialResult: Equatable, Hashable {
         if lhs.authenticatorData != rhs.authenticatorData {
             return false
         }
-        if lhs.attestedCredentialData != rhs.attestedCredentialData {
+        if lhs.attestationObject != rhs.attestationObject {
             return false
         }
         if lhs.credentialId != rhs.credentialId {
@@ -1166,7 +1166,7 @@ extension MakeCredentialResult: Equatable, Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(authenticatorData)
-        hasher.combine(attestedCredentialData)
+        hasher.combine(attestationObject)
         hasher.combine(credentialId)
     }
 }
@@ -1177,14 +1177,14 @@ public struct FfiConverterTypeMakeCredentialResult: FfiConverterRustBuffer {
         return
             try MakeCredentialResult(
                 authenticatorData: FfiConverterData.read(from: &buf), 
-                attestedCredentialData: FfiConverterData.read(from: &buf), 
+                attestationObject: FfiConverterData.read(from: &buf), 
                 credentialId: FfiConverterData.read(from: &buf)
         )
     }
 
     public static func write(_ value: MakeCredentialResult, into buf: inout [UInt8]) {
         FfiConverterData.write(value.authenticatorData, into: &buf)
-        FfiConverterData.write(value.attestedCredentialData, into: &buf)
+        FfiConverterData.write(value.attestationObject, into: &buf)
         FfiConverterData.write(value.credentialId, into: &buf)
     }
 }
