@@ -1858,17 +1858,16 @@ public struct Fido2CredentialNewView {
     public let keyAlgorithm: String
     public let keyCurve: String
     public let rpId: String
-    public let userHandle: Data?
+    public let userHandle: String?
     public let userName: String?
     public let counter: String
     public let rpName: String?
     public let userDisplayName: String?
-    public let discoverable: String
     public let creationDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, rpId: String, userHandle: Data?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
+    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, rpId: String, userHandle: String?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, creationDate: DateTime) {
         self.credentialId = credentialId
         self.keyType = keyType
         self.keyAlgorithm = keyAlgorithm
@@ -1879,7 +1878,6 @@ public struct Fido2CredentialNewView {
         self.counter = counter
         self.rpName = rpName
         self.userDisplayName = userDisplayName
-        self.discoverable = discoverable
         self.creationDate = creationDate
     }
 }
@@ -1918,9 +1916,6 @@ extension Fido2CredentialNewView: Equatable, Hashable {
         if lhs.userDisplayName != rhs.userDisplayName {
             return false
         }
-        if lhs.discoverable != rhs.discoverable {
-            return false
-        }
         if lhs.creationDate != rhs.creationDate {
             return false
         }
@@ -1938,7 +1933,6 @@ extension Fido2CredentialNewView: Equatable, Hashable {
         hasher.combine(counter)
         hasher.combine(rpName)
         hasher.combine(userDisplayName)
-        hasher.combine(discoverable)
         hasher.combine(creationDate)
     }
 }
@@ -1953,12 +1947,11 @@ public struct FfiConverterTypeFido2CredentialNewView: FfiConverterRustBuffer {
                 keyAlgorithm: FfiConverterString.read(from: &buf), 
                 keyCurve: FfiConverterString.read(from: &buf), 
                 rpId: FfiConverterString.read(from: &buf), 
-                userHandle: FfiConverterOptionData.read(from: &buf), 
+                userHandle: FfiConverterOptionString.read(from: &buf), 
                 userName: FfiConverterOptionString.read(from: &buf), 
                 counter: FfiConverterString.read(from: &buf), 
                 rpName: FfiConverterOptionString.read(from: &buf), 
                 userDisplayName: FfiConverterOptionString.read(from: &buf), 
-                discoverable: FfiConverterString.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
@@ -1969,12 +1962,11 @@ public struct FfiConverterTypeFido2CredentialNewView: FfiConverterRustBuffer {
         FfiConverterString.write(value.keyAlgorithm, into: &buf)
         FfiConverterString.write(value.keyCurve, into: &buf)
         FfiConverterString.write(value.rpId, into: &buf)
-        FfiConverterOptionData.write(value.userHandle, into: &buf)
+        FfiConverterOptionString.write(value.userHandle, into: &buf)
         FfiConverterOptionString.write(value.userName, into: &buf)
         FfiConverterString.write(value.counter, into: &buf)
         FfiConverterOptionString.write(value.rpName, into: &buf)
         FfiConverterOptionString.write(value.userDisplayName, into: &buf)
-        FfiConverterString.write(value.discoverable, into: &buf)
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
     }
 }
@@ -1996,7 +1988,7 @@ public struct Fido2CredentialView {
     public let keyCurve: String
     public let keyValue: EncString
     public let rpId: String
-    public let userHandle: Data?
+    public let userHandle: String?
     public let userName: String?
     public let counter: String
     public let rpName: String?
@@ -2006,7 +1998,7 @@ public struct Fido2CredentialView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, keyValue: EncString, rpId: String, userHandle: Data?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
+    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, keyValue: EncString, rpId: String, userHandle: String?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
         self.credentialId = credentialId
         self.keyType = keyType
         self.keyAlgorithm = keyAlgorithm
@@ -2097,7 +2089,7 @@ public struct FfiConverterTypeFido2CredentialView: FfiConverterRustBuffer {
                 keyCurve: FfiConverterString.read(from: &buf), 
                 keyValue: FfiConverterTypeEncString.read(from: &buf), 
                 rpId: FfiConverterString.read(from: &buf), 
-                userHandle: FfiConverterOptionData.read(from: &buf), 
+                userHandle: FfiConverterOptionString.read(from: &buf), 
                 userName: FfiConverterOptionString.read(from: &buf), 
                 counter: FfiConverterString.read(from: &buf), 
                 rpName: FfiConverterOptionString.read(from: &buf), 
@@ -2114,7 +2106,7 @@ public struct FfiConverterTypeFido2CredentialView: FfiConverterRustBuffer {
         FfiConverterString.write(value.keyCurve, into: &buf)
         FfiConverterTypeEncString.write(value.keyValue, into: &buf)
         FfiConverterString.write(value.rpId, into: &buf)
-        FfiConverterOptionData.write(value.userHandle, into: &buf)
+        FfiConverterOptionString.write(value.userHandle, into: &buf)
         FfiConverterOptionString.write(value.userName, into: &buf)
         FfiConverterString.write(value.counter, into: &buf)
         FfiConverterOptionString.write(value.rpName, into: &buf)
@@ -3880,27 +3872,6 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterString.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
-    typealias SwiftType = Data?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterData.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterData.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
