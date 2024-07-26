@@ -153,7 +153,7 @@ fileprivate func writeDouble(_ writer: inout [UInt8], _ value: Double) {
 }
 
 // Protocol for types that transfer other types across the FFI. This is
-// analogous go the Rust trait of the same name.
+// analogous to the Rust trait of the same name.
 fileprivate protocol FfiConverter {
     associatedtype FfiType
     associatedtype SwiftType
@@ -253,18 +253,19 @@ fileprivate extension RustCallStatus {
 }
 
 private func rustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
-    try makeRustCall(callback, errorHandler: nil)
+    let neverThrow: ((RustBuffer) throws -> Never)? = nil
+    return try makeRustCall(callback, errorHandler: neverThrow)
 }
 
-private func rustCallWithError<T>(
-    _ errorHandler: @escaping (RustBuffer) throws -> Error,
+private func rustCallWithError<T, E: Swift.Error>(
+    _ errorHandler: @escaping (RustBuffer) throws -> E,
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
     try makeRustCall(callback, errorHandler: errorHandler)
 }
 
-private func makeRustCall<T>(
+private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
-    errorHandler: ((RustBuffer) throws -> Error)?
+    errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
     uniffiEnsureInitialized()
     var callStatus = RustCallStatus.init()
@@ -273,9 +274,9 @@ private func makeRustCall<T>(
     return returnedVal
 }
 
-private func uniffiCheckCallStatus(
+private func uniffiCheckCallStatus<E: Swift.Error>(
     callStatus: RustCallStatus,
-    errorHandler: ((RustBuffer) throws -> Error)?
+    errorHandler: ((RustBuffer) throws -> E)?
 ) throws {
     switch callStatus.code {
         case CALL_SUCCESS:
@@ -917,6 +918,17 @@ public protocol ClientAuthProtocol : AnyObject {
      */
     func validatePasswordUserKey(password: String, encryptedUserKey: String) throws  -> String
     
+    /**
+     * Validate the user PIN
+     *
+     * To validate the user PIN, you need to have the user's pin_protected_user_key. This key is
+     * obtained when enabling PIN unlock on the account with the `derive_pin_key` method.
+     *
+     * This works by comparing the decrypted user key with the current user key, so the client must
+     * be unlocked.
+     */
+    func validatePin(pin: String, pinProtectedUserKey: EncString) throws  -> Bool
+    
 }
 
 open class ClientAuth:
@@ -1093,6 +1105,24 @@ open func validatePasswordUserKey(password: String, encryptedUserKey: String)thr
     uniffi_bitwarden_uniffi_fn_method_clientauth_validate_password_user_key(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
         FfiConverterString.lower(encryptedUserKey),$0
+    )
+})
+}
+    
+    /**
+     * Validate the user PIN
+     *
+     * To validate the user PIN, you need to have the user's pin_protected_user_key. This key is
+     * obtained when enabling PIN unlock on the account with the `derive_pin_key` method.
+     *
+     * This works by comparing the decrypted user key with the current user key, so the client must
+     * be unlocked.
+     */
+open func validatePin(pin: String, pinProtectedUserKey: EncString)throws  -> Bool {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientauth_validate_pin(self.uniffiClonePointer(),
+        FfiConverterString.lower(pin),
+        FfiConverterTypeEncString_lower(pinProtectedUserKey),$0
     )
 })
 }
@@ -4087,7 +4117,11 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
 
 extension BitwardenError: Equatable, Hashable {}
 
-extension BitwardenError: Error { }
+extension BitwardenError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
 
 
 public enum Fido2CallbackError {
@@ -4147,7 +4181,11 @@ public struct FfiConverterTypeFido2CallbackError: FfiConverterRustBuffer {
 
 extension Fido2CallbackError: Equatable, Hashable {}
 
-extension Fido2CallbackError: Error { }
+extension Fido2CallbackError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
@@ -4754,7 +4792,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
     liftFunc: (F) throws -> T,
-    errorHandler: ((RustBuffer) throws -> Error)?
+    errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
     // Make sure to call uniffiEnsureInitialized() since future creation doesn't have a
     // RustCallStatus param, so doesn't use makeRustCall()
@@ -4861,9 +4899,9 @@ private enum InitializationResult {
     case contractVersionMismatch
     case apiChecksumMismatch
 }
-// Use a global variables to perform the versioning checks. Swift ensures that
+// Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult {
+private var initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
     let bindings_contract_version = 26
     // Get the scaffolding contract version by calling the into the dylib
@@ -4935,6 +4973,9 @@ private var initializationResult: InitializationResult {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_password_user_key() != 37923) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_validate_pin() != 12802) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientciphers_decrypt() != 40270) {
@@ -5115,7 +5156,7 @@ private var initializationResult: InitializationResult {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     return InitializationResult.ok
-}
+}()
 
 private func uniffiEnsureInitialized() {
     switch initializationResult {
