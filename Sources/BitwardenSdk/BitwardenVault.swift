@@ -1135,9 +1135,13 @@ public struct CipherListView {
     public let organizationId: Uuid?
     public let folderId: Uuid?
     public let collectionIds: [Uuid]
+    /**
+     * Temporary, required to support calculating TOTP from CipherListView.
+     */
+    public let key: EncString?
     public let name: String
     public let subTitle: String
-    public let type: CipherType
+    public let type: CipherListViewType
     public let favorite: Bool
     public let reprompt: CipherRepromptType
     public let edit: Bool
@@ -1152,7 +1156,10 @@ public struct CipherListView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], name: String, subTitle: String, type: CipherType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
+    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
+        /**
+         * Temporary, required to support calculating TOTP from CipherListView.
+         */key: EncString?, name: String, subTitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1160,6 +1167,7 @@ public struct CipherListView {
         self.organizationId = organizationId
         self.folderId = folderId
         self.collectionIds = collectionIds
+        self.key = key
         self.name = name
         self.subTitle = subTitle
         self.type = type
@@ -1188,6 +1196,9 @@ extension CipherListView: Equatable, Hashable {
             return false
         }
         if lhs.collectionIds != rhs.collectionIds {
+            return false
+        }
+        if lhs.key != rhs.key {
             return false
         }
         if lhs.name != rhs.name {
@@ -1231,6 +1242,7 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(organizationId)
         hasher.combine(folderId)
         hasher.combine(collectionIds)
+        hasher.combine(key)
         hasher.combine(name)
         hasher.combine(subTitle)
         hasher.combine(type)
@@ -1254,9 +1266,10 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 organizationId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
+                key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 subTitle: FfiConverterString.read(from: &buf), 
-                type: FfiConverterTypeCipherType.read(from: &buf), 
+                type: FfiConverterTypeCipherListViewType.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 edit: FfiConverterBool.read(from: &buf), 
@@ -1273,9 +1286,10 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.organizationId, into: &buf)
         FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterString.write(value.subTitle, into: &buf)
-        FfiConverterTypeCipherType.write(value.type, into: &buf)
+        FfiConverterTypeCipherListViewType.write(value.type, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.edit, into: &buf)
@@ -1302,6 +1316,9 @@ public struct CipherView {
     public let organizationId: Uuid?
     public let folderId: Uuid?
     public let collectionIds: [Uuid]
+    /**
+     * Temporary, required to support re-encrypting existing items.
+     */
     public let key: EncString?
     public let name: String
     public let notes: String?
@@ -1325,7 +1342,10 @@ public struct CipherView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
+        /**
+         * Temporary, required to support re-encrypting existing items.
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -3490,6 +3510,79 @@ public func FfiConverterTypeTotpResponse_lift(_ buf: RustBuffer) throws -> TotpR
 public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuffer {
     return FfiConverterTypeTotpResponse.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
+public enum CipherListViewType {
+    
+    case login(hasFido2: Bool, totp: EncString?
+    )
+    case secureNote
+    case card
+    case identity
+}
+
+
+public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
+    typealias SwiftType = CipherListViewType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherListViewType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .login(hasFido2: try FfiConverterBool.read(from: &buf), totp: try FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+        
+        case 2: return .secureNote
+        
+        case 3: return .card
+        
+        case 4: return .identity
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherListViewType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .login(hasFido2,totp):
+            writeInt(&buf, Int32(1))
+            FfiConverterBool.write(hasFido2, into: &buf)
+            FfiConverterOptionTypeEncString.write(totp, into: &buf)
+            
+        
+        case .secureNote:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .card:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .identity:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+public func FfiConverterTypeCipherListViewType_lift(_ buf: RustBuffer) throws -> CipherListViewType {
+    return try FfiConverterTypeCipherListViewType.lift(buf)
+}
+
+public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType) -> RustBuffer {
+    return FfiConverterTypeCipherListViewType.lower(value)
+}
+
+
+
+extension CipherListViewType: Equatable, Hashable {}
+
+
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
