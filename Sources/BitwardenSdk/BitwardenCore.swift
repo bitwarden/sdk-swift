@@ -703,6 +703,85 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 }
 
 
+public struct DeriveKeyConnectorRequest {
+    /**
+     * Encrypted user key, used to validate the master key
+     */
+    public let userKeyEncrypted: EncString
+    public let password: String
+    public let kdf: Kdf
+    public let email: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Encrypted user key, used to validate the master key
+         */userKeyEncrypted: EncString, password: String, kdf: Kdf, email: String) {
+        self.userKeyEncrypted = userKeyEncrypted
+        self.password = password
+        self.kdf = kdf
+        self.email = email
+    }
+}
+
+
+
+extension DeriveKeyConnectorRequest: Equatable, Hashable {
+    public static func ==(lhs: DeriveKeyConnectorRequest, rhs: DeriveKeyConnectorRequest) -> Bool {
+        if lhs.userKeyEncrypted != rhs.userKeyEncrypted {
+            return false
+        }
+        if lhs.password != rhs.password {
+            return false
+        }
+        if lhs.kdf != rhs.kdf {
+            return false
+        }
+        if lhs.email != rhs.email {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(userKeyEncrypted)
+        hasher.combine(password)
+        hasher.combine(kdf)
+        hasher.combine(email)
+    }
+}
+
+
+public struct FfiConverterTypeDeriveKeyConnectorRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeriveKeyConnectorRequest {
+        return
+            try DeriveKeyConnectorRequest(
+                userKeyEncrypted: FfiConverterTypeEncString.read(from: &buf), 
+                password: FfiConverterString.read(from: &buf), 
+                kdf: FfiConverterTypeKdf.read(from: &buf), 
+                email: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DeriveKeyConnectorRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.userKeyEncrypted, into: &buf)
+        FfiConverterString.write(value.password, into: &buf)
+        FfiConverterTypeKdf.write(value.kdf, into: &buf)
+        FfiConverterString.write(value.email, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeDeriveKeyConnectorRequest_lift(_ buf: RustBuffer) throws -> DeriveKeyConnectorRequest {
+    return try FfiConverterTypeDeriveKeyConnectorRequest.lift(buf)
+}
+
+public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyConnectorRequest) -> RustBuffer {
+    return FfiConverterTypeDeriveKeyConnectorRequest.lower(value)
+}
+
+
 public struct DerivePinKeyResponse {
     /**
      * [UserKey](bitwarden_crypto::UserKey) protected by PIN
@@ -990,6 +1069,71 @@ public func FfiConverterTypeInitUserCryptoRequest_lift(_ buf: RustBuffer) throws
 
 public func FfiConverterTypeInitUserCryptoRequest_lower(_ value: InitUserCryptoRequest) -> RustBuffer {
     return FfiConverterTypeInitUserCryptoRequest.lower(value)
+}
+
+
+public struct KeyConnectorResponse {
+    public let masterKey: String
+    public let encryptedUserKey: String
+    public let keys: RsaKeyPair
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(masterKey: String, encryptedUserKey: String, keys: RsaKeyPair) {
+        self.masterKey = masterKey
+        self.encryptedUserKey = encryptedUserKey
+        self.keys = keys
+    }
+}
+
+
+
+extension KeyConnectorResponse: Equatable, Hashable {
+    public static func ==(lhs: KeyConnectorResponse, rhs: KeyConnectorResponse) -> Bool {
+        if lhs.masterKey != rhs.masterKey {
+            return false
+        }
+        if lhs.encryptedUserKey != rhs.encryptedUserKey {
+            return false
+        }
+        if lhs.keys != rhs.keys {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(masterKey)
+        hasher.combine(encryptedUserKey)
+        hasher.combine(keys)
+    }
+}
+
+
+public struct FfiConverterTypeKeyConnectorResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyConnectorResponse {
+        return
+            try KeyConnectorResponse(
+                masterKey: FfiConverterString.read(from: &buf), 
+                encryptedUserKey: FfiConverterString.read(from: &buf), 
+                keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: KeyConnectorResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.masterKey, into: &buf)
+        FfiConverterString.write(value.encryptedUserKey, into: &buf)
+        FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeKeyConnectorResponse_lift(_ buf: RustBuffer) throws -> KeyConnectorResponse {
+    return try FfiConverterTypeKeyConnectorResponse.lift(buf)
+}
+
+public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResponse) -> RustBuffer {
+    return FfiConverterTypeKeyConnectorResponse.lower(value)
 }
 
 
@@ -1672,6 +1816,14 @@ public enum InitUserCryptoMethod {
          * The user's symmetric crypto key, encrypted with the Device Key.
          */deviceProtectedUserKey: AsymmetricEncString
     )
+    case keyConnector(
+        /**
+         * Base64 encoded master key, retrieved from the key connector.
+         */masterKey: String, 
+        /**
+         * The user's encrypted symmetric crypto key
+         */userKey: String
+    )
 }
 
 
@@ -1695,6 +1847,9 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         )
         
         case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        )
+        
+        case 6: return .keyConnector(masterKey: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -1733,6 +1888,12 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
             FfiConverterTypeAsymmetricEncString.write(deviceProtectedUserKey, into: &buf)
+            
+        
+        case let .keyConnector(masterKey,userKey):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(masterKey, into: &buf)
+            FfiConverterString.write(userKey, into: &buf)
             
         }
     }

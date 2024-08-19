@@ -870,6 +870,11 @@ public protocol ClientAuthProtocol : AnyObject {
     func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String
     
     /**
+     * Generate keys needed to onboard a new user without master key to key connector
+     */
+    func makeKeyConnectorKeys() throws  -> KeyConnectorResponse
+    
+    /**
      * Generate keys needed for registration process
      */
     func makeRegisterKeys(email: String, password: String, kdf: Kdf) throws  -> RegisterKeyResponse
@@ -1001,6 +1006,16 @@ open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose:
             liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeBitwardenError.lift
         )
+}
+    
+    /**
+     * Generate keys needed to onboard a new user without master key to key connector
+     */
+open func makeKeyConnectorKeys()throws  -> KeyConnectorResponse {
+    return try  FfiConverterTypeKeyConnectorResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientauth_make_key_connector_keys(self.uniffiClonePointer(),$0
+    )
+})
 }
     
     /**
@@ -1471,6 +1486,11 @@ public func FfiConverterTypeClientCollections_lower(_ value: ClientCollections) 
 public protocol ClientCryptoProtocol : AnyObject {
     
     /**
+     * Derive the master key for migrating to the key connector
+     */
+    func deriveKeyConnector(request: DeriveKeyConnectorRequest) throws  -> String
+    
+    /**
      * Generates a PIN protected user key from the provided PIN. The result can be stored and later
      * used to initialize another client instance by using the PIN and the PIN key with
      * `initialize_user_crypto`.
@@ -1551,6 +1571,17 @@ open class ClientCrypto:
 
     
 
+    
+    /**
+     * Derive the master key for migrating to the key connector
+     */
+open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> String {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientcrypto_derive_key_connector(self.uniffiClonePointer(),
+        FfiConverterTypeDeriveKeyConnectorRequest_lower(request),$0
+    )
+})
+}
     
     /**
      * Generates a PIN protected user key from the provided PIN. The result can be stored and later
@@ -4798,6 +4829,10 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -4968,6 +5003,9 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_hash_password() != 58719) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_key_connector_keys() != 11807) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientauth_make_register_keys() != 4847) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -5014,6 +5052,9 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcollections_decrypt_list() != 34441) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_key_connector() != 31169) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_derive_pin_key() != 33793) {
