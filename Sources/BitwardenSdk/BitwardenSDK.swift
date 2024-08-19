@@ -3075,6 +3075,11 @@ public protocol ClientVaultProtocol : AnyObject {
     func generateTotp(key: String, time: DateTime?) throws  -> TotpResponse
     
     /**
+     * Generate a TOTP code from a provided cipher list view.
+     */
+    func generateTotpCipherView(view: CipherListView, time: DateTime?) throws  -> TotpResponse
+    
+    /**
      * Password history operations
      */
     func passwordHistory()  -> ClientPasswordHistory
@@ -3174,6 +3179,18 @@ open func generateTotp(key: String, time: DateTime?)throws  -> TotpResponse {
     return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_clientvault_generate_totp(self.uniffiClonePointer(),
         FfiConverterString.lower(key),
+        FfiConverterOptionTypeDateTime.lower(time),$0
+    )
+})
+}
+    
+    /**
+     * Generate a TOTP code from a provided cipher list view.
+     */
+open func generateTotpCipherView(view: CipherListView, time: DateTime?)throws  -> TotpResponse {
+    return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientvault_generate_totp_cipher_view(self.uniffiClonePointer(),
+        FfiConverterTypeCipherListView_lower(view),
         FfiConverterOptionTypeDateTime.lower(time),$0
     )
 })
@@ -5123,6 +5140,9 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp() != 46339) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientvault_generate_totp_cipher_view() != 12034) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientvault_password_history() != 59154) {
