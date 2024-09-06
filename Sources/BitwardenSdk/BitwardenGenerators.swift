@@ -50,9 +50,11 @@ fileprivate extension ForeignBytes {
 
 fileprivate extension Data {
     init(rustBuffer: RustBuffer) {
-        // TODO: This copies the buffer. Can we read directly from a
-        // Rust buffer?
-        self.init(bytes: rustBuffer.data!, count: Int(rustBuffer.len))
+        self.init(
+            bytesNoCopy: rustBuffer.data!,
+            count: Int(rustBuffer.len),
+            deallocator: .none
+        )
     }
 }
 
@@ -591,22 +593,22 @@ public struct PasswordGeneratorRequest {
     public let avoidAmbiguous: Bool
     /**
      * The minimum number of lowercase characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
+     * When set, the value must be between 1 and 9. This value is ignored if lowercase is false.
      */
     public let minLowercase: UInt8?
     /**
      * The minimum number of uppercase characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is uppercase is false
+     * When set, the value must be between 1 and 9. This value is ignored if uppercase is false.
      */
     public let minUppercase: UInt8?
     /**
      * The minimum number of numbers in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is numbers is false
+     * When set, the value must be between 1 and 9. This value is ignored if numbers is false.
      */
     public let minNumber: UInt8?
     /**
      * The minimum number of special characters in the generated password.
-     * When set, the value must be between 1 and 9. This value is ignored is special is false
+     * When set, the value must be between 1 and 9. This value is ignored if special is false.
      */
     public let minSpecial: UInt8?
 
@@ -635,19 +637,19 @@ public struct PasswordGeneratorRequest {
          */avoidAmbiguous: Bool, 
         /**
          * The minimum number of lowercase characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is lowercase is false
+         * When set, the value must be between 1 and 9. This value is ignored if lowercase is false.
          */minLowercase: UInt8?, 
         /**
          * The minimum number of uppercase characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is uppercase is false
+         * When set, the value must be between 1 and 9. This value is ignored if uppercase is false.
          */minUppercase: UInt8?, 
         /**
          * The minimum number of numbers in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is numbers is false
+         * When set, the value must be between 1 and 9. This value is ignored if numbers is false.
          */minNumber: UInt8?, 
         /**
          * The minimum number of special characters in the generated password.
-         * When set, the value must be between 1 and 9. This value is ignored is special is false
+         * When set, the value must be between 1 and 9. This value is ignored if special is false.
          */minSpecial: UInt8?) {
         self.lowercase = lowercase
         self.uppercase = uppercase
