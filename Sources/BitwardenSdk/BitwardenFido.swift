@@ -1753,6 +1753,108 @@ public func FfiConverterTypeSelectedCredential_lower(_ value: SelectedCredential
     return FfiConverterTypeSelectedCredential.lower(value)
 }
 
+
+/**
+ * An Unverified asset link.
+ */
+public struct UnverifiedAssetLink {
+    /**
+     * Application package name.
+     */
+    public let packageName: String
+    /**
+     * Fingerprint to compare.
+     */
+    public let sha256CertFingerprint: String
+    /**
+     * Host to lookup the well known asset link.
+     */
+    public let host: String
+    /**
+     * When sourced from the application statement list or parsed from host for passkeys.
+     * Will be generated from `host` if not provided.
+     */
+    public let assetLinkUrl: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Application package name.
+         */packageName: String, 
+        /**
+         * Fingerprint to compare.
+         */sha256CertFingerprint: String, 
+        /**
+         * Host to lookup the well known asset link.
+         */host: String, 
+        /**
+         * When sourced from the application statement list or parsed from host for passkeys.
+         * Will be generated from `host` if not provided.
+         */assetLinkUrl: String?) {
+        self.packageName = packageName
+        self.sha256CertFingerprint = sha256CertFingerprint
+        self.host = host
+        self.assetLinkUrl = assetLinkUrl
+    }
+}
+
+
+
+extension UnverifiedAssetLink: Equatable, Hashable {
+    public static func ==(lhs: UnverifiedAssetLink, rhs: UnverifiedAssetLink) -> Bool {
+        if lhs.packageName != rhs.packageName {
+            return false
+        }
+        if lhs.sha256CertFingerprint != rhs.sha256CertFingerprint {
+            return false
+        }
+        if lhs.host != rhs.host {
+            return false
+        }
+        if lhs.assetLinkUrl != rhs.assetLinkUrl {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(packageName)
+        hasher.combine(sha256CertFingerprint)
+        hasher.combine(host)
+        hasher.combine(assetLinkUrl)
+    }
+}
+
+
+public struct FfiConverterTypeUnverifiedAssetLink: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnverifiedAssetLink {
+        return
+            try UnverifiedAssetLink(
+                packageName: FfiConverterString.read(from: &buf), 
+                sha256CertFingerprint: FfiConverterString.read(from: &buf), 
+                host: FfiConverterString.read(from: &buf), 
+                assetLinkUrl: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UnverifiedAssetLink, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.packageName, into: &buf)
+        FfiConverterString.write(value.sha256CertFingerprint, into: &buf)
+        FfiConverterString.write(value.host, into: &buf)
+        FfiConverterOptionString.write(value.assetLinkUrl, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeUnverifiedAssetLink_lift(_ buf: RustBuffer) throws -> UnverifiedAssetLink {
+    return try FfiConverterTypeUnverifiedAssetLink.lift(buf)
+}
+
+public func FfiConverterTypeUnverifiedAssetLink_lower(_ value: UnverifiedAssetLink) -> RustBuffer {
+    return FfiConverterTypeUnverifiedAssetLink.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -1811,6 +1913,77 @@ public func FfiConverterTypeClientData_lower(_ value: ClientData) -> RustBuffer 
 
 
 extension ClientData: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The origin of a WebAuthn request.
+ */
+
+public enum Origin {
+    
+    /**
+     * A Url, meant for a request in the web browser.
+     */
+    case web(String
+    )
+    /**
+     * An android digital asset fingerprint.
+     * Meant for a request coming from an android application.
+     */
+    case android(UnverifiedAssetLink
+    )
+}
+
+
+public struct FfiConverterTypeOrigin: FfiConverterRustBuffer {
+    typealias SwiftType = Origin
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Origin {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .web(try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .android(try FfiConverterTypeUnverifiedAssetLink.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: Origin, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .web(v1):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(v1, into: &buf)
+            
+        
+        case let .android(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeUnverifiedAssetLink.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+public func FfiConverterTypeOrigin_lift(_ buf: RustBuffer) throws -> Origin {
+    return try FfiConverterTypeOrigin.lift(buf)
+}
+
+public func FfiConverterTypeOrigin_lower(_ value: Origin) -> RustBuffer {
+    return FfiConverterTypeOrigin.lower(value)
+}
+
+
+
+extension Origin: Equatable, Hashable {}
 
 
 
