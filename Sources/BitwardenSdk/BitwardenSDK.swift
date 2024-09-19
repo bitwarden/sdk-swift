@@ -2166,9 +2166,9 @@ public func FfiConverterTypeClientFido2Authenticator_lower(_ value: ClientFido2A
 
 public protocol ClientFido2ClientProtocol : AnyObject {
     
-    func authenticate(origin: String, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse
+    func authenticate(origin: Origin, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse
     
-    func register(origin: String, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse
+    func register(origin: Origin, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse
     
 }
 
@@ -2213,13 +2213,13 @@ open class ClientFido2Client:
     
 
     
-open func authenticate(origin: String, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse {
+open func authenticate(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientfido2client_authenticate(
                     self.uniffiClonePointer(),
-                    FfiConverterString.lower(origin),FfiConverterString.lower(request),FfiConverterTypeClientData_lower(clientData)
+                    FfiConverterTypeOrigin_lower(origin),FfiConverterString.lower(request),FfiConverterTypeClientData_lower(clientData)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -2230,13 +2230,13 @@ open func authenticate(origin: String, request: String, clientData: ClientData)a
         )
 }
     
-open func register(origin: String, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse {
+open func register(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_clientfido2client_register(
                     self.uniffiClonePointer(),
-                    FfiConverterString.lower(origin),FfiConverterString.lower(request),FfiConverterTypeClientData_lower(clientData)
+                    FfiConverterTypeOrigin_lower(origin),FfiConverterString.lower(request),FfiConverterTypeClientData_lower(clientData)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -4835,6 +4835,8 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -5107,10 +5109,10 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_silently_discover_credentials() != 47262) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_authenticate() != 55420) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_authenticate() != 36920) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_register() != 51611) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_register() != 29872) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_decrypt() != 1331) {
