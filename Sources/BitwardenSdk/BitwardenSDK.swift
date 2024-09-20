@@ -501,6 +501,11 @@ public protocol ClientProtocol : AnyObject {
      */
     func generators()  -> ClientGenerators
     
+    /**
+     * Test method, calls http endpoint
+     */
+    func httpGet(url: String) async throws  -> String
+    
     func platform()  -> ClientPlatform
     
     /**
@@ -616,6 +621,26 @@ open func generators() -> ClientGenerators {
     uniffi_bitwarden_uniffi_fn_method_client_generators(self.uniffiClonePointer(),$0
     )
 })
+}
+    
+    /**
+     * Test method, calls http endpoint
+     */
+open func httpGet(url: String)async throws  -> String {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_client_http_get(
+                    self.uniffiClonePointer(),
+                    FfiConverterString.lower(url)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError.lift
+        )
 }
     
 open func platform() -> ClientPlatform {
@@ -4978,6 +5003,9 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 50372) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 31705) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 32492) {
