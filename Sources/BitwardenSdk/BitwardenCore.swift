@@ -1607,6 +1607,10 @@ public enum DeviceType {
     case vivaldiExtension
     case safariExtension
     case sdk
+    case server
+    case windowsCli
+    case macOsCli
+    case linuxCli
 }
 
 
@@ -1660,6 +1664,14 @@ public struct FfiConverterTypeDeviceType: FfiConverterRustBuffer {
         case 21: return .safariExtension
         
         case 22: return .sdk
+        
+        case 23: return .server
+        
+        case 24: return .windowsCli
+        
+        case 25: return .macOsCli
+        
+        case 26: return .linuxCli
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -1755,6 +1767,22 @@ public struct FfiConverterTypeDeviceType: FfiConverterRustBuffer {
         
         case .sdk:
             writeInt(&buf, Int32(22))
+        
+        
+        case .server:
+            writeInt(&buf, Int32(23))
+        
+        
+        case .windowsCli:
+            writeInt(&buf, Int32(24))
+        
+        
+        case .macOsCli:
+            writeInt(&buf, Int32(25))
+        
+        
+        case .linuxCli:
+            writeInt(&buf, Int32(26))
         
         }
     }
