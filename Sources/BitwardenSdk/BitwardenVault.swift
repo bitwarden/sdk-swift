@@ -908,6 +908,7 @@ public struct Cipher {
     public let identity: Identity?
     public let card: Card?
     public let secureNote: SecureNote?
+    public let sshKey: SshKey?
     public let favorite: Bool
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
@@ -927,7 +928,7 @@ public struct Cipher {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -940,6 +941,7 @@ public struct Cipher {
         self.identity = identity
         self.card = card
         self.secureNote = secureNote
+        self.sshKey = sshKey
         self.favorite = favorite
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
@@ -995,6 +997,9 @@ extension Cipher: Equatable, Hashable {
         if lhs.secureNote != rhs.secureNote {
             return false
         }
+        if lhs.sshKey != rhs.sshKey {
+            return false
+        }
         if lhs.favorite != rhs.favorite {
             return false
         }
@@ -1047,6 +1052,7 @@ extension Cipher: Equatable, Hashable {
         hasher.combine(identity)
         hasher.combine(card)
         hasher.combine(secureNote)
+        hasher.combine(sshKey)
         hasher.combine(favorite)
         hasher.combine(reprompt)
         hasher.combine(organizationUseTotp)
@@ -1079,6 +1085,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 identity: FfiConverterOptionTypeIdentity.read(from: &buf), 
                 card: FfiConverterOptionTypeCard.read(from: &buf), 
                 secureNote: FfiConverterOptionTypeSecureNote.read(from: &buf), 
+                sshKey: FfiConverterOptionTypeSshKey.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
@@ -1107,6 +1114,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeIdentity.write(value.identity, into: &buf)
         FfiConverterOptionTypeCard.write(value.card, into: &buf)
         FfiConverterOptionTypeSecureNote.write(value.secureNote, into: &buf)
+        FfiConverterOptionTypeSshKey.write(value.sshKey, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
@@ -1329,6 +1337,7 @@ public struct CipherView {
     public let identity: IdentityView?
     public let card: CardView?
     public let secureNote: SecureNoteView?
+    public let sshKey: SshKeyView?
     public let favorite: Bool
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
@@ -1347,7 +1356,7 @@ public struct CipherView {
     public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
         /**
          * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1360,6 +1369,7 @@ public struct CipherView {
         self.identity = identity
         self.card = card
         self.secureNote = secureNote
+        self.sshKey = sshKey
         self.favorite = favorite
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
@@ -1415,6 +1425,9 @@ extension CipherView: Equatable, Hashable {
         if lhs.secureNote != rhs.secureNote {
             return false
         }
+        if lhs.sshKey != rhs.sshKey {
+            return false
+        }
         if lhs.favorite != rhs.favorite {
             return false
         }
@@ -1467,6 +1480,7 @@ extension CipherView: Equatable, Hashable {
         hasher.combine(identity)
         hasher.combine(card)
         hasher.combine(secureNote)
+        hasher.combine(sshKey)
         hasher.combine(favorite)
         hasher.combine(reprompt)
         hasher.combine(organizationUseTotp)
@@ -1499,6 +1513,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 identity: FfiConverterOptionTypeIdentityView.read(from: &buf), 
                 card: FfiConverterOptionTypeCardView.read(from: &buf), 
                 secureNote: FfiConverterOptionTypeSecureNoteView.read(from: &buf), 
+                sshKey: FfiConverterOptionTypeSshKeyView.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
@@ -1527,6 +1542,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeIdentityView.write(value.identity, into: &buf)
         FfiConverterOptionTypeCardView.write(value.card, into: &buf)
         FfiConverterOptionTypeSecureNoteView.write(value.secureNote, into: &buf)
+        FfiConverterOptionTypeSshKeyView.write(value.sshKey, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
@@ -3445,6 +3461,172 @@ public func FfiConverterTypeSecureNoteView_lower(_ value: SecureNoteView) -> Rus
 }
 
 
+public struct SshKey {
+    /**
+     * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
+     */
+    public let privateKey: EncString?
+    /**
+     * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
+     */
+    public let publicKey: EncString?
+    /**
+     * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
+     */
+    public let fingerprint: EncString?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
+         */privateKey: EncString?, 
+        /**
+         * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
+         */publicKey: EncString?, 
+        /**
+         * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
+         */fingerprint: EncString?) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.fingerprint = fingerprint
+    }
+}
+
+
+
+extension SshKey: Equatable, Hashable {
+    public static func ==(lhs: SshKey, rhs: SshKey) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.fingerprint != rhs.fingerprint {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(fingerprint)
+    }
+}
+
+
+public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKey {
+        return
+            try SshKey(
+                privateKey: FfiConverterOptionTypeEncString.read(from: &buf), 
+                publicKey: FfiConverterOptionTypeEncString.read(from: &buf), 
+                fingerprint: FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SshKey, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeEncString.write(value.privateKey, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.publicKey, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.fingerprint, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSshKey_lift(_ buf: RustBuffer) throws -> SshKey {
+    return try FfiConverterTypeSshKey.lift(buf)
+}
+
+public func FfiConverterTypeSshKey_lower(_ value: SshKey) -> RustBuffer {
+    return FfiConverterTypeSshKey.lower(value)
+}
+
+
+public struct SshKeyView {
+    /**
+     * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
+     */
+    public let privateKey: String?
+    /**
+     * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
+     */
+    public let publicKey: String?
+    /**
+     * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
+     */
+    public let fingerprint: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
+         */privateKey: String?, 
+        /**
+         * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
+         */publicKey: String?, 
+        /**
+         * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
+         */fingerprint: String?) {
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.fingerprint = fingerprint
+    }
+}
+
+
+
+extension SshKeyView: Equatable, Hashable {
+    public static func ==(lhs: SshKeyView, rhs: SshKeyView) -> Bool {
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.fingerprint != rhs.fingerprint {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKey)
+        hasher.combine(publicKey)
+        hasher.combine(fingerprint)
+    }
+}
+
+
+public struct FfiConverterTypeSshKeyView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKeyView {
+        return
+            try SshKeyView(
+                privateKey: FfiConverterOptionString.read(from: &buf), 
+                publicKey: FfiConverterOptionString.read(from: &buf), 
+                fingerprint: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SshKeyView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.privateKey, into: &buf)
+        FfiConverterOptionString.write(value.publicKey, into: &buf)
+        FfiConverterOptionString.write(value.fingerprint, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeSshKeyView_lift(_ buf: RustBuffer) throws -> SshKeyView {
+    return try FfiConverterTypeSshKeyView.lift(buf)
+}
+
+public func FfiConverterTypeSshKeyView_lower(_ value: SshKeyView) -> RustBuffer {
+    return FfiConverterTypeSshKeyView.lower(value)
+}
+
+
 public struct TotpResponse {
     /**
      * Generated TOTP code
@@ -3523,6 +3705,7 @@ public enum CipherListViewType {
     case secureNote
     case card
     case identity
+    case sshKey
 }
 
 
@@ -3541,6 +3724,8 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         case 3: return .card
         
         case 4: return .identity
+        
+        case 5: return .sshKey
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3566,6 +3751,10 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         
         case .identity:
             writeInt(&buf, Int32(4))
+        
+        
+        case .sshKey:
+            writeInt(&buf, Int32(5))
         
         }
     }
@@ -3650,6 +3839,7 @@ public enum CipherType : UInt8 {
     case secureNote = 2
     case card = 3
     case identity = 4
+    case sshKey = 5
 }
 
 
@@ -3667,6 +3857,8 @@ public struct FfiConverterTypeCipherType: FfiConverterRustBuffer {
         case 3: return .card
         
         case 4: return .identity
+        
+        case 5: return .sshKey
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3690,6 +3882,10 @@ public struct FfiConverterTypeCipherType: FfiConverterRustBuffer {
         
         case .identity:
             writeInt(&buf, Int32(4))
+        
+        
+        case .sshKey:
+            writeInt(&buf, Int32(5))
         
         }
     }
@@ -4178,6 +4374,48 @@ fileprivate struct FfiConverterOptionTypeSecureNoteView: FfiConverterRustBuffer 
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeSecureNoteView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeSshKey: FfiConverterRustBuffer {
+    typealias SwiftType = SshKey?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSshKey.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSshKey.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate struct FfiConverterOptionTypeSshKeyView: FfiConverterRustBuffer {
+    typealias SwiftType = SshKeyView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSshKeyView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSshKeyView.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
