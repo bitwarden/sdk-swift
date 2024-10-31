@@ -1575,16 +1575,18 @@ public struct Collection {
     public let externalId: String?
     public let hidePasswords: Bool
     public let readOnly: Bool
+    public let manage: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool) {
+    public init(id: Uuid?, organizationId: Uuid, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
         self.externalId = externalId
         self.hidePasswords = hidePasswords
         self.readOnly = readOnly
+        self.manage = manage
     }
 }
 
@@ -1610,6 +1612,9 @@ extension Collection: Equatable, Hashable {
         if lhs.readOnly != rhs.readOnly {
             return false
         }
+        if lhs.manage != rhs.manage {
+            return false
+        }
         return true
     }
 
@@ -1620,6 +1625,7 @@ extension Collection: Equatable, Hashable {
         hasher.combine(externalId)
         hasher.combine(hidePasswords)
         hasher.combine(readOnly)
+        hasher.combine(manage)
     }
 }
 
@@ -1633,7 +1639,8 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
-                readOnly: FfiConverterBool.read(from: &buf)
+                readOnly: FfiConverterBool.read(from: &buf), 
+                manage: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -1644,6 +1651,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.externalId, into: &buf)
         FfiConverterBool.write(value.hidePasswords, into: &buf)
         FfiConverterBool.write(value.readOnly, into: &buf)
+        FfiConverterBool.write(value.manage, into: &buf)
     }
 }
 
@@ -1664,16 +1672,18 @@ public struct CollectionView {
     public let externalId: String?
     public let hidePasswords: Bool
     public let readOnly: Bool
+    public let manage: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool) {
+    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
         self.externalId = externalId
         self.hidePasswords = hidePasswords
         self.readOnly = readOnly
+        self.manage = manage
     }
 }
 
@@ -1699,6 +1709,9 @@ extension CollectionView: Equatable, Hashable {
         if lhs.readOnly != rhs.readOnly {
             return false
         }
+        if lhs.manage != rhs.manage {
+            return false
+        }
         return true
     }
 
@@ -1709,6 +1722,7 @@ extension CollectionView: Equatable, Hashable {
         hasher.combine(externalId)
         hasher.combine(hidePasswords)
         hasher.combine(readOnly)
+        hasher.combine(manage)
     }
 }
 
@@ -1722,7 +1736,8 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
                 name: FfiConverterString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
-                readOnly: FfiConverterBool.read(from: &buf)
+                readOnly: FfiConverterBool.read(from: &buf), 
+                manage: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -1733,6 +1748,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.externalId, into: &buf)
         FfiConverterBool.write(value.hidePasswords, into: &buf)
         FfiConverterBool.write(value.readOnly, into: &buf)
+        FfiConverterBool.write(value.manage, into: &buf)
     }
 }
 
@@ -3465,28 +3481,28 @@ public struct SshKey {
     /**
      * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
      */
-    public let privateKey: EncString?
+    public let privateKey: EncString
     /**
      * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
      */
-    public let publicKey: EncString?
+    public let publicKey: EncString
     /**
      * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
      */
-    public let fingerprint: EncString?
+    public let fingerprint: EncString
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
-         */privateKey: EncString?, 
+         */privateKey: EncString, 
         /**
          * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
-         */publicKey: EncString?, 
+         */publicKey: EncString, 
         /**
          * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
-         */fingerprint: EncString?) {
+         */fingerprint: EncString) {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.fingerprint = fingerprint
@@ -3521,16 +3537,16 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKey {
         return
             try SshKey(
-                privateKey: FfiConverterOptionTypeEncString.read(from: &buf), 
-                publicKey: FfiConverterOptionTypeEncString.read(from: &buf), 
-                fingerprint: FfiConverterOptionTypeEncString.read(from: &buf)
+                privateKey: FfiConverterTypeEncString.read(from: &buf), 
+                publicKey: FfiConverterTypeEncString.read(from: &buf), 
+                fingerprint: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SshKey, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeEncString.write(value.privateKey, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.publicKey, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.fingerprint, into: &buf)
+        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
+        FfiConverterTypeEncString.write(value.publicKey, into: &buf)
+        FfiConverterTypeEncString.write(value.fingerprint, into: &buf)
     }
 }
 
@@ -3548,28 +3564,28 @@ public struct SshKeyView {
     /**
      * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
      */
-    public let privateKey: String?
+    public let privateKey: String
     /**
      * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
      */
-    public let publicKey: String?
+    public let publicKey: String
     /**
      * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
      */
-    public let fingerprint: String?
+    public let fingerprint: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
-         */privateKey: String?, 
+         */privateKey: String, 
         /**
          * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
-         */publicKey: String?, 
+         */publicKey: String, 
         /**
          * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
-         */fingerprint: String?) {
+         */fingerprint: String) {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.fingerprint = fingerprint
@@ -3604,16 +3620,16 @@ public struct FfiConverterTypeSshKeyView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKeyView {
         return
             try SshKeyView(
-                privateKey: FfiConverterOptionString.read(from: &buf), 
-                publicKey: FfiConverterOptionString.read(from: &buf), 
-                fingerprint: FfiConverterOptionString.read(from: &buf)
+                privateKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SshKeyView, into buf: inout [UInt8]) {
-        FfiConverterOptionString.write(value.privateKey, into: &buf)
-        FfiConverterOptionString.write(value.publicKey, into: &buf)
-        FfiConverterOptionString.write(value.fingerprint, into: &buf)
+        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
     }
 }
 
