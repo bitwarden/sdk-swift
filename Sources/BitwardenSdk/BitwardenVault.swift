@@ -3038,6 +3038,77 @@ public func FfiConverterTypeLogin_lower(_ value: Login) -> RustBuffer {
 }
 
 
+public struct LoginListView {
+    public let hasFido2: Bool
+    /**
+     * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
+     */
+    public let totp: EncString?
+    public let uris: [LoginUriView]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(hasFido2: Bool, 
+        /**
+         * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
+         */totp: EncString?, uris: [LoginUriView]?) {
+        self.hasFido2 = hasFido2
+        self.totp = totp
+        self.uris = uris
+    }
+}
+
+
+
+extension LoginListView: Equatable, Hashable {
+    public static func ==(lhs: LoginListView, rhs: LoginListView) -> Bool {
+        if lhs.hasFido2 != rhs.hasFido2 {
+            return false
+        }
+        if lhs.totp != rhs.totp {
+            return false
+        }
+        if lhs.uris != rhs.uris {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(hasFido2)
+        hasher.combine(totp)
+        hasher.combine(uris)
+    }
+}
+
+
+public struct FfiConverterTypeLoginListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoginListView {
+        return
+            try LoginListView(
+                hasFido2: FfiConverterBool.read(from: &buf), 
+                totp: FfiConverterOptionTypeEncString.read(from: &buf), 
+                uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoginListView, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.hasFido2, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.totp, into: &buf)
+        FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
+    }
+}
+
+
+public func FfiConverterTypeLoginListView_lift(_ buf: RustBuffer) throws -> LoginListView {
+    return try FfiConverterTypeLoginListView.lift(buf)
+}
+
+public func FfiConverterTypeLoginListView_lower(_ value: LoginListView) -> RustBuffer {
+    return FfiConverterTypeLoginListView.lower(value)
+}
+
+
 public struct LoginUri {
     public let uri: EncString?
     public let match: UriMatchType?
@@ -3716,7 +3787,7 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 
 public enum CipherListViewType {
     
-    case login(hasFido2: Bool, totp: EncString?
+    case login(LoginListView
     )
     case secureNote
     case card
@@ -3732,7 +3803,7 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .login(hasFido2: try FfiConverterBool.read(from: &buf), totp: try FfiConverterOptionTypeEncString.read(from: &buf)
+        case 1: return .login(try FfiConverterTypeLoginListView.read(from: &buf)
         )
         
         case 2: return .secureNote
@@ -3751,10 +3822,9 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         switch value {
         
         
-        case let .login(hasFido2,totp):
+        case let .login(v1):
             writeInt(&buf, Int32(1))
-            FfiConverterBool.write(hasFido2, into: &buf)
-            FfiConverterOptionTypeEncString.write(totp, into: &buf)
+            FfiConverterTypeLoginListView.write(v1, into: &buf)
             
         
         case .secureNote:
