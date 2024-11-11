@@ -1150,7 +1150,7 @@ public struct CipherListView {
      */
     public let key: EncString?
     public let name: String
-    public let subTitle: String
+    public let subtitle: String
     public let type: CipherListViewType
     public let favorite: Bool
     public let reprompt: CipherRepromptType
@@ -1169,7 +1169,7 @@ public struct CipherListView {
     public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
         /**
          * Temporary, required to support calculating TOTP from CipherListView.
-         */key: EncString?, name: String, subTitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
+         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1179,7 +1179,7 @@ public struct CipherListView {
         self.collectionIds = collectionIds
         self.key = key
         self.name = name
-        self.subTitle = subTitle
+        self.subtitle = subtitle
         self.type = type
         self.favorite = favorite
         self.reprompt = reprompt
@@ -1214,7 +1214,7 @@ extension CipherListView: Equatable, Hashable {
         if lhs.name != rhs.name {
             return false
         }
-        if lhs.subTitle != rhs.subTitle {
+        if lhs.subtitle != rhs.subtitle {
             return false
         }
         if lhs.type != rhs.type {
@@ -1254,7 +1254,7 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(collectionIds)
         hasher.combine(key)
         hasher.combine(name)
-        hasher.combine(subTitle)
+        hasher.combine(subtitle)
         hasher.combine(type)
         hasher.combine(favorite)
         hasher.combine(reprompt)
@@ -1278,7 +1278,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
-                subTitle: FfiConverterString.read(from: &buf), 
+                subtitle: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeCipherListViewType.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
@@ -1298,7 +1298,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
-        FfiConverterString.write(value.subTitle, into: &buf)
+        FfiConverterString.write(value.subtitle, into: &buf)
         FfiConverterTypeCipherListViewType.write(value.type, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
