@@ -1154,6 +1154,7 @@ public struct CipherListView {
     public let type: CipherListViewType
     public let favorite: Bool
     public let reprompt: CipherRepromptType
+    public let organizationUseTotp: Bool
     public let edit: Bool
     public let viewPassword: Bool
     /**
@@ -1169,7 +1170,7 @@ public struct CipherListView {
     public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
         /**
          * Temporary, required to support calculating TOTP from CipherListView.
-         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, edit: Bool, viewPassword: Bool, 
+         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1183,6 +1184,7 @@ public struct CipherListView {
         self.type = type
         self.favorite = favorite
         self.reprompt = reprompt
+        self.organizationUseTotp = organizationUseTotp
         self.edit = edit
         self.viewPassword = viewPassword
         self.attachments = attachments
@@ -1226,6 +1228,9 @@ extension CipherListView: Equatable, Hashable {
         if lhs.reprompt != rhs.reprompt {
             return false
         }
+        if lhs.organizationUseTotp != rhs.organizationUseTotp {
+            return false
+        }
         if lhs.edit != rhs.edit {
             return false
         }
@@ -1258,6 +1263,7 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(type)
         hasher.combine(favorite)
         hasher.combine(reprompt)
+        hasher.combine(organizationUseTotp)
         hasher.combine(edit)
         hasher.combine(viewPassword)
         hasher.combine(attachments)
@@ -1282,6 +1288,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 type: FfiConverterTypeCipherListViewType.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
+                organizationUseTotp: FfiConverterBool.read(from: &buf), 
                 edit: FfiConverterBool.read(from: &buf), 
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 attachments: FfiConverterUInt32.read(from: &buf), 
@@ -1302,6 +1309,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterTypeCipherListViewType.write(value.type, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
+        FfiConverterBool.write(value.organizationUseTotp, into: &buf)
         FfiConverterBool.write(value.edit, into: &buf)
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterUInt32.write(value.attachments, into: &buf)
