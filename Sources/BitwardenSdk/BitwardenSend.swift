@@ -170,10 +170,16 @@ fileprivate protocol FfiConverter {
 fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
 extension FfiConverterPrimitive {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ value: FfiType) throws -> SwiftType {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> FfiType {
         return value
     }
@@ -184,6 +190,9 @@ extension FfiConverterPrimitive {
 fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
 
 extension FfiConverterRustBuffer {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ buf: RustBuffer) throws -> SwiftType {
         var reader = createReader(data: Data(rustBuffer: buf))
         let value = try read(from: &reader)
@@ -194,6 +203,9 @@ extension FfiConverterRustBuffer {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> RustBuffer {
           var writer = createWriter()
           write(value, into: &writer)
@@ -384,6 +396,9 @@ fileprivate class UniffiHandleMap<T> {
 // Public interface members begin here.
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     typealias FfiType = UInt32
     typealias SwiftType = UInt32
@@ -397,6 +412,9 @@ fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -418,6 +436,9 @@ fileprivate struct FfiConverterBool : FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -573,6 +594,9 @@ extension Send: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSend: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Send {
         return
@@ -617,10 +641,16 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSend_lift(_ buf: RustBuffer) throws -> Send {
     return try FfiConverterTypeSend.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSend_lower(_ value: Send) -> RustBuffer {
     return FfiConverterTypeSend.lower(value)
 }
@@ -676,6 +706,9 @@ extension SendFile: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendFile: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFile {
         return
@@ -696,10 +729,16 @@ public struct FfiConverterTypeSendFile: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendFile_lift(_ buf: RustBuffer) throws -> SendFile {
     return try FfiConverterTypeSendFile.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
     return FfiConverterTypeSendFile.lower(value)
 }
@@ -755,6 +794,9 @@ extension SendFileView: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendFileView {
         return
@@ -775,10 +817,16 @@ public struct FfiConverterTypeSendFileView: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendFileView_lift(_ buf: RustBuffer) throws -> SendFileView {
     return try FfiConverterTypeSendFileView.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuffer {
     return FfiConverterTypeSendFileView.lower(value)
 }
@@ -852,6 +900,9 @@ extension SendListView: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendListView {
         return
@@ -880,10 +931,16 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendListView_lift(_ buf: RustBuffer) throws -> SendListView {
     return try FfiConverterTypeSendListView.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendListView_lower(_ value: SendListView) -> RustBuffer {
     return FfiConverterTypeSendListView.lower(value)
 }
@@ -921,6 +978,9 @@ extension SendText: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendText: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendText {
         return
@@ -937,10 +997,16 @@ public struct FfiConverterTypeSendText: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendText_lift(_ buf: RustBuffer) throws -> SendText {
     return try FfiConverterTypeSendText.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendText_lower(_ value: SendText) -> RustBuffer {
     return FfiConverterTypeSendText.lower(value)
 }
@@ -978,6 +1044,9 @@ extension SendTextView: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendTextView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendTextView {
         return
@@ -994,10 +1063,16 @@ public struct FfiConverterTypeSendTextView: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendTextView_lift(_ buf: RustBuffer) throws -> SendTextView {
     return try FfiConverterTypeSendTextView.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuffer {
     return FfiConverterTypeSendTextView.lower(value)
 }
@@ -1149,6 +1224,9 @@ extension SendView: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendView {
         return
@@ -1195,10 +1273,16 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendView_lift(_ buf: RustBuffer) throws -> SendView {
     return try FfiConverterTypeSendView.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
     return FfiConverterTypeSendView.lower(value)
 }
@@ -1213,6 +1297,9 @@ public enum SendType : UInt8 {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeSendType: FfiConverterRustBuffer {
     typealias SwiftType = SendType
 
@@ -1244,10 +1331,16 @@ public struct FfiConverterTypeSendType: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendType_lift(_ buf: RustBuffer) throws -> SendType {
     return try FfiConverterTypeSendType.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
     return FfiConverterTypeSendType.lower(value)
 }
@@ -1258,6 +1351,9 @@ extension SendType: Equatable, Hashable {}
 
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
     typealias SwiftType = UInt32?
 
@@ -1279,6 +1375,9 @@ fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -1300,6 +1399,9 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSendFile: FfiConverterRustBuffer {
     typealias SwiftType = SendFile?
 
@@ -1321,6 +1423,9 @@ fileprivate struct FfiConverterOptionTypeSendFile: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSendFileView: FfiConverterRustBuffer {
     typealias SwiftType = SendFileView?
 
@@ -1342,6 +1447,9 @@ fileprivate struct FfiConverterOptionTypeSendFileView: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSendText: FfiConverterRustBuffer {
     typealias SwiftType = SendText?
 
@@ -1363,6 +1471,9 @@ fileprivate struct FfiConverterOptionTypeSendText: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSendTextView: FfiConverterRustBuffer {
     typealias SwiftType = SendTextView?
 
@@ -1384,6 +1495,9 @@ fileprivate struct FfiConverterOptionTypeSendTextView: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
     typealias SwiftType = DateTime?
 
@@ -1405,6 +1519,9 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
     typealias SwiftType = Uuid?
 
@@ -1426,6 +1543,9 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     typealias SwiftType = EncString?
 

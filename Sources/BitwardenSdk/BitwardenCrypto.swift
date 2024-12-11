@@ -170,10 +170,16 @@ fileprivate protocol FfiConverter {
 fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
 extension FfiConverterPrimitive {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ value: FfiType) throws -> SwiftType {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> FfiType {
         return value
     }
@@ -184,6 +190,9 @@ extension FfiConverterPrimitive {
 fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
 
 extension FfiConverterRustBuffer {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ buf: RustBuffer) throws -> SwiftType {
         var reader = createReader(data: Data(rustBuffer: buf))
         let value = try read(from: &reader)
@@ -194,6 +203,9 @@ extension FfiConverterRustBuffer {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> RustBuffer {
           var writer = createWriter()
           write(value, into: &writer)
@@ -384,6 +396,9 @@ fileprivate class UniffiHandleMap<T> {
 // Public interface members begin here.
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     typealias FfiType = UInt32
     typealias SwiftType = UInt32
@@ -397,6 +412,9 @@ fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -485,6 +503,9 @@ extension RsaKeyPair: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeRsaKeyPair: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RsaKeyPair {
         return
@@ -501,10 +522,16 @@ public struct FfiConverterTypeRsaKeyPair: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeRsaKeyPair_lift(_ buf: RustBuffer) throws -> RsaKeyPair {
     return try FfiConverterTypeRsaKeyPair.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer {
     return FfiConverterTypeRsaKeyPair.lower(value)
 }
@@ -578,6 +605,9 @@ extension TrustDeviceResponse: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceResponse {
         return
@@ -598,10 +628,16 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeTrustDeviceResponse_lift(_ buf: RustBuffer) throws -> TrustDeviceResponse {
     return try FfiConverterTypeTrustDeviceResponse.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeTrustDeviceResponse_lower(_ value: TrustDeviceResponse) -> RustBuffer {
     return FfiConverterTypeTrustDeviceResponse.lower(value)
 }
@@ -616,6 +652,9 @@ public enum HashPurpose {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeHashPurpose: FfiConverterRustBuffer {
     typealias SwiftType = HashPurpose
 
@@ -647,10 +686,16 @@ public struct FfiConverterTypeHashPurpose: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeHashPurpose_lift(_ buf: RustBuffer) throws -> HashPurpose {
     return try FfiConverterTypeHashPurpose.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffer {
     return FfiConverterTypeHashPurpose.lower(value)
 }
@@ -679,6 +724,9 @@ public enum Kdf {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeKdf: FfiConverterRustBuffer {
     typealias SwiftType = Kdf
 
@@ -716,10 +764,16 @@ public struct FfiConverterTypeKdf: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeKdf_lift(_ buf: RustBuffer) throws -> Kdf {
     return try FfiConverterTypeKdf.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
     return FfiConverterTypeKdf.lower(value)
 }
@@ -736,6 +790,10 @@ extension Kdf: Equatable, Hashable {}
  * is needed because the UDL type name is used in function/method signatures.
  */
 public typealias AsymmetricEncString = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmetricEncString {
         return try FfiConverterString.read(from: &buf)
@@ -755,10 +813,16 @@ public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeAsymmetricEncString_lift(_ value: RustBuffer) throws -> AsymmetricEncString {
     return try FfiConverterTypeAsymmetricEncString.lift(value)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncString) -> RustBuffer {
     return FfiConverterTypeAsymmetricEncString.lower(value)
 }
@@ -770,6 +834,10 @@ public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncStri
  * is needed because the UDL type name is used in function/method signatures.
  */
 public typealias EncString = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeEncString: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncString {
         return try FfiConverterString.read(from: &buf)
@@ -789,10 +857,16 @@ public struct FfiConverterTypeEncString: FfiConverter {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeEncString_lift(_ value: RustBuffer) throws -> EncString {
     return try FfiConverterTypeEncString.lift(value)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
     return FfiConverterTypeEncString.lower(value)
 }
@@ -804,6 +878,10 @@ public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
  * is needed because the UDL type name is used in function/method signatures.
  */
 public typealias NonZeroU32 = UInt32
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeNonZeroU32: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NonZeroU32 {
         return try FfiConverterUInt32.read(from: &buf)
@@ -823,10 +901,16 @@ public struct FfiConverterTypeNonZeroU32: FfiConverter {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU32 {
     return try FfiConverterTypeNonZeroU32.lift(value)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
 }

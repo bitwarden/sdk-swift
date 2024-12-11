@@ -170,10 +170,16 @@ fileprivate protocol FfiConverter {
 fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
 extension FfiConverterPrimitive {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ value: FfiType) throws -> SwiftType {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> FfiType {
         return value
     }
@@ -184,6 +190,9 @@ extension FfiConverterPrimitive {
 fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
 
 extension FfiConverterRustBuffer {
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lift(_ buf: RustBuffer) throws -> SwiftType {
         var reader = createReader(data: Data(rustBuffer: buf))
         let value = try read(from: &reader)
@@ -194,6 +203,9 @@ extension FfiConverterRustBuffer {
         return value
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public static func lower(_ value: SwiftType) -> RustBuffer {
           var writer = createWriter()
           write(value, into: &writer)
@@ -384,6 +396,9 @@ fileprivate class UniffiHandleMap<T> {
 // Public interface members begin here.
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
     typealias FfiType = UInt8
     typealias SwiftType = UInt8
@@ -397,6 +412,9 @@ fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -418,6 +436,9 @@ fileprivate struct FfiConverterBool : FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -532,6 +553,9 @@ extension PassphraseGeneratorRequest: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypePassphraseGeneratorRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassphraseGeneratorRequest {
         return
@@ -552,10 +576,16 @@ public struct FfiConverterTypePassphraseGeneratorRequest: FfiConverterRustBuffer
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypePassphraseGeneratorRequest_lift(_ buf: RustBuffer) throws -> PassphraseGeneratorRequest {
     return try FfiConverterTypePassphraseGeneratorRequest.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypePassphraseGeneratorRequest_lower(_ value: PassphraseGeneratorRequest) -> RustBuffer {
     return FfiConverterTypePassphraseGeneratorRequest.lower(value)
 }
@@ -716,6 +746,9 @@ extension PasswordGeneratorRequest: Equatable, Hashable {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordGeneratorRequest {
         return
@@ -748,10 +781,16 @@ public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypePasswordGeneratorRequest_lift(_ buf: RustBuffer) throws -> PasswordGeneratorRequest {
     return try FfiConverterTypePasswordGeneratorRequest.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypePasswordGeneratorRequest_lower(_ value: PasswordGeneratorRequest) -> RustBuffer {
     return FfiConverterTypePasswordGeneratorRequest.lower(value)
 }
@@ -773,6 +812,9 @@ public enum AppendType {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeAppendType: FfiConverterRustBuffer {
     typealias SwiftType = AppendType
 
@@ -806,10 +848,16 @@ public struct FfiConverterTypeAppendType: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeAppendType_lift(_ buf: RustBuffer) throws -> AppendType {
     return try FfiConverterTypeAppendType.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeAppendType_lower(_ value: AppendType) -> RustBuffer {
     return FfiConverterTypeAppendType.lower(value)
 }
@@ -848,6 +896,9 @@ public enum ForwarderServiceType {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
     typealias SwiftType = ForwarderServiceType
 
@@ -918,10 +969,16 @@ public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeForwarderServiceType_lift(_ buf: RustBuffer) throws -> ForwarderServiceType {
     return try FfiConverterTypeForwarderServiceType.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeForwarderServiceType_lower(_ value: ForwarderServiceType) -> RustBuffer {
     return FfiConverterTypeForwarderServiceType.lower(value)
 }
@@ -982,6 +1039,9 @@ public enum UsernameGeneratorRequest {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct FfiConverterTypeUsernameGeneratorRequest: FfiConverterRustBuffer {
     typealias SwiftType = UsernameGeneratorRequest
 
@@ -1037,10 +1097,16 @@ public struct FfiConverterTypeUsernameGeneratorRequest: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeUsernameGeneratorRequest_lift(_ buf: RustBuffer) throws -> UsernameGeneratorRequest {
     return try FfiConverterTypeUsernameGeneratorRequest.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func FfiConverterTypeUsernameGeneratorRequest_lower(_ value: UsernameGeneratorRequest) -> RustBuffer {
     return FfiConverterTypeUsernameGeneratorRequest.lower(value)
 }
@@ -1051,6 +1117,9 @@ extension UsernameGeneratorRequest: Equatable, Hashable {}
 
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionUInt8: FfiConverterRustBuffer {
     typealias SwiftType = UInt8?
 
@@ -1072,6 +1141,9 @@ fileprivate struct FfiConverterOptionUInt8: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
