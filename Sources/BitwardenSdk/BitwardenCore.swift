@@ -1235,6 +1235,84 @@ public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResp
 }
 
 
+public struct MakeKeyPairResponse {
+    /**
+     * The user's public key
+     */
+    public let userPublicKey: String
+    /**
+     * User's private key, encrypted with the user key
+     */
+    public let userKeyEncryptedPrivateKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The user's public key
+         */userPublicKey: String, 
+        /**
+         * User's private key, encrypted with the user key
+         */userKeyEncryptedPrivateKey: EncString) {
+        self.userPublicKey = userPublicKey
+        self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
+    }
+}
+
+
+
+extension MakeKeyPairResponse: Equatable, Hashable {
+    public static func ==(lhs: MakeKeyPairResponse, rhs: MakeKeyPairResponse) -> Bool {
+        if lhs.userPublicKey != rhs.userPublicKey {
+            return false
+        }
+        if lhs.userKeyEncryptedPrivateKey != rhs.userKeyEncryptedPrivateKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(userPublicKey)
+        hasher.combine(userKeyEncryptedPrivateKey)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeKeyPairResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeKeyPairResponse {
+        return
+            try MakeKeyPairResponse(
+                userPublicKey: FfiConverterString.read(from: &buf), 
+                userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeKeyPairResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.userPublicKey, into: &buf)
+        FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeKeyPairResponse_lift(_ buf: RustBuffer) throws -> MakeKeyPairResponse {
+    return try FfiConverterTypeMakeKeyPairResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairResponse) -> RustBuffer {
+    return FfiConverterTypeMakeKeyPairResponse.lower(value)
+}
+
+
 public struct MasterPasswordPolicyOptions {
     public let minComplexity: UInt8
     public let minLength: UInt8
@@ -1648,6 +1726,176 @@ public func FfiConverterTypeUpdatePasswordResponse_lift(_ buf: RustBuffer) throw
 #endif
 public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePasswordResponse) -> RustBuffer {
     return FfiConverterTypeUpdatePasswordResponse.lower(value)
+}
+
+
+public struct VerifyAsymmetricKeysRequest {
+    /**
+     * The user's user key
+     */
+    public let userKey: String
+    /**
+     * The user's public key
+     */
+    public let userPublicKey: String
+    /**
+     * User's private key, encrypted with the user key
+     */
+    public let userKeyEncryptedPrivateKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The user's user key
+         */userKey: String, 
+        /**
+         * The user's public key
+         */userPublicKey: String, 
+        /**
+         * User's private key, encrypted with the user key
+         */userKeyEncryptedPrivateKey: EncString) {
+        self.userKey = userKey
+        self.userPublicKey = userPublicKey
+        self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
+    }
+}
+
+
+
+extension VerifyAsymmetricKeysRequest: Equatable, Hashable {
+    public static func ==(lhs: VerifyAsymmetricKeysRequest, rhs: VerifyAsymmetricKeysRequest) -> Bool {
+        if lhs.userKey != rhs.userKey {
+            return false
+        }
+        if lhs.userPublicKey != rhs.userPublicKey {
+            return false
+        }
+        if lhs.userKeyEncryptedPrivateKey != rhs.userKeyEncryptedPrivateKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(userKey)
+        hasher.combine(userPublicKey)
+        hasher.combine(userKeyEncryptedPrivateKey)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVerifyAsymmetricKeysRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VerifyAsymmetricKeysRequest {
+        return
+            try VerifyAsymmetricKeysRequest(
+                userKey: FfiConverterString.read(from: &buf), 
+                userPublicKey: FfiConverterString.read(from: &buf), 
+                userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VerifyAsymmetricKeysRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.userKey, into: &buf)
+        FfiConverterString.write(value.userPublicKey, into: &buf)
+        FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVerifyAsymmetricKeysRequest_lift(_ buf: RustBuffer) throws -> VerifyAsymmetricKeysRequest {
+    return try FfiConverterTypeVerifyAsymmetricKeysRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVerifyAsymmetricKeysRequest_lower(_ value: VerifyAsymmetricKeysRequest) -> RustBuffer {
+    return FfiConverterTypeVerifyAsymmetricKeysRequest.lower(value)
+}
+
+
+public struct VerifyAsymmetricKeysResponse {
+    /**
+     * Whether the user's private key was decryptable by the user key.
+     */
+    public let privateKeyDecryptable: Bool
+    /**
+     * Whether the user's private key was a valid RSA key and matched the public key provided.
+     */
+    public let validPrivateKey: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Whether the user's private key was decryptable by the user key.
+         */privateKeyDecryptable: Bool, 
+        /**
+         * Whether the user's private key was a valid RSA key and matched the public key provided.
+         */validPrivateKey: Bool) {
+        self.privateKeyDecryptable = privateKeyDecryptable
+        self.validPrivateKey = validPrivateKey
+    }
+}
+
+
+
+extension VerifyAsymmetricKeysResponse: Equatable, Hashable {
+    public static func ==(lhs: VerifyAsymmetricKeysResponse, rhs: VerifyAsymmetricKeysResponse) -> Bool {
+        if lhs.privateKeyDecryptable != rhs.privateKeyDecryptable {
+            return false
+        }
+        if lhs.validPrivateKey != rhs.validPrivateKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(privateKeyDecryptable)
+        hasher.combine(validPrivateKey)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVerifyAsymmetricKeysResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VerifyAsymmetricKeysResponse {
+        return
+            try VerifyAsymmetricKeysResponse(
+                privateKeyDecryptable: FfiConverterBool.read(from: &buf), 
+                validPrivateKey: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VerifyAsymmetricKeysResponse, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.privateKeyDecryptable, into: &buf)
+        FfiConverterBool.write(value.validPrivateKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVerifyAsymmetricKeysResponse_lift(_ buf: RustBuffer) throws -> VerifyAsymmetricKeysResponse {
+    return try FfiConverterTypeVerifyAsymmetricKeysResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAsymmetricKeysResponse) -> RustBuffer {
+    return FfiConverterTypeVerifyAsymmetricKeysResponse.lower(value)
 }
 
 // Note that we don't yet support `indirect` for enums.
