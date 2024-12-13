@@ -1901,14 +1901,34 @@ public func FfiConverterTypeClientCrypto_lower(_ value: ClientCrypto) -> UnsafeM
 public protocol ClientExportersProtocol : AnyObject {
     
     /**
-     * **API Draft:** Export organization vault
+     * Credential Exchange Format (CXF)
+     *
+     * *Warning:* Expect this API to be unstable, and it will change in the future.
+     *
+     * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
+     * Ideally the output should be immediately deserialized to [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
+     */
+    func exportCxf(account: Account, ciphers: [Cipher]) throws  -> String
+    
+    /**
+     * Export organization vault
      */
     func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat) throws  -> String
     
     /**
-     * **API Draft:** Export user vault
+     * Export user vault
      */
     func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat) throws  -> String
+    
+    /**
+     * Credential Exchange Format (CXF)
+     *
+     * *Warning:* Expect this API to be unstable, and it will change in the future.
+     *
+     * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
+     * Ideally the input should be immediately serialized from [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
+     */
+    func importCxf(payload: String) throws  -> [Cipher]
     
 }
 
@@ -1963,7 +1983,24 @@ open class ClientExporters:
 
     
     /**
-     * **API Draft:** Export organization vault
+     * Credential Exchange Format (CXF)
+     *
+     * *Warning:* Expect this API to be unstable, and it will change in the future.
+     *
+     * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
+     * Ideally the output should be immediately deserialized to [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
+     */
+open func exportCxf(account: Account, ciphers: [Cipher])throws  -> String {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientexporters_export_cxf(self.uniffiClonePointer(),
+        FfiConverterTypeAccount_lower(account),
+        FfiConverterSequenceTypeCipher.lower(ciphers),$0
+    )
+})
+}
+    
+    /**
+     * Export organization vault
      */
 open func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat)throws  -> String {
     return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
@@ -1976,7 +2013,7 @@ open func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], 
 }
     
     /**
-     * **API Draft:** Export user vault
+     * Export user vault
      */
 open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat)throws  -> String {
     return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
@@ -1984,6 +2021,22 @@ open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat
         FfiConverterSequenceTypeFolder.lower(folders),
         FfiConverterSequenceTypeCipher.lower(ciphers),
         FfiConverterTypeExportFormat_lower(format),$0
+    )
+})
+}
+    
+    /**
+     * Credential Exchange Format (CXF)
+     *
+     * *Warning:* Expect this API to be unstable, and it will change in the future.
+     *
+     * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
+     * Ideally the input should be immediately serialized from [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
+     */
+open func importCxf(payload: String)throws  -> [Cipher] {
+    return try  FfiConverterSequenceTypeCipher.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_clientexporters_import_cxf(self.uniffiClonePointer(),
+        FfiConverterString.lower(payload),$0
     )
 })
 }
@@ -2686,17 +2739,17 @@ public func FfiConverterTypeClientFolders_lower(_ value: ClientFolders) -> Unsaf
 public protocol ClientGeneratorsProtocol : AnyObject {
     
     /**
-     * **API Draft:** Generate Passphrase
+     * Generate Passphrase
      */
     func passphrase(settings: PassphraseGeneratorRequest) throws  -> String
     
     /**
-     * **API Draft:** Generate Password
+     * Generate Password
      */
     func password(settings: PasswordGeneratorRequest) throws  -> String
     
     /**
-     * **API Draft:** Generate Username
+     * Generate Username
      */
     func username(settings: UsernameGeneratorRequest) async throws  -> String
     
@@ -2753,7 +2806,7 @@ open class ClientGenerators:
 
     
     /**
-     * **API Draft:** Generate Passphrase
+     * Generate Passphrase
      */
 open func passphrase(settings: PassphraseGeneratorRequest)throws  -> String {
     return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
@@ -2764,7 +2817,7 @@ open func passphrase(settings: PassphraseGeneratorRequest)throws  -> String {
 }
     
     /**
-     * **API Draft:** Generate Password
+     * Generate Password
      */
 open func password(settings: PasswordGeneratorRequest)throws  -> String {
     return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
@@ -2775,7 +2828,7 @@ open func password(settings: PasswordGeneratorRequest)throws  -> String {
 }
     
     /**
-     * **API Draft:** Generate Username
+     * Generate Username
      */
 open func username(settings: UsernameGeneratorRequest)async throws  -> String {
     return
@@ -5309,6 +5362,8 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -5557,10 +5612,16 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientcrypto_update_password() != 10481) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 49791) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_cxf() != 38236) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 27241) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_organization_vault() != 60792) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_export_vault() != 13653) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientexporters_import_cxf() != 17062) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_authenticator() != 50893) {
@@ -5599,13 +5660,13 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfolders_encrypt() != 16835) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 23031) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_passphrase() != 37863) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 61260) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_password() != 43781) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_username() != 58695) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientgenerators_username() != 31165) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientpasswordhistory_decrypt_list() != 33793) {

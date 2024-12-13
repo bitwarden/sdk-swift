@@ -437,6 +437,85 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+
+/**
+ * Temporary struct to hold metadata related to current account
+ *
+ * Eventually the SDK itself should have this state and we get rid of this struct.
+ */
+public struct Account {
+    public let id: Uuid
+    public let email: String
+    public let name: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Uuid, email: String, name: String?) {
+        self.id = id
+        self.email = email
+        self.name = name
+    }
+}
+
+
+
+extension Account: Equatable, Hashable {
+    public static func ==(lhs: Account, rhs: Account) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.email != rhs.email {
+            return false
+        }
+        if lhs.name != rhs.name {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(email)
+        hasher.combine(name)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccount: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Account {
+        return
+            try Account(
+                id: FfiConverterTypeUuid.read(from: &buf), 
+                email: FfiConverterString.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Account, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterString.write(value.email, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccount_lift(_ buf: RustBuffer) throws -> Account {
+    return try FfiConverterTypeAccount.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccount_lower(_ value: Account) -> RustBuffer {
+    return FfiConverterTypeAccount.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -508,6 +587,32 @@ public func FfiConverterTypeExportFormat_lower(_ value: ExportFormat) -> RustBuf
 
 
 extension ExportFormat: Equatable, Hashable {}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
+    typealias SwiftType = String?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
 
 
 
