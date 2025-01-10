@@ -889,6 +889,11 @@ public protocol ClientProtocol : AnyObject {
     func sends()  -> SendClient
     
     /**
+     * SSH operations
+     */
+    func ssh()  -> SshClient
+    
+    /**
      * Vault item operations
      */
     func vault()  -> VaultClient
@@ -1040,6 +1045,16 @@ open func platform() -> PlatformClient {
 open func sends() -> SendClient {
     return try!  FfiConverterTypeSendClient.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_sends(self.uniffiClonePointer(),$0
+    )
+})
+}
+    
+    /**
+     * SSH operations
+     */
+open func ssh() -> SshClient {
+    return try!  FfiConverterTypeSshClient.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_ssh(self.uniffiClonePointer(),$0
     )
 })
 }
@@ -4157,6 +4172,138 @@ public func FfiConverterTypeSendClient_lower(_ value: SendClient) -> UnsafeMutab
 
 
 
+public protocol SshClientProtocol : AnyObject {
+    
+    func generateSshKey(keyAlgorithm: KeyAlgorithm) throws  -> SshKey
+    
+    func importSshKey(importedKey: String, password: String?) throws  -> SshKey
+    
+}
+
+open class SshClient:
+    SshClientProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer!
+
+    /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoPointer {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noPointer: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing [Pointer] the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noPointer: NoPointer) {
+        self.pointer = nil
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiClonePointer() -> UnsafeMutableRawPointer {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_sshclient(self.pointer, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        guard let pointer = pointer else {
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_sshclient(pointer, $0) }
+    }
+
+    
+
+    
+open func generateSshKey(keyAlgorithm: KeyAlgorithm)throws  -> SshKey {
+    return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_sshclient_generate_ssh_key(self.uniffiClonePointer(),
+        FfiConverterTypeKeyAlgorithm_lower(keyAlgorithm),$0
+    )
+})
+}
+    
+open func importSshKey(importedKey: String, password: String?)throws  -> SshKey {
+    return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+    uniffi_bitwarden_uniffi_fn_method_sshclient_import_ssh_key(self.uniffiClonePointer(),
+        FfiConverterString.lower(importedKey),
+        FfiConverterOptionString.lower(password),$0
+    )
+})
+}
+    
+
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSshClient: FfiConverter {
+
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = SshClient
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> SshClient {
+        return SshClient(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: SshClient) -> UnsafeMutableRawPointer {
+        return value.uniffiClonePointer()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshClient {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if (ptr == nil) {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: SshClient, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+}
+
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSshClient_lift(_ pointer: UnsafeMutableRawPointer) throws -> SshClient {
+    return try FfiConverterTypeSshClient.lift(pointer)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSshClient_lower(_ value: SshClient) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeSshClient.lower(value)
+}
+
+
+
+
 public protocol VaultClientProtocol : AnyObject {
     
     /**
@@ -4787,6 +4934,30 @@ extension UiHint: Equatable, Hashable {}
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
+    typealias SwiftType = String?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceData: FfiConverterRustBuffer {
     typealias SwiftType = [Data]?
 
@@ -5364,6 +5535,10 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -5552,6 +5727,9 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 40143) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 22745) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 46726) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -5727,6 +5905,12 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 15411) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 5944) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 21825) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 22493) {
