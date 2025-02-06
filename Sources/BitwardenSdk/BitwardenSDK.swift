@@ -531,7 +531,7 @@ public protocol AuthClientProtocol : AnyObject {
     func newAuthRequest(email: String) throws  -> AuthRequestResponse
     
     /**
-     * **API Draft:** Calculate Password Strength
+     * Calculate Password Strength
      */
     func passwordStrength(password: String, email: String, additionalInputs: [String])  -> UInt8
     
@@ -706,7 +706,7 @@ open func newAuthRequest(email: String)throws  -> AuthRequestResponse {
 }
     
     /**
-     * **API Draft:** Calculate Password Strength
+     * Calculate Password Strength
      */
 open func passwordStrength(password: String, email: String, additionalInputs: [String]) -> UInt8 {
     return try!  FfiConverterUInt8.lift(try! rustCall() {
@@ -5685,7 +5685,7 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_new_auth_request() != 19097) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_password_strength() != 11953) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_password_strength() != 22685) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_satisfies_policy() != 62787) {
