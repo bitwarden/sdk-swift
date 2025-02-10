@@ -837,11 +837,11 @@ public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyCo
 
 public struct DerivePinKeyResponse {
     /**
-     * [UserKey](bitwarden_crypto::UserKey) protected by PIN
+     * [UserKey] protected by PIN
      */
     public let pinProtectedUserKey: EncString
     /**
-     * PIN protected by [UserKey](bitwarden_crypto::UserKey)
+     * PIN protected by [UserKey]
      */
     public let encryptedPin: EncString
 
@@ -849,10 +849,10 @@ public struct DerivePinKeyResponse {
     // declare one manually.
     public init(
         /**
-         * [UserKey](bitwarden_crypto::UserKey) protected by PIN
+         * [UserKey] protected by PIN
          */pinProtectedUserKey: EncString, 
         /**
-         * PIN protected by [UserKey](bitwarden_crypto::UserKey)
+         * PIN protected by [UserKey]
          */encryptedPin: EncString) {
         self.pinProtectedUserKey = pinProtectedUserKey
         self.encryptedPin = encryptedPin
