@@ -891,7 +891,7 @@ public enum ForwarderServiceType {
     )
     case forwardEmail(apiToken: String, domain: String
     )
-    case simpleLogin(apiKey: String
+    case simpleLogin(apiKey: String, baseUrl: String
     )
 }
 
@@ -921,7 +921,7 @@ public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
         case 5: return .forwardEmail(apiToken: try FfiConverterString.read(from: &buf), domain: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .simpleLogin(apiKey: try FfiConverterString.read(from: &buf)
+        case 6: return .simpleLogin(apiKey: try FfiConverterString.read(from: &buf), baseUrl: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -960,9 +960,10 @@ public struct FfiConverterTypeForwarderServiceType: FfiConverterRustBuffer {
             FfiConverterString.write(domain, into: &buf)
             
         
-        case let .simpleLogin(apiKey):
+        case let .simpleLogin(apiKey,baseUrl):
             writeInt(&buf, Int32(6))
             FfiConverterString.write(apiKey, into: &buf)
+            FfiConverterString.write(baseUrl, into: &buf)
             
         }
     }
