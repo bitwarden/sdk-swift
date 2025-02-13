@@ -4174,9 +4174,9 @@ public func FfiConverterTypeSendClient_lower(_ value: SendClient) -> UnsafeMutab
 
 public protocol SshClientProtocol : AnyObject {
     
-    func generateSshKey(keyAlgorithm: KeyAlgorithm) throws  -> SshKey
+    func generateSshKey(keyAlgorithm: KeyAlgorithm) throws  -> SshKeyView
     
-    func importSshKey(importedKey: String, password: String?) throws  -> SshKey
+    func importSshKey(importedKey: String, password: String?) throws  -> SshKeyView
     
 }
 
@@ -4230,16 +4230,16 @@ open class SshClient:
     
 
     
-open func generateSshKey(keyAlgorithm: KeyAlgorithm)throws  -> SshKey {
-    return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func generateSshKey(keyAlgorithm: KeyAlgorithm)throws  -> SshKeyView {
+    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_sshclient_generate_ssh_key(self.uniffiClonePointer(),
         FfiConverterTypeKeyAlgorithm_lower(keyAlgorithm),$0
     )
 })
 }
     
-open func importSshKey(importedKey: String, password: String?)throws  -> SshKey {
-    return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func importSshKey(importedKey: String, password: String?)throws  -> SshKeyView {
+    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_sshclient_import_ssh_key(self.uniffiClonePointer(),
         FfiConverterString.lower(importedKey),
         FfiConverterOptionString.lower(password),$0
@@ -5907,10 +5907,10 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 15411) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 5944) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 17409) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 21825) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 34814) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 22493) {
