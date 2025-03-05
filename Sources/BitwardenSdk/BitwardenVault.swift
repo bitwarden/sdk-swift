@@ -982,6 +982,7 @@ public struct Cipher {
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
     public let edit: Bool
+    public let permissions: CipherPermissions?
     public let viewPassword: Bool
     public let localData: LocalData?
     public let attachments: [Attachment]?
@@ -997,7 +998,7 @@ public struct Cipher {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1015,6 +1016,7 @@ public struct Cipher {
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
         self.edit = edit
+        self.permissions = permissions
         self.viewPassword = viewPassword
         self.localData = localData
         self.attachments = attachments
@@ -1081,6 +1083,9 @@ extension Cipher: Equatable, Hashable {
         if lhs.edit != rhs.edit {
             return false
         }
+        if lhs.permissions != rhs.permissions {
+            return false
+        }
         if lhs.viewPassword != rhs.viewPassword {
             return false
         }
@@ -1126,6 +1131,7 @@ extension Cipher: Equatable, Hashable {
         hasher.combine(reprompt)
         hasher.combine(organizationUseTotp)
         hasher.combine(edit)
+        hasher.combine(permissions)
         hasher.combine(viewPassword)
         hasher.combine(localData)
         hasher.combine(attachments)
@@ -1162,6 +1168,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
                 edit: FfiConverterBool.read(from: &buf), 
+                permissions: FfiConverterOptionTypeCipherPermissions.read(from: &buf), 
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 localData: FfiConverterOptionTypeLocalData.read(from: &buf), 
                 attachments: FfiConverterOptionSequenceTypeAttachment.read(from: &buf), 
@@ -1191,6 +1198,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
         FfiConverterBool.write(value.edit, into: &buf)
+        FfiConverterOptionTypeCipherPermissions.write(value.permissions, into: &buf)
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterOptionTypeLocalData.write(value.localData, into: &buf)
         FfiConverterOptionSequenceTypeAttachment.write(value.attachments, into: &buf)
@@ -1234,6 +1242,7 @@ public struct CipherListView {
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
     public let edit: Bool
+    public let permissions: CipherPermissions?
     public let viewPassword: Bool
     /**
      * The number of attachments
@@ -1248,7 +1257,7 @@ public struct CipherListView {
     public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
         /**
          * Temporary, required to support calculating TOTP from CipherListView.
-         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, 
+         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1264,6 +1273,7 @@ public struct CipherListView {
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
         self.edit = edit
+        self.permissions = permissions
         self.viewPassword = viewPassword
         self.attachments = attachments
         self.creationDate = creationDate
@@ -1312,6 +1322,9 @@ extension CipherListView: Equatable, Hashable {
         if lhs.edit != rhs.edit {
             return false
         }
+        if lhs.permissions != rhs.permissions {
+            return false
+        }
         if lhs.viewPassword != rhs.viewPassword {
             return false
         }
@@ -1343,6 +1356,7 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(reprompt)
         hasher.combine(organizationUseTotp)
         hasher.combine(edit)
+        hasher.combine(permissions)
         hasher.combine(viewPassword)
         hasher.combine(attachments)
         hasher.combine(creationDate)
@@ -1371,6 +1385,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
                 edit: FfiConverterBool.read(from: &buf), 
+                permissions: FfiConverterOptionTypeCipherPermissions.read(from: &buf), 
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 attachments: FfiConverterUInt32.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
@@ -1392,6 +1407,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
         FfiConverterBool.write(value.edit, into: &buf)
+        FfiConverterOptionTypeCipherPermissions.write(value.permissions, into: &buf)
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterUInt32.write(value.attachments, into: &buf)
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
@@ -1416,6 +1432,72 @@ public func FfiConverterTypeCipherListView_lower(_ value: CipherListView) -> Rus
 }
 
 
+public struct CipherPermissions {
+    public let delete: Bool
+    public let restore: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(delete: Bool, restore: Bool) {
+        self.delete = delete
+        self.restore = restore
+    }
+}
+
+
+
+extension CipherPermissions: Equatable, Hashable {
+    public static func ==(lhs: CipherPermissions, rhs: CipherPermissions) -> Bool {
+        if lhs.delete != rhs.delete {
+            return false
+        }
+        if lhs.restore != rhs.restore {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(delete)
+        hasher.combine(restore)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherPermissions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherPermissions {
+        return
+            try CipherPermissions(
+                delete: FfiConverterBool.read(from: &buf), 
+                restore: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherPermissions, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.delete, into: &buf)
+        FfiConverterBool.write(value.restore, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherPermissions_lift(_ buf: RustBuffer) throws -> CipherPermissions {
+    return try FfiConverterTypeCipherPermissions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherPermissions_lower(_ value: CipherPermissions) -> RustBuffer {
+    return FfiConverterTypeCipherPermissions.lower(value)
+}
+
+
 public struct CipherView {
     public let id: Uuid?
     public let organizationId: Uuid?
@@ -1437,6 +1519,7 @@ public struct CipherView {
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
     public let edit: Bool
+    public let permissions: CipherPermissions?
     public let viewPassword: Bool
     public let localData: LocalDataView?
     public let attachments: [AttachmentView]?
@@ -1451,7 +1534,7 @@ public struct CipherView {
     public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
         /**
          * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1469,6 +1552,7 @@ public struct CipherView {
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
         self.edit = edit
+        self.permissions = permissions
         self.viewPassword = viewPassword
         self.localData = localData
         self.attachments = attachments
@@ -1535,6 +1619,9 @@ extension CipherView: Equatable, Hashable {
         if lhs.edit != rhs.edit {
             return false
         }
+        if lhs.permissions != rhs.permissions {
+            return false
+        }
         if lhs.viewPassword != rhs.viewPassword {
             return false
         }
@@ -1580,6 +1667,7 @@ extension CipherView: Equatable, Hashable {
         hasher.combine(reprompt)
         hasher.combine(organizationUseTotp)
         hasher.combine(edit)
+        hasher.combine(permissions)
         hasher.combine(viewPassword)
         hasher.combine(localData)
         hasher.combine(attachments)
@@ -1616,6 +1704,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
                 edit: FfiConverterBool.read(from: &buf), 
+                permissions: FfiConverterOptionTypeCipherPermissions.read(from: &buf), 
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 localData: FfiConverterOptionTypeLocalDataView.read(from: &buf), 
                 attachments: FfiConverterOptionSequenceTypeAttachmentView.read(from: &buf), 
@@ -1645,6 +1734,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
         FfiConverterBool.write(value.edit, into: &buf)
+        FfiConverterOptionTypeCipherPermissions.write(value.permissions, into: &buf)
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterOptionTypeLocalDataView.write(value.localData, into: &buf)
         FfiConverterOptionSequenceTypeAttachmentView.write(value.attachments, into: &buf)
@@ -4690,6 +4780,30 @@ fileprivate struct FfiConverterOptionTypeCardView: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeCardView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeCipherPermissions: FfiConverterRustBuffer {
+    typealias SwiftType = CipherPermissions?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCipherPermissions.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCipherPermissions.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
