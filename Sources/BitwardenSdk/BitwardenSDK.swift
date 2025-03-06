@@ -2898,7 +2898,7 @@ public protocol Fido2CredentialStore : AnyObject {
     
     func findCredentials(ids: [Data]?, ripId: String) async throws  -> [CipherView]
     
-    func allCredentials() async throws  -> [CipherView]
+    func allCredentials() async throws  -> [CipherListView]
     
     func saveCredential(cred: Cipher) async throws 
     
@@ -2971,7 +2971,7 @@ open func findCredentials(ids: [Data]?, ripId: String)async throws  -> [CipherVi
         )
 }
     
-open func allCredentials()async throws  -> [CipherView] {
+open func allCredentials()async throws  -> [CipherListView] {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2983,7 +2983,7 @@ open func allCredentials()async throws  -> [CipherView] {
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterSequenceTypeCipherView.lift,
+            liftFunc: FfiConverterSequenceTypeCipherListView.lift,
             errorHandler: FfiConverterTypeFido2CallbackError.lift
         )
 }
@@ -3073,7 +3073,7 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
             uniffiOutReturn: UnsafeMutablePointer<UniffiForeignFuture>
         ) in
             let makeCall = {
-                () async throws -> [CipherView] in
+                () async throws -> [CipherListView] in
                 guard let uniffiObj = try? FfiConverterTypeFido2CredentialStore.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
@@ -3081,11 +3081,11 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 )
             }
 
-            let uniffiHandleSuccess = { (returnValue: [CipherView]) in
+            let uniffiHandleSuccess = { (returnValue: [CipherListView]) in
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     UniffiForeignFutureStructRustBuffer(
-                        returnValue: FfiConverterSequenceTypeCipherView.lower(returnValue),
+                        returnValue: FfiConverterSequenceTypeCipherListView.lower(returnValue),
                         callStatus: RustCallStatus()
                     )
                 )
@@ -5847,7 +5847,7 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_find_credentials() != 37125) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 34338) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 16553) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 55817) {

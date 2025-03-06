@@ -2128,6 +2128,96 @@ public func FfiConverterTypeFido2Credential_lower(_ value: Fido2Credential) -> R
 }
 
 
+public struct Fido2CredentialListView {
+    public let credentialId: String
+    public let rpId: String
+    public let userHandle: String?
+    public let userName: String?
+    public let userDisplayName: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(credentialId: String, rpId: String, userHandle: String?, userName: String?, userDisplayName: String?) {
+        self.credentialId = credentialId
+        self.rpId = rpId
+        self.userHandle = userHandle
+        self.userName = userName
+        self.userDisplayName = userDisplayName
+    }
+}
+
+
+
+extension Fido2CredentialListView: Equatable, Hashable {
+    public static func ==(lhs: Fido2CredentialListView, rhs: Fido2CredentialListView) -> Bool {
+        if lhs.credentialId != rhs.credentialId {
+            return false
+        }
+        if lhs.rpId != rhs.rpId {
+            return false
+        }
+        if lhs.userHandle != rhs.userHandle {
+            return false
+        }
+        if lhs.userName != rhs.userName {
+            return false
+        }
+        if lhs.userDisplayName != rhs.userDisplayName {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(credentialId)
+        hasher.combine(rpId)
+        hasher.combine(userHandle)
+        hasher.combine(userName)
+        hasher.combine(userDisplayName)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFido2CredentialListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2CredentialListView {
+        return
+            try Fido2CredentialListView(
+                credentialId: FfiConverterString.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userHandle: FfiConverterOptionString.read(from: &buf), 
+                userName: FfiConverterOptionString.read(from: &buf), 
+                userDisplayName: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Fido2CredentialListView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.credentialId, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterOptionString.write(value.userHandle, into: &buf)
+        FfiConverterOptionString.write(value.userName, into: &buf)
+        FfiConverterOptionString.write(value.userDisplayName, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2CredentialListView_lift(_ buf: RustBuffer) throws -> Fido2CredentialListView {
+    return try FfiConverterTypeFido2CredentialListView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2CredentialListView_lower(_ value: Fido2CredentialListView) -> RustBuffer {
+    return FfiConverterTypeFido2CredentialListView.lower(value)
+}
+
+
 public struct Fido2CredentialNewView {
     public let credentialId: String
     public let keyType: String
@@ -3359,7 +3449,9 @@ public func FfiConverterTypeLogin_lower(_ value: Login) -> RustBuffer {
 
 
 public struct LoginListView {
+    public let fido2Credentials: [Fido2CredentialListView]?
     public let hasFido2: Bool
+    public let username: String?
     /**
      * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
      */
@@ -3368,11 +3460,13 @@ public struct LoginListView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(hasFido2: Bool, 
+    public init(fido2Credentials: [Fido2CredentialListView]?, hasFido2: Bool, username: String?, 
         /**
          * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
          */totp: EncString?, uris: [LoginUriView]?) {
+        self.fido2Credentials = fido2Credentials
         self.hasFido2 = hasFido2
+        self.username = username
         self.totp = totp
         self.uris = uris
     }
@@ -3382,7 +3476,13 @@ public struct LoginListView {
 
 extension LoginListView: Equatable, Hashable {
     public static func ==(lhs: LoginListView, rhs: LoginListView) -> Bool {
+        if lhs.fido2Credentials != rhs.fido2Credentials {
+            return false
+        }
         if lhs.hasFido2 != rhs.hasFido2 {
+            return false
+        }
+        if lhs.username != rhs.username {
             return false
         }
         if lhs.totp != rhs.totp {
@@ -3395,7 +3495,9 @@ extension LoginListView: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
+        hasher.combine(fido2Credentials)
         hasher.combine(hasFido2)
+        hasher.combine(username)
         hasher.combine(totp)
         hasher.combine(uris)
     }
@@ -3409,14 +3511,18 @@ public struct FfiConverterTypeLoginListView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoginListView {
         return
             try LoginListView(
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialListView.read(from: &buf), 
                 hasFido2: FfiConverterBool.read(from: &buf), 
+                username: FfiConverterOptionString.read(from: &buf), 
                 totp: FfiConverterOptionTypeEncString.read(from: &buf), 
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf)
         )
     }
 
     public static func write(_ value: LoginListView, into buf: inout [UInt8]) {
+        FfiConverterOptionSequenceTypeFido2CredentialListView.write(value.fido2Credentials, into: &buf)
         FfiConverterBool.write(value.hasFido2, into: &buf)
+        FfiConverterOptionString.write(value.username, into: &buf)
         FfiConverterOptionTypeEncString.write(value.totp, into: &buf)
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
     }
@@ -5148,6 +5254,30 @@ fileprivate struct FfiConverterOptionSequenceTypeFido2Credential: FfiConverterRu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionSequenceTypeFido2CredentialListView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialListView]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeFido2CredentialListView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeFido2CredentialListView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceTypeField: FfiConverterRustBuffer {
     typealias SwiftType = [Field]?
 
@@ -5455,6 +5585,31 @@ fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuff
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2Credential.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeFido2CredentialListView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialListView]
+
+    public static func write(_ value: [Fido2CredentialListView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFido2CredentialListView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialListView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Fido2CredentialListView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFido2CredentialListView.read(from: &buf))
         }
         return seq
     }
