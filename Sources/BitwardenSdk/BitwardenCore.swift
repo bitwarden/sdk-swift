@@ -516,6 +516,9 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
+/**
+ * Response for `new_auth_request`.
+ */
 public struct AuthRequestResponse {
     /**
      * Base64 encoded private key
@@ -747,13 +750,25 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 }
 
 
+/**
+ * Request for migrating an account from password to key connector.
+ */
 public struct DeriveKeyConnectorRequest {
     /**
      * Encrypted user key, used to validate the master key
      */
     public let userKeyEncrypted: EncString
+    /**
+     * The user's master password
+     */
     public let password: String
+    /**
+     * The KDF parameters used to derive the master key
+     */
     public let kdf: Kdf
+    /**
+     * The user's email address
+     */
     public let email: String
 
     // Default memberwise initializers are never public by default, so we
@@ -761,7 +776,16 @@ public struct DeriveKeyConnectorRequest {
     public init(
         /**
          * Encrypted user key, used to validate the master key
-         */userKeyEncrypted: EncString, password: String, kdf: Kdf, email: String) {
+         */userKeyEncrypted: EncString, 
+        /**
+         * The user's master password
+         */password: String, 
+        /**
+         * The KDF parameters used to derive the master key
+         */kdf: Kdf, 
+        /**
+         * The user's email address
+         */email: String) {
         self.userKeyEncrypted = userKeyEncrypted
         self.password = password
         self.kdf = kdf
@@ -835,6 +859,9 @@ public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyCo
 }
 
 
+/**
+ * Request for deriving a pin protected user key
+ */
 public struct DerivePinKeyResponse {
     /**
      * [UserKey] protected by PIN
@@ -913,6 +940,9 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
 }
 
 
+/**
+ * Request to generate a fingerprint.
+ */
 public struct FingerprintRequest {
     /**
      * The input material, used in the fingerprint generation process.
@@ -991,6 +1021,9 @@ public func FfiConverterTypeFingerprintRequest_lower(_ value: FingerprintRequest
 }
 
 
+/**
+ * Represents the request to initialize the user's organizational cryptographic state.
+ */
 public struct InitOrgCryptoRequest {
     /**
      * The encryption keys for all the organizations the user is a part of
@@ -1055,6 +1088,9 @@ public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoReq
 }
 
 
+/**
+ * State used for initializing the user cryptographic state.
+ */
 public struct InitUserCryptoRequest {
     /**
      * The user's KDF parameters, as received from the prelogin request
@@ -1235,6 +1271,9 @@ public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResp
 }
 
 
+/**
+ * Response from the `make_key_pair` function
+ */
 public struct MakeKeyPairResponse {
     /**
      * The user's public key
@@ -1651,6 +1690,9 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConv
 }
 
 
+/**
+ * Response from the `update_password` function
+ */
 public struct UpdatePasswordResponse {
     /**
      * Hash of the new password
@@ -1729,6 +1771,9 @@ public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePassword
 }
 
 
+/**
+ * Request for `verify_asymmetric_keys`.
+ */
 public struct VerifyAsymmetricKeysRequest {
     /**
      * The user's user key
@@ -1821,6 +1866,9 @@ public func FfiConverterTypeVerifyAsymmetricKeysRequest_lower(_ value: VerifyAsy
 }
 
 
+/**
+ * Response for `verify_asymmetric_keys`.
+ */
 public struct VerifyAsymmetricKeysResponse {
     /**
      * Whether the user's private key was decryptable by the user key.
@@ -1900,14 +1948,23 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAs
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Auth requests supports multiple initialization methods.
+ */
 
 public enum AuthRequestMethod {
     
+    /**
+     * User Key
+     */
     case userKey(
         /**
          * User Key protected by the private key provided in `AuthRequestResponse`.
          */protectedUserKey: AsymmetricEncString
     )
+    /**
+     * Master Key
+     */
     case masterKey(
         /**
          * Master Key protected by the private key provided in `AuthRequestResponse`.
@@ -2212,9 +2269,15 @@ extension DeviceType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The crypto method used to initialize the user cryptographic state.
+ */
 
 public enum InitUserCryptoMethod {
     
+    /**
+     * Password
+     */
     case password(
         /**
          * The user's master password
@@ -2223,11 +2286,17 @@ public enum InitUserCryptoMethod {
          * The user's encrypted symmetric crypto key
          */userKey: String
     )
+    /**
+     * Never lock and/or biometric unlock
+     */
     case decryptedKey(
         /**
          * The user's decrypted encryption key, obtained using `get_user_encryption_key`
          */decryptedUserKey: String
     )
+    /**
+     * PIN
+     */
     case pin(
         /**
          * The user's PIN
@@ -2237,11 +2306,20 @@ public enum InitUserCryptoMethod {
          * this.
          */pinProtectedUserKey: EncString
     )
+    /**
+     * Auth request
+     */
     case authRequest(
         /**
          * Private Key generated by the `crate::auth::new_auth_request`.
-         */requestPrivateKey: String, method: AuthRequestMethod
+         */requestPrivateKey: String, 
+        /**
+         * The type of auth request
+         */method: AuthRequestMethod
     )
+    /**
+     * Device Key
+     */
     case deviceKey(
         /**
          * The device's DeviceKey
@@ -2253,6 +2331,9 @@ public enum InitUserCryptoMethod {
          * The user's symmetric crypto key, encrypted with the Device Key.
          */deviceProtectedUserKey: AsymmetricEncString
     )
+    /**
+     * Key connector
+     */
     case keyConnector(
         /**
          * Base64 encoded master key, retrieved from the key connector.
