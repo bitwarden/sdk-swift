@@ -3211,12 +3211,12 @@ public func FfiConverterTypeIdentityView_lower(_ value: IdentityView) -> RustBuf
 
 
 public struct LocalData {
-    public let lastUsedDate: UInt32?
-    public let lastLaunched: UInt32?
+    public let lastUsedDate: DateTime?
+    public let lastLaunched: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(lastUsedDate: UInt32?, lastLaunched: UInt32?) {
+    public init(lastUsedDate: DateTime?, lastLaunched: DateTime?) {
         self.lastUsedDate = lastUsedDate
         self.lastLaunched = lastLaunched
     }
@@ -3249,14 +3249,14 @@ public struct FfiConverterTypeLocalData: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocalData {
         return
             try LocalData(
-                lastUsedDate: FfiConverterOptionUInt32.read(from: &buf), 
-                lastLaunched: FfiConverterOptionUInt32.read(from: &buf)
+                lastUsedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                lastLaunched: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: LocalData, into buf: inout [UInt8]) {
-        FfiConverterOptionUInt32.write(value.lastUsedDate, into: &buf)
-        FfiConverterOptionUInt32.write(value.lastLaunched, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.lastUsedDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.lastLaunched, into: &buf)
     }
 }
 
@@ -3277,12 +3277,12 @@ public func FfiConverterTypeLocalData_lower(_ value: LocalData) -> RustBuffer {
 
 
 public struct LocalDataView {
-    public let lastUsedDate: UInt32?
-    public let lastLaunched: UInt32?
+    public let lastUsedDate: DateTime?
+    public let lastLaunched: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(lastUsedDate: UInt32?, lastLaunched: UInt32?) {
+    public init(lastUsedDate: DateTime?, lastLaunched: DateTime?) {
         self.lastUsedDate = lastUsedDate
         self.lastLaunched = lastLaunched
     }
@@ -3315,14 +3315,14 @@ public struct FfiConverterTypeLocalDataView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocalDataView {
         return
             try LocalDataView(
-                lastUsedDate: FfiConverterOptionUInt32.read(from: &buf), 
-                lastLaunched: FfiConverterOptionUInt32.read(from: &buf)
+                lastUsedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                lastLaunched: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: LocalDataView, into buf: inout [UInt8]) {
-        FfiConverterOptionUInt32.write(value.lastUsedDate, into: &buf)
-        FfiConverterOptionUInt32.write(value.lastLaunched, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.lastUsedDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.lastLaunched, into: &buf)
     }
 }
 
@@ -4770,30 +4770,6 @@ public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuf
 extension UriMatchType: Equatable, Hashable {}
 
 
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
-    typealias SwiftType = UInt32?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterUInt32.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterUInt32.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
