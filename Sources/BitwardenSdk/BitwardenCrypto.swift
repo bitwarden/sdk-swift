@@ -545,7 +545,7 @@ public struct TrustDeviceResponse {
     /**
      * UserKey encrypted with DevicePublicKey
      */
-    public let protectedUserKey: AsymmetricEncString
+    public let protectedUserKey: UnsignedSharedKey
     /**
      * DevicePrivateKey encrypted with [DeviceKey]
      */
@@ -563,7 +563,7 @@ public struct TrustDeviceResponse {
          */deviceKey: String, 
         /**
          * UserKey encrypted with DevicePublicKey
-         */protectedUserKey: AsymmetricEncString, 
+         */protectedUserKey: UnsignedSharedKey, 
         /**
          * DevicePrivateKey encrypted with [DeviceKey]
          */protectedDevicePrivateKey: EncString, 
@@ -613,7 +613,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
         return
             try TrustDeviceResponse(
                 deviceKey: FfiConverterString.read(from: &buf), 
-                protectedUserKey: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
+                protectedUserKey: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
                 protectedDevicePrivateKey: FfiConverterTypeEncString.read(from: &buf), 
                 protectedDevicePublicKey: FfiConverterTypeEncString.read(from: &buf)
         )
@@ -621,7 +621,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
 
     public static func write(_ value: TrustDeviceResponse, into buf: inout [UInt8]) {
         FfiConverterString.write(value.deviceKey, into: &buf)
-        FfiConverterTypeAsymmetricEncString.write(value.protectedUserKey, into: &buf)
+        FfiConverterTypeUnsignedSharedKey.write(value.protectedUserKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePrivateKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePublicKey, into: &buf)
     }
@@ -789,50 +789,6 @@ extension Kdf: Equatable, Hashable {}
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias AsymmetricEncString = String
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeAsymmetricEncString: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AsymmetricEncString {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: AsymmetricEncString, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> AsymmetricEncString {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: AsymmetricEncString) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeAsymmetricEncString_lift(_ value: RustBuffer) throws -> AsymmetricEncString {
-    return try FfiConverterTypeAsymmetricEncString.lift(value)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeAsymmetricEncString_lower(_ value: AsymmetricEncString) -> RustBuffer {
-    return FfiConverterTypeAsymmetricEncString.lower(value)
-}
-
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias EncString = String
 
 #if swift(>=5.8)
@@ -913,6 +869,50 @@ public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU3
 #endif
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias UnsignedSharedKey = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUnsignedSharedKey: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnsignedSharedKey {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: UnsignedSharedKey, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> UnsignedSharedKey {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: UnsignedSharedKey) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnsignedSharedKey_lift(_ value: RustBuffer) throws -> UnsignedSharedKey {
+    return try FfiConverterTypeUnsignedSharedKey.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnsignedSharedKey_lower(_ value: UnsignedSharedKey) -> RustBuffer {
+    return FfiConverterTypeUnsignedSharedKey.lower(value)
 }
 
 

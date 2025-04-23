@@ -1028,14 +1028,14 @@ public struct InitOrgCryptoRequest {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
-    public let organizationKeys: [Uuid: AsymmetricEncString]
+    public let organizationKeys: [Uuid: UnsignedSharedKey]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * The encryption keys for all the organizations the user is a part of
-         */organizationKeys: [Uuid: AsymmetricEncString]) {
+         */organizationKeys: [Uuid: UnsignedSharedKey]) {
         self.organizationKeys = organizationKeys
     }
 }
@@ -1063,12 +1063,12 @@ public struct FfiConverterTypeInitOrgCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitOrgCryptoRequest {
         return
             try InitOrgCryptoRequest(
-                organizationKeys: FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.read(from: &buf)
+                organizationKeys: FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey.read(from: &buf)
         )
     }
 
     public static func write(_ value: InitOrgCryptoRequest, into buf: inout [UInt8]) {
-        FfiConverterDictionaryTypeUuidTypeAsymmetricEncString.write(value.organizationKeys, into: &buf)
+        FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey.write(value.organizationKeys, into: &buf)
     }
 }
 
@@ -1545,12 +1545,12 @@ public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyRespon
 public struct RegisterTdeKeyResponse {
     public let privateKey: EncString
     public let publicKey: String
-    public let adminReset: AsymmetricEncString
+    public let adminReset: UnsignedSharedKey
     public let deviceKey: TrustDeviceResponse?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(privateKey: EncString, publicKey: String, adminReset: AsymmetricEncString, deviceKey: TrustDeviceResponse?) {
+    public init(privateKey: EncString, publicKey: String, adminReset: UnsignedSharedKey, deviceKey: TrustDeviceResponse?) {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.adminReset = adminReset
@@ -1595,7 +1595,7 @@ public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
             try RegisterTdeKeyResponse(
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
                 publicKey: FfiConverterString.read(from: &buf), 
-                adminReset: FfiConverterTypeAsymmetricEncString.read(from: &buf), 
+                adminReset: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
                 deviceKey: FfiConverterOptionTypeTrustDeviceResponse.read(from: &buf)
         )
     }
@@ -1603,7 +1603,7 @@ public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
     public static func write(_ value: RegisterTdeKeyResponse, into buf: inout [UInt8]) {
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
         FfiConverterString.write(value.publicKey, into: &buf)
-        FfiConverterTypeAsymmetricEncString.write(value.adminReset, into: &buf)
+        FfiConverterTypeUnsignedSharedKey.write(value.adminReset, into: &buf)
         FfiConverterOptionTypeTrustDeviceResponse.write(value.deviceKey, into: &buf)
     }
 }
@@ -1960,7 +1960,7 @@ public enum AuthRequestMethod {
     case userKey(
         /**
          * User Key protected by the private key provided in `AuthRequestResponse`.
-         */protectedUserKey: AsymmetricEncString
+         */protectedUserKey: UnsignedSharedKey
     )
     /**
      * Master Key
@@ -1968,7 +1968,7 @@ public enum AuthRequestMethod {
     case masterKey(
         /**
          * Master Key protected by the private key provided in `AuthRequestResponse`.
-         */protectedMasterKey: AsymmetricEncString, 
+         */protectedMasterKey: UnsignedSharedKey, 
         /**
          * User Key protected by the MasterKey, provided by the auth response.
          */authRequestKey: EncString
@@ -1986,10 +1986,10 @@ public struct FfiConverterTypeAuthRequestMethod: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .userKey(protectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        case 1: return .userKey(protectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
         )
         
-        case 2: return .masterKey(protectedMasterKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf), authRequestKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 2: return .masterKey(protectedMasterKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf), authRequestKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -2002,12 +2002,12 @@ public struct FfiConverterTypeAuthRequestMethod: FfiConverterRustBuffer {
         
         case let .userKey(protectedUserKey):
             writeInt(&buf, Int32(1))
-            FfiConverterTypeAsymmetricEncString.write(protectedUserKey, into: &buf)
+            FfiConverterTypeUnsignedSharedKey.write(protectedUserKey, into: &buf)
             
         
         case let .masterKey(protectedMasterKey,authRequestKey):
             writeInt(&buf, Int32(2))
-            FfiConverterTypeAsymmetricEncString.write(protectedMasterKey, into: &buf)
+            FfiConverterTypeUnsignedSharedKey.write(protectedMasterKey, into: &buf)
             FfiConverterTypeEncString.write(authRequestKey, into: &buf)
             
         }
@@ -2329,7 +2329,7 @@ public enum InitUserCryptoMethod {
          */protectedDevicePrivateKey: EncString, 
         /**
          * The user's symmetric crypto key, encrypted with the Device Key.
-         */deviceProtectedUserKey: AsymmetricEncString
+         */deviceProtectedUserKey: UnsignedSharedKey
     )
     /**
      * Key connector
@@ -2367,7 +2367,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 4: return .authRequest(requestPrivateKey: try FfiConverterString.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
-        case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+        case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
         )
         
         case 6: return .keyConnector(masterKey: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
@@ -2408,7 +2408,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
             FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
-            FfiConverterTypeAsymmetricEncString.write(deviceProtectedUserKey, into: &buf)
+            FfiConverterTypeUnsignedSharedKey.write(deviceProtectedUserKey, into: &buf)
             
         
         case let .keyConnector(masterKey,userKey):
@@ -2468,23 +2468,23 @@ fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterDictionaryTypeUuidTypeAsymmetricEncString: FfiConverterRustBuffer {
-    public static func write(_ value: [Uuid: AsymmetricEncString], into buf: inout [UInt8]) {
+fileprivate struct FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey: FfiConverterRustBuffer {
+    public static func write(_ value: [Uuid: UnsignedSharedKey], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for (key, value) in value {
             FfiConverterTypeUuid.write(key, into: &buf)
-            FfiConverterTypeAsymmetricEncString.write(value, into: &buf)
+            FfiConverterTypeUnsignedSharedKey.write(value, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: AsymmetricEncString] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: UnsignedSharedKey] {
         let len: Int32 = try readInt(&buf)
-        var dict = [Uuid: AsymmetricEncString]()
+        var dict = [Uuid: UnsignedSharedKey]()
         dict.reserveCapacity(Int(len))
         for _ in 0..<len {
             let key = try FfiConverterTypeUuid.read(from: &buf)
-            let value = try FfiConverterTypeAsymmetricEncString.read(from: &buf)
+            let value = try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
             dict[key] = value
         }
         return dict

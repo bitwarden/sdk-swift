@@ -503,7 +503,7 @@ public protocol AuthClientProtocol : AnyObject {
     /**
      * Approve an auth request
      */
-    func approveAuthRequest(publicKey: String) throws  -> AsymmetricEncString
+    func approveAuthRequest(publicKey: String) throws  -> UnsignedSharedKey
     
     /**
      * Hash the user password
@@ -630,8 +630,8 @@ open class AuthClient:
     /**
      * Approve an auth request
      */
-open func approveAuthRequest(publicKey: String)throws  -> AsymmetricEncString {
-    return try  FfiConverterTypeAsymmetricEncString_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey {
+    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_approve_auth_request(self.uniffiClonePointer(),
         FfiConverterString.lower(publicKey),$0
     )
@@ -2440,7 +2440,7 @@ public protocol CryptoClientProtocol : AnyObject {
      */
     func derivePinUserKey(encryptedPin: EncString) throws  -> EncString
     
-    func enrollAdminPasswordReset(publicKey: String) throws  -> AsymmetricEncString
+    func enrollAdminPasswordReset(publicKey: String) throws  -> UnsignedSharedKey
     
     /**
      * Get the uses's decrypted encryption key. Note: It's very important
@@ -2554,8 +2554,8 @@ open func derivePinUserKey(encryptedPin: EncString)throws  -> EncString {
 })
 }
     
-open func enrollAdminPasswordReset(publicKey: String)throws  -> AsymmetricEncString {
-    return try  FfiConverterTypeAsymmetricEncString_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKey {
+    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_admin_password_reset(self.uniffiClonePointer(),
         FfiConverterString.lower(publicKey),$0
     )
@@ -5667,7 +5667,7 @@ private var initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 13213) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 40672) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 62158) {
@@ -5817,7 +5817,7 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_user_key() != 36786) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 58145) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 16090) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 18343) {
