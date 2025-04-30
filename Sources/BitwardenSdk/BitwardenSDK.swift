@@ -503,12 +503,12 @@ public protocol AttachmentsClientProtocol : AnyObject {
     /**
      * Decrypt an attachment file in memory
      */
-    func decryptBuffer(cipher: Cipher, attachment: Attachment, buffer: Data) throws  -> Data
+    func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data) throws  -> Data
     
     /**
      * Decrypt an attachment file located in the file system
      */
-    func decryptFile(cipher: Cipher, attachment: Attachment, encryptedFilePath: String, decryptedFilePath: String) throws 
+    func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFilePath: String, decryptedFilePath: String) throws 
     
     /**
      * Encrypt an attachment file in memory
@@ -575,11 +575,11 @@ open class AttachmentsClient:
     /**
      * Decrypt an attachment file in memory
      */
-open func decryptBuffer(cipher: Cipher, attachment: Attachment, buffer: Data)throws  -> Data {
+open func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> Data {
     return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_decrypt_buffer(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
-        FfiConverterTypeAttachment_lower(attachment),
+        FfiConverterTypeAttachmentView_lower(attachment),
         FfiConverterData.lower(buffer),$0
     )
 })
@@ -588,10 +588,10 @@ open func decryptBuffer(cipher: Cipher, attachment: Attachment, buffer: Data)thr
     /**
      * Decrypt an attachment file located in the file system
      */
-open func decryptFile(cipher: Cipher, attachment: Attachment, encryptedFilePath: String, decryptedFilePath: String)throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFilePath: String, decryptedFilePath: String)throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_decrypt_file(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
-        FfiConverterTypeAttachment_lower(attachment),
+        FfiConverterTypeAttachmentView_lower(attachment),
         FfiConverterString.lower(encryptedFilePath),
         FfiConverterString.lower(decryptedFilePath),$0
     )
@@ -5667,10 +5667,10 @@ private var initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 53660) {
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 3394) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_file() != 61874) {
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_file() != 40902) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_buffer() != 49510) {
