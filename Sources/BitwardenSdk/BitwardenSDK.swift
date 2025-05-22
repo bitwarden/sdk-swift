@@ -1050,7 +1050,7 @@ public protocol CiphersClientProtocol : AnyObject {
     /**
      * Encrypt cipher
      */
-    func encrypt(cipherView: CipherView) throws  -> Cipher
+    func encrypt(cipherView: CipherView) throws  -> EncryptionContext
     
     /**
      * Move a cipher to an organization, reencrypting the cipher key if necessary
@@ -1142,8 +1142,8 @@ open func decryptList(ciphers: [Cipher])throws  -> [CipherListView] {
     /**
      * Encrypt cipher
      */
-open func encrypt(cipherView: CipherView)throws  -> Cipher {
-    return try  FfiConverterTypeCipher_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encrypt(cipherView: CipherView)throws  -> EncryptionContext {
+    return try  FfiConverterTypeEncryptionContext_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_encrypt(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipherView),$0
     )
@@ -2598,7 +2598,7 @@ public protocol Fido2CredentialStore : AnyObject {
     
     func allCredentials() async throws  -> [CipherListView]
     
-    func saveCredential(cred: Cipher) async throws 
+    func saveCredential(cred: EncryptionContext) async throws 
     
 }
 
@@ -2686,13 +2686,13 @@ open func allCredentials()async throws  -> [CipherListView] {
         )
 }
     
-open func saveCredential(cred: Cipher)async throws  {
+open func saveCredential(cred: EncryptionContext)async throws  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_fido2credentialstore_save_credential(
                     self.uniffiClonePointer(),
-                    FfiConverterTypeCipher_lower(cred)
+                    FfiConverterTypeEncryptionContext_lower(cred)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -2818,7 +2818,7 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try await uniffiObj.saveCredential(
-                     cred: try FfiConverterTypeCipher_lift(cred)
+                     cred: try FfiConverterTypeEncryptionContext_lift(cred)
                 )
             }
 
@@ -5539,6 +5539,8 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
 
 
 
+
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -5724,7 +5726,7 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 63651) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 16127) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 31667) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 64767) {
@@ -5835,7 +5837,7 @@ private var initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 16553) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 55817) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 44560) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user() != 19175) {

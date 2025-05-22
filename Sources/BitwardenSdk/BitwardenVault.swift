@@ -1974,6 +1974,80 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 }
 
 
+public struct EncryptionContext {
+    /**
+     * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
+     * Organization-owned ciphers
+     */
+    public let encryptedFor: Uuid
+    public let cipher: Cipher
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
+         * Organization-owned ciphers
+         */encryptedFor: Uuid, cipher: Cipher) {
+        self.encryptedFor = encryptedFor
+        self.cipher = cipher
+    }
+}
+
+
+
+extension EncryptionContext: Equatable, Hashable {
+    public static func ==(lhs: EncryptionContext, rhs: EncryptionContext) -> Bool {
+        if lhs.encryptedFor != rhs.encryptedFor {
+            return false
+        }
+        if lhs.cipher != rhs.cipher {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(encryptedFor)
+        hasher.combine(cipher)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEncryptionContext: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncryptionContext {
+        return
+            try EncryptionContext(
+                encryptedFor: FfiConverterTypeUuid.read(from: &buf), 
+                cipher: FfiConverterTypeCipher.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: EncryptionContext, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.encryptedFor, into: &buf)
+        FfiConverterTypeCipher.write(value.cipher, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptionContext_lift(_ buf: RustBuffer) throws -> EncryptionContext {
+    return try FfiConverterTypeEncryptionContext.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptionContext_lower(_ value: EncryptionContext) -> RustBuffer {
+    return FfiConverterTypeEncryptionContext.lower(value)
+}
+
+
 public struct Fido2Credential {
     public let credentialId: EncString
     public let keyType: EncString

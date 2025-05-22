@@ -1092,6 +1092,7 @@ public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoReq
  * State used for initializing the user cryptographic state.
  */
 public struct InitUserCryptoRequest {
+    public let userId: Uuid?
     /**
      * The user's KDF parameters, as received from the prelogin request
      */
@@ -1111,7 +1112,7 @@ public struct InitUserCryptoRequest {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(
+    public init(userId: Uuid?, 
         /**
          * The user's KDF parameters, as received from the prelogin request
          */kdfParams: Kdf, 
@@ -1124,6 +1125,7 @@ public struct InitUserCryptoRequest {
         /**
          * The initialization method to use
          */method: InitUserCryptoMethod) {
+        self.userId = userId
         self.kdfParams = kdfParams
         self.email = email
         self.privateKey = privateKey
@@ -1135,6 +1137,9 @@ public struct InitUserCryptoRequest {
 
 extension InitUserCryptoRequest: Equatable, Hashable {
     public static func ==(lhs: InitUserCryptoRequest, rhs: InitUserCryptoRequest) -> Bool {
+        if lhs.userId != rhs.userId {
+            return false
+        }
         if lhs.kdfParams != rhs.kdfParams {
             return false
         }
@@ -1151,6 +1156,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
+        hasher.combine(userId)
         hasher.combine(kdfParams)
         hasher.combine(email)
         hasher.combine(privateKey)
@@ -1166,6 +1172,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitUserCryptoRequest {
         return
             try InitUserCryptoRequest(
+                userId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
                 privateKey: FfiConverterString.read(from: &buf), 
@@ -1174,6 +1181,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: InitUserCryptoRequest, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeUuid.write(value.userId, into: &buf)
         FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
         FfiConverterString.write(value.email, into: &buf)
         FfiConverterString.write(value.privateKey, into: &buf)
@@ -2460,6 +2468,30 @@ fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBu
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeTrustDeviceResponse.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
+    typealias SwiftType = Uuid?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeUuid.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
