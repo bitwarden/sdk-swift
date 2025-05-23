@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -561,6 +562,9 @@ public struct AuthRequestResponse {
     }
 }
 
+#if compiler(>=6)
+extension AuthRequestResponse: Sendable {}
+#endif
 
 
 extension AuthRequestResponse: Equatable, Hashable {
@@ -587,6 +591,7 @@ extension AuthRequestResponse: Equatable, Hashable {
         hasher.combine(accessCode)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -684,6 +689,9 @@ public struct ClientSettings {
     }
 }
 
+#if compiler(>=6)
+extension ClientSettings: Sendable {}
+#endif
 
 
 extension ClientSettings: Equatable, Hashable {
@@ -710,6 +718,7 @@ extension ClientSettings: Equatable, Hashable {
         hasher.combine(deviceType)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -793,6 +802,9 @@ public struct DeriveKeyConnectorRequest {
     }
 }
 
+#if compiler(>=6)
+extension DeriveKeyConnectorRequest: Sendable {}
+#endif
 
 
 extension DeriveKeyConnectorRequest: Equatable, Hashable {
@@ -819,6 +831,7 @@ extension DeriveKeyConnectorRequest: Equatable, Hashable {
         hasher.combine(email)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -886,6 +899,9 @@ public struct DerivePinKeyResponse {
     }
 }
 
+#if compiler(>=6)
+extension DerivePinKeyResponse: Sendable {}
+#endif
 
 
 extension DerivePinKeyResponse: Equatable, Hashable {
@@ -904,6 +920,7 @@ extension DerivePinKeyResponse: Equatable, Hashable {
         hasher.combine(encryptedPin)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -967,6 +984,9 @@ public struct FingerprintRequest {
     }
 }
 
+#if compiler(>=6)
+extension FingerprintRequest: Sendable {}
+#endif
 
 
 extension FingerprintRequest: Equatable, Hashable {
@@ -985,6 +1005,7 @@ extension FingerprintRequest: Equatable, Hashable {
         hasher.combine(publicKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1040,6 +1061,9 @@ public struct InitOrgCryptoRequest {
     }
 }
 
+#if compiler(>=6)
+extension InitOrgCryptoRequest: Sendable {}
+#endif
 
 
 extension InitOrgCryptoRequest: Equatable, Hashable {
@@ -1054,6 +1078,7 @@ extension InitOrgCryptoRequest: Equatable, Hashable {
         hasher.combine(organizationKeys)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1133,6 +1158,9 @@ public struct InitUserCryptoRequest {
     }
 }
 
+#if compiler(>=6)
+extension InitUserCryptoRequest: Sendable {}
+#endif
 
 
 extension InitUserCryptoRequest: Equatable, Hashable {
@@ -1163,6 +1191,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         hasher.combine(method)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1219,6 +1248,9 @@ public struct KeyConnectorResponse {
     }
 }
 
+#if compiler(>=6)
+extension KeyConnectorResponse: Sendable {}
+#endif
 
 
 extension KeyConnectorResponse: Equatable, Hashable {
@@ -1241,6 +1273,7 @@ extension KeyConnectorResponse: Equatable, Hashable {
         hasher.combine(keys)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1306,6 +1339,9 @@ public struct MakeKeyPairResponse {
     }
 }
 
+#if compiler(>=6)
+extension MakeKeyPairResponse: Sendable {}
+#endif
 
 
 extension MakeKeyPairResponse: Equatable, Hashable {
@@ -1324,6 +1360,7 @@ extension MakeKeyPairResponse: Equatable, Hashable {
         hasher.combine(userKeyEncryptedPrivateKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1392,6 +1429,9 @@ public struct MasterPasswordPolicyOptions {
     }
 }
 
+#if compiler(>=6)
+extension MasterPasswordPolicyOptions: Sendable {}
+#endif
 
 
 extension MasterPasswordPolicyOptions: Equatable, Hashable {
@@ -1430,6 +1470,7 @@ extension MasterPasswordPolicyOptions: Equatable, Hashable {
         hasher.combine(enforceOnLogin)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1490,6 +1531,9 @@ public struct RegisterKeyResponse {
     }
 }
 
+#if compiler(>=6)
+extension RegisterKeyResponse: Sendable {}
+#endif
 
 
 extension RegisterKeyResponse: Equatable, Hashable {
@@ -1512,6 +1556,7 @@ extension RegisterKeyResponse: Equatable, Hashable {
         hasher.combine(keys)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1566,6 +1611,9 @@ public struct RegisterTdeKeyResponse {
     }
 }
 
+#if compiler(>=6)
+extension RegisterTdeKeyResponse: Sendable {}
+#endif
 
 
 extension RegisterTdeKeyResponse: Equatable, Hashable {
@@ -1592,6 +1640,7 @@ extension RegisterTdeKeyResponse: Equatable, Hashable {
         hasher.combine(deviceKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1644,6 +1693,9 @@ public struct UniffiConverterDummyRecord {
     }
 }
 
+#if compiler(>=6)
+extension UniffiConverterDummyRecord: Sendable {}
+#endif
 
 
 extension UniffiConverterDummyRecord: Equatable, Hashable {
@@ -1662,6 +1714,7 @@ extension UniffiConverterDummyRecord: Equatable, Hashable {
         hasher.combine(date)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1725,6 +1778,9 @@ public struct UpdatePasswordResponse {
     }
 }
 
+#if compiler(>=6)
+extension UpdatePasswordResponse: Sendable {}
+#endif
 
 
 extension UpdatePasswordResponse: Equatable, Hashable {
@@ -1743,6 +1799,7 @@ extension UpdatePasswordResponse: Equatable, Hashable {
         hasher.combine(newKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1814,6 +1871,9 @@ public struct VerifyAsymmetricKeysRequest {
     }
 }
 
+#if compiler(>=6)
+extension VerifyAsymmetricKeysRequest: Sendable {}
+#endif
 
 
 extension VerifyAsymmetricKeysRequest: Equatable, Hashable {
@@ -1836,6 +1896,7 @@ extension VerifyAsymmetricKeysRequest: Equatable, Hashable {
         hasher.combine(userKeyEncryptedPrivateKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1901,6 +1962,9 @@ public struct VerifyAsymmetricKeysResponse {
     }
 }
 
+#if compiler(>=6)
+extension VerifyAsymmetricKeysResponse: Sendable {}
+#endif
 
 
 extension VerifyAsymmetricKeysResponse: Equatable, Hashable {
@@ -1919,6 +1983,7 @@ extension VerifyAsymmetricKeysResponse: Equatable, Hashable {
         hasher.combine(validPrivateKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1984,6 +2049,10 @@ public enum AuthRequestMethod {
 }
 
 
+#if compiler(>=6)
+extension AuthRequestMethod: Sendable {}
+#endif
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -2038,7 +2107,6 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 }
 
 
-
 extension AuthRequestMethod: Equatable, Hashable {}
 
 
@@ -2076,6 +2144,10 @@ public enum DeviceType {
     case linuxCli
 }
 
+
+#if compiler(>=6)
+extension DeviceType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2270,7 +2342,6 @@ public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer 
 }
 
 
-
 extension DeviceType: Equatable, Hashable {}
 
 
@@ -2352,6 +2423,10 @@ public enum InitUserCryptoMethod {
     )
 }
 
+
+#if compiler(>=6)
+extension InitUserCryptoMethod: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2444,7 +2519,6 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 }
 
 
-
 extension InitUserCryptoMethod: Equatable, Hashable {}
 
 
@@ -2522,16 +2596,6 @@ fileprivate struct FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey: FfiConve
         return dict
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -2628,19 +2692,22 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_core_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenCoreInitialized() {
     switch initializationResult {
     case .ok:
         break

@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenUniffiInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -495,10 +496,48 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
+        let seconds: Int64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        }
+    }
+
+    public static func write(_ value: Date, into buf: inout [UInt8]) {
+        var delta = value.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
+            sign = -1
+            delta = -delta
+        }
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        writeInt(&buf, sign * seconds)
+        writeInt(&buf, nanoseconds)
+    }
+}
 
 
 
-public protocol AttachmentsClientProtocol : AnyObject {
+
+public protocol AttachmentsClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt an attachment file in memory
@@ -521,9 +560,7 @@ public protocol AttachmentsClientProtocol : AnyObject {
     func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String) throws  -> Attachment
     
 }
-
-open class AttachmentsClient:
-    AttachmentsClientProtocol {
+open class AttachmentsClient: AttachmentsClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -537,6 +574,9 @@ open class AttachmentsClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -575,8 +615,8 @@ open class AttachmentsClient:
     /**
      * Decrypt an attachment file in memory
      */
-open func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> Data {
-    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_decrypt_buffer(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
         FfiConverterTypeAttachmentView_lower(attachment),
@@ -588,7 +628,7 @@ open func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data
     /**
      * Decrypt an attachment file located in the file system
      */
-open func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFilePath: String, decryptedFilePath: String)throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFilePath: String, decryptedFilePath: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_decrypt_file(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
         FfiConverterTypeAttachmentView_lower(attachment),
@@ -601,8 +641,8 @@ open func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFileP
     /**
      * Encrypt an attachment file in memory
      */
-open func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> AttachmentEncryptResult {
-    return try  FfiConverterTypeAttachmentEncryptResult_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> AttachmentEncryptResult  {
+    return try  FfiConverterTypeAttachmentEncryptResult_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_encrypt_buffer(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
         FfiConverterTypeAttachmentView_lower(attachment),
@@ -614,8 +654,8 @@ open func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data
     /**
      * Encrypt an attachment file located in the file system
      */
-open func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String)throws  -> Attachment {
-    return try  FfiConverterTypeAttachment_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String)throws  -> Attachment  {
+    return try  FfiConverterTypeAttachment_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_attachmentsclient_encrypt_file(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),
         FfiConverterTypeAttachmentView_lower(attachment),
@@ -627,6 +667,7 @@ open func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFileP
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -663,8 +704,6 @@ public struct FfiConverterTypeAttachmentsClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -682,7 +721,9 @@ public func FfiConverterTypeAttachmentsClient_lower(_ value: AttachmentsClient) 
 
 
 
-public protocol AuthClientProtocol : AnyObject {
+
+
+public protocol AuthClientProtocol: AnyObject, Sendable {
     
     /**
      * Approve an auth request
@@ -760,9 +801,7 @@ public protocol AuthClientProtocol : AnyObject {
     func validatePin(pin: String, pinProtectedUserKey: EncString) throws  -> Bool
     
 }
-
-open class AuthClient:
-    AuthClientProtocol {
+open class AuthClient: AuthClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -776,6 +815,9 @@ open class AuthClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -814,8 +856,8 @@ open class AuthClient:
     /**
      * Approve an auth request
      */
-open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey {
-    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey  {
+    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_approve_auth_request(self.uniffiClonePointer(),
         FfiConverterString.lower(publicKey),$0
     )
@@ -825,7 +867,7 @@ open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey {
     /**
      * Hash the user password
      */
-open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose)async throws  -> String {
+open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose)async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -838,15 +880,15 @@ open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose:
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterString.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
     /**
      * Generate keys needed to onboard a new user without master key to key connector
      */
-open func makeKeyConnectorKeys()throws  -> KeyConnectorResponse {
-    return try  FfiConverterTypeKeyConnectorResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func makeKeyConnectorKeys()throws  -> KeyConnectorResponse  {
+    return try  FfiConverterTypeKeyConnectorResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_make_key_connector_keys(self.uniffiClonePointer(),$0
     )
 })
@@ -855,8 +897,8 @@ open func makeKeyConnectorKeys()throws  -> KeyConnectorResponse {
     /**
      * Generate keys needed for registration process
      */
-open func makeRegisterKeys(email: String, password: String, kdf: Kdf)throws  -> RegisterKeyResponse {
-    return try  FfiConverterTypeRegisterKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func makeRegisterKeys(email: String, password: String, kdf: Kdf)throws  -> RegisterKeyResponse  {
+    return try  FfiConverterTypeRegisterKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_make_register_keys(self.uniffiClonePointer(),
         FfiConverterString.lower(email),
         FfiConverterString.lower(password),
@@ -868,8 +910,8 @@ open func makeRegisterKeys(email: String, password: String, kdf: Kdf)throws  -> 
     /**
      * Generate keys needed for TDE process
      */
-open func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool)throws  -> RegisterTdeKeyResponse {
-    return try  FfiConverterTypeRegisterTdeKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool)throws  -> RegisterTdeKeyResponse  {
+    return try  FfiConverterTypeRegisterTdeKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_make_register_tde_keys(self.uniffiClonePointer(),
         FfiConverterString.lower(email),
         FfiConverterString.lower(orgPublicKey),
@@ -881,8 +923,8 @@ open func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevic
     /**
      * Initialize a new auth request
      */
-open func newAuthRequest(email: String)throws  -> AuthRequestResponse {
-    return try  FfiConverterTypeAuthRequestResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func newAuthRequest(email: String)throws  -> AuthRequestResponse  {
+    return try  FfiConverterTypeAuthRequestResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_new_auth_request(self.uniffiClonePointer(),
         FfiConverterString.lower(email),$0
     )
@@ -892,7 +934,7 @@ open func newAuthRequest(email: String)throws  -> AuthRequestResponse {
     /**
      * Calculate Password Strength
      */
-open func passwordStrength(password: String, email: String, additionalInputs: [String]) -> UInt8 {
+open func passwordStrength(password: String, email: String, additionalInputs: [String]) -> UInt8  {
     return try!  FfiConverterUInt8.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_authclient_password_strength(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
@@ -905,7 +947,7 @@ open func passwordStrength(password: String, email: String, additionalInputs: [S
     /**
      * Evaluate if the provided password satisfies the provided policy
      */
-open func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) -> Bool {
+open func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPasswordPolicyOptions) -> Bool  {
     return try!  FfiConverterBool.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_authclient_satisfies_policy(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
@@ -918,8 +960,8 @@ open func satisfiesPolicy(password: String, strength: UInt8, policy: MasterPassw
     /**
      * Trust the current device
      */
-open func trustDevice()throws  -> TrustDeviceResponse {
-    return try  FfiConverterTypeTrustDeviceResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func trustDevice()throws  -> TrustDeviceResponse  {
+    return try  FfiConverterTypeTrustDeviceResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_trust_device(self.uniffiClonePointer(),$0
     )
 })
@@ -932,8 +974,8 @@ open func trustDevice()throws  -> TrustDeviceResponse {
      * `HashPurpose::LocalAuthentication` during login and persist it. If the login method has no
      * password, use the email OTP.
      */
-open func validatePassword(password: String, passwordHash: String)throws  -> Bool {
-    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func validatePassword(password: String, passwordHash: String)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_validate_password(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
         FfiConverterString.lower(passwordHash),$0
@@ -949,8 +991,8 @@ open func validatePassword(password: String, passwordHash: String)throws  -> Boo
      *
      * This works by comparing the provided password against the encrypted user key.
      */
-open func validatePasswordUserKey(password: String, encryptedUserKey: String)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func validatePasswordUserKey(password: String, encryptedUserKey: String)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_validate_password_user_key(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
         FfiConverterString.lower(encryptedUserKey),$0
@@ -967,8 +1009,8 @@ open func validatePasswordUserKey(password: String, encryptedUserKey: String)thr
      * This works by comparing the decrypted user key with the current user key, so the client must
      * be unlocked.
      */
-open func validatePin(pin: String, pinProtectedUserKey: EncString)throws  -> Bool {
-    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func validatePin(pin: String, pinProtectedUserKey: EncString)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_validate_pin(self.uniffiClonePointer(),
         FfiConverterString.lower(pin),
         FfiConverterTypeEncString_lower(pinProtectedUserKey),$0
@@ -978,6 +1020,7 @@ open func validatePin(pin: String, pinProtectedUserKey: EncString)throws  -> Boo
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1014,8 +1057,6 @@ public struct FfiConverterTypeAuthClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1033,7 +1074,9 @@ public func FfiConverterTypeAuthClient_lower(_ value: AuthClient) -> UnsafeMutab
 
 
 
-public protocol CiphersClientProtocol : AnyObject {
+
+
+public protocol CiphersClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt cipher
@@ -1058,9 +1101,7 @@ public protocol CiphersClientProtocol : AnyObject {
     func moveToOrganization(cipher: CipherView, organizationId: Uuid) throws  -> CipherView
     
 }
-
-open class CiphersClient:
-    CiphersClientProtocol {
+open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -1074,6 +1115,9 @@ open class CiphersClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -1112,16 +1156,16 @@ open class CiphersClient:
     /**
      * Decrypt cipher
      */
-open func decrypt(cipher: Cipher)throws  -> CipherView {
-    return try  FfiConverterTypeCipherView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decrypt(cipher: Cipher)throws  -> CipherView  {
+    return try  FfiConverterTypeCipherView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt(self.uniffiClonePointer(),
         FfiConverterTypeCipher_lower(cipher),$0
     )
 })
 }
     
-open func decryptFido2Credentials(cipherView: CipherView)throws  -> [Fido2CredentialView] {
-    return try  FfiConverterSequenceTypeFido2CredentialView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptFido2Credentials(cipherView: CipherView)throws  -> [Fido2CredentialView]  {
+    return try  FfiConverterSequenceTypeFido2CredentialView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_fido2_credentials(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipherView),$0
     )
@@ -1131,8 +1175,8 @@ open func decryptFido2Credentials(cipherView: CipherView)throws  -> [Fido2Creden
     /**
      * Decrypt cipher list
      */
-open func decryptList(ciphers: [Cipher])throws  -> [CipherListView] {
-    return try  FfiConverterSequenceTypeCipherListView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptList(ciphers: [Cipher])throws  -> [CipherListView]  {
+    return try  FfiConverterSequenceTypeCipherListView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_list(self.uniffiClonePointer(),
         FfiConverterSequenceTypeCipher.lower(ciphers),$0
     )
@@ -1142,8 +1186,8 @@ open func decryptList(ciphers: [Cipher])throws  -> [CipherListView] {
     /**
      * Encrypt cipher
      */
-open func encrypt(cipherView: CipherView)throws  -> EncryptionContext {
-    return try  FfiConverterTypeEncryptionContext_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encrypt(cipherView: CipherView)throws  -> EncryptionContext  {
+    return try  FfiConverterTypeEncryptionContext_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_encrypt(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipherView),$0
     )
@@ -1153,8 +1197,8 @@ open func encrypt(cipherView: CipherView)throws  -> EncryptionContext {
     /**
      * Move a cipher to an organization, reencrypting the cipher key if necessary
      */
-open func moveToOrganization(cipher: CipherView, organizationId: Uuid)throws  -> CipherView {
-    return try  FfiConverterTypeCipherView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func moveToOrganization(cipher: CipherView, organizationId: Uuid)throws  -> CipherView  {
+    return try  FfiConverterTypeCipherView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_move_to_organization(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipher),
         FfiConverterTypeUuid_lower(organizationId),$0
@@ -1164,6 +1208,7 @@ open func moveToOrganization(cipher: CipherView, organizationId: Uuid)throws  ->
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1200,8 +1245,6 @@ public struct FfiConverterTypeCiphersClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1219,7 +1262,9 @@ public func FfiConverterTypeCiphersClient_lower(_ value: CiphersClient) -> Unsaf
 
 
 
-public protocol ClientProtocol : AnyObject {
+
+
+public protocol ClientProtocol: AnyObject, Sendable {
     
     /**
      * Auth operations
@@ -1269,9 +1314,7 @@ public protocol ClientProtocol : AnyObject {
     func vault()  -> VaultClient
     
 }
-
-open class Client:
-    ClientProtocol {
+open class Client: ClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -1285,6 +1328,9 @@ open class Client:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -1334,8 +1380,8 @@ public convenience init(settings: ClientSettings?) {
     /**
      * Auth operations
      */
-open func auth() -> AuthClient {
-    return try!  FfiConverterTypeAuthClient.lift(try! rustCall() {
+open func auth() -> AuthClient  {
+    return try!  FfiConverterTypeAuthClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_auth(self.uniffiClonePointer(),$0
     )
 })
@@ -1344,8 +1390,8 @@ open func auth() -> AuthClient {
     /**
      * Crypto operations
      */
-open func crypto() -> CryptoClient {
-    return try!  FfiConverterTypeCryptoClient.lift(try! rustCall() {
+open func crypto() -> CryptoClient  {
+    return try!  FfiConverterTypeCryptoClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_crypto(self.uniffiClonePointer(),$0
     )
 })
@@ -1354,7 +1400,7 @@ open func crypto() -> CryptoClient {
     /**
      * Test method, echoes back the input
      */
-open func echo(msg: String) -> String {
+open func echo(msg: String) -> String  {
     return try!  FfiConverterString.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_echo(self.uniffiClonePointer(),
         FfiConverterString.lower(msg),$0
@@ -1365,8 +1411,8 @@ open func echo(msg: String) -> String {
     /**
      * Exporters
      */
-open func exporters() -> ExporterClient {
-    return try!  FfiConverterTypeExporterClient.lift(try! rustCall() {
+open func exporters() -> ExporterClient  {
+    return try!  FfiConverterTypeExporterClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_exporters(self.uniffiClonePointer(),$0
     )
 })
@@ -1375,8 +1421,8 @@ open func exporters() -> ExporterClient {
     /**
      * Generator operations
      */
-open func generators() -> GeneratorClients {
-    return try!  FfiConverterTypeGeneratorClients.lift(try! rustCall() {
+open func generators() -> GeneratorClients  {
+    return try!  FfiConverterTypeGeneratorClients_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_generators(self.uniffiClonePointer(),$0
     )
 })
@@ -1385,7 +1431,7 @@ open func generators() -> GeneratorClients {
     /**
      * Test method, calls http endpoint
      */
-open func httpGet(url: String)async throws  -> String {
+open func httpGet(url: String)async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1398,12 +1444,12 @@ open func httpGet(url: String)async throws  -> String {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterString.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
-open func platform() -> PlatformClient {
-    return try!  FfiConverterTypePlatformClient.lift(try! rustCall() {
+open func platform() -> PlatformClient  {
+    return try!  FfiConverterTypePlatformClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_platform(self.uniffiClonePointer(),$0
     )
 })
@@ -1412,8 +1458,8 @@ open func platform() -> PlatformClient {
     /**
      * Sends operations
      */
-open func sends() -> SendClient {
-    return try!  FfiConverterTypeSendClient.lift(try! rustCall() {
+open func sends() -> SendClient  {
+    return try!  FfiConverterTypeSendClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_sends(self.uniffiClonePointer(),$0
     )
 })
@@ -1422,8 +1468,8 @@ open func sends() -> SendClient {
     /**
      * SSH operations
      */
-open func ssh() -> SshClient {
-    return try!  FfiConverterTypeSshClient.lift(try! rustCall() {
+open func ssh() -> SshClient  {
+    return try!  FfiConverterTypeSshClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_ssh(self.uniffiClonePointer(),$0
     )
 })
@@ -1432,8 +1478,8 @@ open func ssh() -> SshClient {
     /**
      * Vault item operations
      */
-open func vault() -> VaultClient {
-    return try!  FfiConverterTypeVaultClient.lift(try! rustCall() {
+open func vault() -> VaultClient  {
+    return try!  FfiConverterTypeVaultClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_vault(self.uniffiClonePointer(),$0
     )
 })
@@ -1441,6 +1487,7 @@ open func vault() -> VaultClient {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1477,8 +1524,6 @@ public struct FfiConverterTypeClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1496,7 +1541,9 @@ public func FfiConverterTypeClient_lower(_ value: Client) -> UnsafeMutableRawPoi
 
 
 
-public protocol ClientFido2Protocol : AnyObject {
+
+
+public protocol ClientFido2Protocol: AnyObject, Sendable {
     
     func authenticator(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore)  -> ClientFido2Authenticator
     
@@ -1505,9 +1552,7 @@ public protocol ClientFido2Protocol : AnyObject {
     func decryptFido2AutofillCredentials(cipherView: CipherView) throws  -> [Fido2CredentialAutofillView]
     
 }
-
-open class ClientFido2:
-    ClientFido2Protocol {
+open class ClientFido2: ClientFido2Protocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -1521,6 +1566,9 @@ open class ClientFido2:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -1556,26 +1604,26 @@ open class ClientFido2:
     
 
     
-open func authenticator(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore) -> ClientFido2Authenticator {
-    return try!  FfiConverterTypeClientFido2Authenticator.lift(try! rustCall() {
+open func authenticator(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore) -> ClientFido2Authenticator  {
+    return try!  FfiConverterTypeClientFido2Authenticator_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_clientfido2_authenticator(self.uniffiClonePointer(),
-        FfiConverterTypeFido2UserInterface.lower(userInterface),
-        FfiConverterTypeFido2CredentialStore.lower(credentialStore),$0
+        FfiConverterTypeFido2UserInterface_lower(userInterface),
+        FfiConverterTypeFido2CredentialStore_lower(credentialStore),$0
     )
 })
 }
     
-open func client(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore) -> ClientFido2Client {
-    return try!  FfiConverterTypeClientFido2Client.lift(try! rustCall() {
+open func client(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore) -> ClientFido2Client  {
+    return try!  FfiConverterTypeClientFido2Client_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_clientfido2_client(self.uniffiClonePointer(),
-        FfiConverterTypeFido2UserInterface.lower(userInterface),
-        FfiConverterTypeFido2CredentialStore.lower(credentialStore),$0
+        FfiConverterTypeFido2UserInterface_lower(userInterface),
+        FfiConverterTypeFido2CredentialStore_lower(credentialStore),$0
     )
 })
 }
     
-open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fido2CredentialAutofillView] {
-    return try  FfiConverterSequenceTypeFido2CredentialAutofillView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fido2CredentialAutofillView]  {
+    return try  FfiConverterSequenceTypeFido2CredentialAutofillView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_clientfido2_decrypt_fido2_autofill_credentials(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipherView),$0
     )
@@ -1584,6 +1632,7 @@ open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fid
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1620,8 +1669,6 @@ public struct FfiConverterTypeClientFido2: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1639,7 +1686,9 @@ public func FfiConverterTypeClientFido2_lower(_ value: ClientFido2) -> UnsafeMut
 
 
 
-public protocol ClientFido2AuthenticatorProtocol : AnyObject {
+
+
+public protocol ClientFido2AuthenticatorProtocol: AnyObject, Sendable {
     
     func credentialsForAutofill() async throws  -> [Fido2CredentialAutofillView]
     
@@ -1650,9 +1699,7 @@ public protocol ClientFido2AuthenticatorProtocol : AnyObject {
     func silentlyDiscoverCredentials(rpId: String) async throws  -> [Fido2CredentialAutofillView]
     
 }
-
-open class ClientFido2Authenticator:
-    ClientFido2AuthenticatorProtocol {
+open class ClientFido2Authenticator: ClientFido2AuthenticatorProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -1666,6 +1713,9 @@ open class ClientFido2Authenticator:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -1701,7 +1751,7 @@ open class ClientFido2Authenticator:
     
 
     
-open func credentialsForAutofill()async throws  -> [Fido2CredentialAutofillView] {
+open func credentialsForAutofill()async throws  -> [Fido2CredentialAutofillView]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1714,11 +1764,11 @@ open func credentialsForAutofill()async throws  -> [Fido2CredentialAutofillView]
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeFido2CredentialAutofillView.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
-open func getAssertion(request: GetAssertionRequest)async throws  -> GetAssertionResult {
+open func getAssertion(request: GetAssertionRequest)async throws  -> GetAssertionResult  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1731,11 +1781,11 @@ open func getAssertion(request: GetAssertionRequest)async throws  -> GetAssertio
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeGetAssertionResult_lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
-open func makeCredential(request: MakeCredentialRequest)async throws  -> MakeCredentialResult {
+open func makeCredential(request: MakeCredentialRequest)async throws  -> MakeCredentialResult  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1748,11 +1798,11 @@ open func makeCredential(request: MakeCredentialRequest)async throws  -> MakeCre
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeMakeCredentialResult_lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
-open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2CredentialAutofillView] {
+open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2CredentialAutofillView]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1765,12 +1815,13 @@ open func silentlyDiscoverCredentials(rpId: String)async throws  -> [Fido2Creden
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeFido2CredentialAutofillView.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1807,8 +1858,6 @@ public struct FfiConverterTypeClientFido2Authenticator: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1826,16 +1875,16 @@ public func FfiConverterTypeClientFido2Authenticator_lower(_ value: ClientFido2A
 
 
 
-public protocol ClientFido2ClientProtocol : AnyObject {
+
+
+public protocol ClientFido2ClientProtocol: AnyObject, Sendable {
     
     func authenticate(origin: Origin, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse
     
     func register(origin: Origin, request: String, clientData: ClientData) async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse
     
 }
-
-open class ClientFido2Client:
-    ClientFido2ClientProtocol {
+open class ClientFido2Client: ClientFido2ClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -1849,6 +1898,9 @@ open class ClientFido2Client:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -1884,7 +1936,7 @@ open class ClientFido2Client:
     
 
     
-open func authenticate(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse {
+open func authenticate(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAssertionResponse  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1897,11 +1949,11 @@ open func authenticate(origin: Origin, request: String, clientData: ClientData)a
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypePublicKeyCredentialAuthenticatorAssertionResponse_lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
-open func register(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse {
+open func register(origin: Origin, request: String, clientData: ClientData)async throws  -> PublicKeyCredentialAuthenticatorAttestationResponse  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -1914,12 +1966,13 @@ open func register(origin: Origin, request: String, clientData: ClientData)async
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypePublicKeyCredentialAuthenticatorAttestationResponse_lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1956,8 +2009,6 @@ public struct FfiConverterTypeClientFido2Client: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1975,7 +2026,9 @@ public func FfiConverterTypeClientFido2Client_lower(_ value: ClientFido2Client) 
 
 
 
-public protocol CollectionsClientProtocol : AnyObject {
+
+
+public protocol CollectionsClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt collection
@@ -1988,9 +2041,7 @@ public protocol CollectionsClientProtocol : AnyObject {
     func decryptList(collections: [Collection]) throws  -> [CollectionView]
     
 }
-
-open class CollectionsClient:
-    CollectionsClientProtocol {
+open class CollectionsClient: CollectionsClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -2004,6 +2055,9 @@ open class CollectionsClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -2042,8 +2096,8 @@ open class CollectionsClient:
     /**
      * Decrypt collection
      */
-open func decrypt(collection: Collection)throws  -> CollectionView {
-    return try  FfiConverterTypeCollectionView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decrypt(collection: Collection)throws  -> CollectionView  {
+    return try  FfiConverterTypeCollectionView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_collectionsclient_decrypt(self.uniffiClonePointer(),
         FfiConverterTypeCollection_lower(collection),$0
     )
@@ -2053,8 +2107,8 @@ open func decrypt(collection: Collection)throws  -> CollectionView {
     /**
      * Decrypt collection list
      */
-open func decryptList(collections: [Collection])throws  -> [CollectionView] {
-    return try  FfiConverterSequenceTypeCollectionView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptList(collections: [Collection])throws  -> [CollectionView]  {
+    return try  FfiConverterSequenceTypeCollectionView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_collectionsclient_decrypt_list(self.uniffiClonePointer(),
         FfiConverterSequenceTypeCollection.lower(collections),$0
     )
@@ -2063,6 +2117,7 @@ open func decryptList(collections: [Collection])throws  -> [CollectionView] {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2099,8 +2154,6 @@ public struct FfiConverterTypeCollectionsClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -2118,7 +2171,9 @@ public func FfiConverterTypeCollectionsClient_lower(_ value: CollectionsClient) 
 
 
 
-public protocol CryptoClientProtocol : AnyObject {
+
+
+public protocol CryptoClientProtocol: AnyObject, Sendable {
     
     /**
      * Derive the master key for migrating to the key connector
@@ -2165,9 +2220,7 @@ public protocol CryptoClientProtocol : AnyObject {
     func updatePassword(newPassword: String) throws  -> UpdatePasswordResponse
     
 }
-
-open class CryptoClient:
-    CryptoClientProtocol {
+open class CryptoClient: CryptoClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -2181,6 +2234,9 @@ open class CryptoClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -2219,8 +2275,8 @@ open class CryptoClient:
     /**
      * Derive the master key for migrating to the key connector
      */
-open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_derive_key_connector(self.uniffiClonePointer(),
         FfiConverterTypeDeriveKeyConnectorRequest_lower(request),$0
     )
@@ -2232,8 +2288,8 @@ open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> Strin
      * used to initialize another client instance by using the PIN and the PIN key with
      * `initialize_user_crypto`.
      */
-open func derivePinKey(pin: String)throws  -> DerivePinKeyResponse {
-    return try  FfiConverterTypeDerivePinKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func derivePinKey(pin: String)throws  -> DerivePinKeyResponse  {
+    return try  FfiConverterTypeDerivePinKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_derive_pin_key(self.uniffiClonePointer(),
         FfiConverterString.lower(pin),$0
     )
@@ -2244,16 +2300,16 @@ open func derivePinKey(pin: String)throws  -> DerivePinKeyResponse {
      * Derives the pin protected user key from encrypted pin. Used when pin requires master
      * password on first unlock.
      */
-open func derivePinUserKey(encryptedPin: EncString)throws  -> EncString {
-    return try  FfiConverterTypeEncString_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func derivePinUserKey(encryptedPin: EncString)throws  -> EncString  {
+    return try  FfiConverterTypeEncString_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_derive_pin_user_key(self.uniffiClonePointer(),
         FfiConverterTypeEncString_lower(encryptedPin),$0
     )
 })
 }
     
-open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKey {
-    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKey  {
+    return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_admin_password_reset(self.uniffiClonePointer(),
         FfiConverterString.lower(publicKey),$0
     )
@@ -2264,7 +2320,7 @@ open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKe
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
-open func getUserEncryptionKey()async throws  -> String {
+open func getUserEncryptionKey()async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2277,7 +2333,7 @@ open func getUserEncryptionKey()async throws  -> String {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterString.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
@@ -2285,7 +2341,7 @@ open func getUserEncryptionKey()async throws  -> String {
      * Initialization method for the organization crypto. Needs to be called after
      * `initialize_user_crypto` but before any other crypto operations.
      */
-open func initializeOrgCrypto(req: InitOrgCryptoRequest)async throws  {
+open func initializeOrgCrypto(req: InitOrgCryptoRequest)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2298,7 +2354,7 @@ open func initializeOrgCrypto(req: InitOrgCryptoRequest)async throws  {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
             liftFunc: { $0 },
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
@@ -2306,7 +2362,7 @@ open func initializeOrgCrypto(req: InitOrgCryptoRequest)async throws  {
      * Initialization method for the user crypto. Needs to be called before any other crypto
      * operations.
      */
-open func initializeUserCrypto(req: InitUserCryptoRequest)async throws  {
+open func initializeUserCrypto(req: InitUserCryptoRequest)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2319,7 +2375,7 @@ open func initializeUserCrypto(req: InitUserCryptoRequest)async throws  {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
             liftFunc: { $0 },
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
@@ -2327,8 +2383,8 @@ open func initializeUserCrypto(req: InitUserCryptoRequest)async throws  {
      * Update the user's password, which will re-encrypt the user's encryption key with the new
      * password. This returns the new encrypted user key and the new password hash.
      */
-open func updatePassword(newPassword: String)throws  -> UpdatePasswordResponse {
-    return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func updatePassword(newPassword: String)throws  -> UpdatePasswordResponse  {
+    return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_update_password(self.uniffiClonePointer(),
         FfiConverterString.lower(newPassword),$0
     )
@@ -2337,6 +2393,7 @@ open func updatePassword(newPassword: String)throws  -> UpdatePasswordResponse {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2373,8 +2430,6 @@ public struct FfiConverterTypeCryptoClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -2392,7 +2447,9 @@ public func FfiConverterTypeCryptoClient_lower(_ value: CryptoClient) -> UnsafeM
 
 
 
-public protocol ExporterClientProtocol : AnyObject {
+
+
+public protocol ExporterClientProtocol: AnyObject, Sendable {
     
     /**
      * Credential Exchange Format (CXF)
@@ -2425,9 +2482,7 @@ public protocol ExporterClientProtocol : AnyObject {
     func importCxf(payload: String) throws  -> [Cipher]
     
 }
-
-open class ExporterClient:
-    ExporterClientProtocol {
+open class ExporterClient: ExporterClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -2441,6 +2496,9 @@ open class ExporterClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -2484,8 +2542,8 @@ open class ExporterClient:
      * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
      * Ideally the output should be immediately deserialized to [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
      */
-open func exportCxf(account: Account, ciphers: [Cipher])throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func exportCxf(account: Account, ciphers: [Cipher])throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_exporterclient_export_cxf(self.uniffiClonePointer(),
         FfiConverterTypeAccount_lower(account),
         FfiConverterSequenceTypeCipher.lower(ciphers),$0
@@ -2496,8 +2554,8 @@ open func exportCxf(account: Account, ciphers: [Cipher])throws  -> String {
     /**
      * Export organization vault
      */
-open func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], format: ExportFormat)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_exporterclient_export_organization_vault(self.uniffiClonePointer(),
         FfiConverterSequenceTypeCollection.lower(collections),
         FfiConverterSequenceTypeCipher.lower(ciphers),
@@ -2509,8 +2567,8 @@ open func exportOrganizationVault(collections: [Collection], ciphers: [Cipher], 
     /**
      * Export user vault
      */
-open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_exporterclient_export_vault(self.uniffiClonePointer(),
         FfiConverterSequenceTypeFolder.lower(folders),
         FfiConverterSequenceTypeCipher.lower(ciphers),
@@ -2527,8 +2585,8 @@ open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat
      * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
      * Ideally the input should be immediately serialized from [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
      */
-open func importCxf(payload: String)throws  -> [Cipher] {
-    return try  FfiConverterSequenceTypeCipher.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func importCxf(payload: String)throws  -> [Cipher]  {
+    return try  FfiConverterSequenceTypeCipher.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_exporterclient_import_cxf(self.uniffiClonePointer(),
         FfiConverterString.lower(payload),$0
     )
@@ -2537,6 +2595,7 @@ open func importCxf(payload: String)throws  -> [Cipher] {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2573,8 +2632,6 @@ public struct FfiConverterTypeExporterClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -2592,7 +2649,9 @@ public func FfiConverterTypeExporterClient_lower(_ value: ExporterClient) -> Uns
 
 
 
-public protocol Fido2CredentialStore : AnyObject {
+
+
+public protocol Fido2CredentialStore: AnyObject, Sendable {
     
     func findCredentials(ids: [Data]?, ripId: String) async throws  -> [CipherView]
     
@@ -2601,9 +2660,7 @@ public protocol Fido2CredentialStore : AnyObject {
     func saveCredential(cred: EncryptionContext) async throws 
     
 }
-
-open class Fido2CredentialStoreImpl:
-    Fido2CredentialStore {
+open class Fido2CredentialStoreImpl: Fido2CredentialStore, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -2617,6 +2674,9 @@ open class Fido2CredentialStoreImpl:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -2652,7 +2712,7 @@ open class Fido2CredentialStoreImpl:
     
 
     
-open func findCredentials(ids: [Data]?, ripId: String)async throws  -> [CipherView] {
+open func findCredentials(ids: [Data]?, ripId: String)async throws  -> [CipherView]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2665,11 +2725,11 @@ open func findCredentials(ids: [Data]?, ripId: String)async throws  -> [CipherVi
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeCipherView.lift,
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
-open func allCredentials()async throws  -> [CipherListView] {
+open func allCredentials()async throws  -> [CipherListView]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2682,11 +2742,11 @@ open func allCredentials()async throws  -> [CipherListView] {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeCipherListView.lift,
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
-open func saveCredential(cred: EncryptionContext)async throws  {
+open func saveCredential(cred: EncryptionContext)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -2699,7 +2759,7 @@ open func saveCredential(cred: EncryptionContext)async throws  {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
             liftFunc: { $0 },
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
@@ -2718,7 +2778,10 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
 
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
-    static var vtable: UniffiVTableCallbackInterfaceFido2CredentialStore = UniffiVTableCallbackInterfaceFido2CredentialStore(
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceFido2CredentialStore] = [UniffiVTableCallbackInterfaceFido2CredentialStore(
         findCredentials: { (
             uniffiHandle: UInt64,
             ids: RustBuffer,
@@ -2760,7 +2823,7 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -2801,7 +2864,7 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -2842,7 +2905,7 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -2852,18 +2915,19 @@ fileprivate struct UniffiCallbackInterfaceFido2CredentialStore {
                 print("Uniffi callback interface Fido2CredentialStore: handle missing in uniffiFree")
             }
         }
-    )
+    )]
 }
 
 private func uniffiCallbackInitFido2CredentialStore() {
-    uniffi_bitwarden_uniffi_fn_init_callback_vtable_fido2credentialstore(&UniffiCallbackInterfaceFido2CredentialStore.vtable)
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_fido2credentialstore(UniffiCallbackInterfaceFido2CredentialStore.vtable)
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
 public struct FfiConverterTypeFido2CredentialStore: FfiConverter {
-    fileprivate static var handleMap = UniffiHandleMap<Fido2CredentialStore>()
+    fileprivate static let handleMap = UniffiHandleMap<Fido2CredentialStore>()
 
     typealias FfiType = UnsafeMutableRawPointer
     typealias SwiftType = Fido2CredentialStore
@@ -2898,8 +2962,6 @@ public struct FfiConverterTypeFido2CredentialStore: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -2917,7 +2979,9 @@ public func FfiConverterTypeFido2CredentialStore_lower(_ value: Fido2CredentialS
 
 
 
-public protocol Fido2UserInterface : AnyObject {
+
+
+public protocol Fido2UserInterface: AnyObject, Sendable {
     
     func checkUser(options: CheckUserOptions, hint: UiHint) async throws  -> CheckUserResult
     
@@ -2928,9 +2992,7 @@ public protocol Fido2UserInterface : AnyObject {
     func isVerificationEnabled() async  -> Bool
     
 }
-
-open class Fido2UserInterfaceImpl:
-    Fido2UserInterface {
+open class Fido2UserInterfaceImpl: Fido2UserInterface, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -2944,6 +3006,9 @@ open class Fido2UserInterfaceImpl:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -2979,24 +3044,24 @@ open class Fido2UserInterfaceImpl:
     
 
     
-open func checkUser(options: CheckUserOptions, hint: UiHint)async throws  -> CheckUserResult {
+open func checkUser(options: CheckUserOptions, hint: UiHint)async throws  -> CheckUserResult  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_fido2userinterface_check_user(
                     self.uniffiClonePointer(),
-                    FfiConverterTypeCheckUserOptions_lower(options),FfiConverterTypeUIHint.lower(hint)
+                    FfiConverterTypeCheckUserOptions_lower(options),FfiConverterTypeUIHint_lower(hint)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeCheckUserResult.lift,
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            liftFunc: FfiConverterTypeCheckUserResult_lift,
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
-open func pickCredentialForAuthentication(availableCredentials: [CipherView])async throws  -> CipherViewWrapper {
+open func pickCredentialForAuthentication(availableCredentials: [CipherView])async throws  -> CipherViewWrapper  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3008,12 +3073,12 @@ open func pickCredentialForAuthentication(availableCredentials: [CipherView])asy
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeCipherViewWrapper.lift,
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            liftFunc: FfiConverterTypeCipherViewWrapper_lift,
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
-open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView)async throws  -> CheckUserAndPickCredentialForCreationResult {
+open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCredential: Fido2CredentialNewView)async throws  -> CheckUserAndPickCredentialForCreationResult  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3025,12 +3090,12 @@ open func checkUserAndPickCredentialForCreation(options: CheckUserOptions, newCr
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lift,
-            errorHandler: FfiConverterTypeFido2CallbackError.lift
+            liftFunc: FfiConverterTypeCheckUserAndPickCredentialForCreationResult_lift,
+            errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
     
-open func isVerificationEnabled()async  -> Bool {
+open func isVerificationEnabled()async  -> Bool  {
     return
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3057,7 +3122,10 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
 
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
-    static var vtable: UniffiVTableCallbackInterfaceFido2UserInterface = UniffiVTableCallbackInterfaceFido2UserInterface(
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceFido2UserInterface] = [UniffiVTableCallbackInterfaceFido2UserInterface(
         checkUser: { (
             uniffiHandle: UInt64,
             options: RustBuffer,
@@ -3073,7 +3141,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 }
                 return try await uniffiObj.checkUser(
                      options: try FfiConverterTypeCheckUserOptions_lift(options),
-                     hint: try FfiConverterTypeUIHint.lift(hint)
+                     hint: try FfiConverterTypeUIHint_lift(hint)
                 )
             }
 
@@ -3081,7 +3149,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     UniffiForeignFutureStructRustBuffer(
-                        returnValue: FfiConverterTypeCheckUserResult.lower(returnValue),
+                        returnValue: FfiConverterTypeCheckUserResult_lower(returnValue),
                         callStatus: RustCallStatus()
                     )
                 )
@@ -3099,7 +3167,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -3124,7 +3192,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     UniffiForeignFutureStructRustBuffer(
-                        returnValue: FfiConverterTypeCipherViewWrapper.lower(returnValue),
+                        returnValue: FfiConverterTypeCipherViewWrapper_lower(returnValue),
                         callStatus: RustCallStatus()
                     )
                 )
@@ -3142,7 +3210,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -3169,7 +3237,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     UniffiForeignFutureStructRustBuffer(
-                        returnValue: FfiConverterTypeCheckUserAndPickCredentialForCreationResult.lower(returnValue),
+                        returnValue: FfiConverterTypeCheckUserAndPickCredentialForCreationResult_lower(returnValue),
                         callStatus: RustCallStatus()
                     )
                 )
@@ -3187,7 +3255,7 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: FfiConverterTypeFido2CallbackError.lower
+                lowerError: FfiConverterTypeFido2CallbackError_lower
             )
             uniffiOutReturn.pointee = uniffiForeignFuture
         },
@@ -3237,18 +3305,19 @@ fileprivate struct UniffiCallbackInterfaceFido2UserInterface {
                 print("Uniffi callback interface Fido2UserInterface: handle missing in uniffiFree")
             }
         }
-    )
+    )]
 }
 
 private func uniffiCallbackInitFido2UserInterface() {
-    uniffi_bitwarden_uniffi_fn_init_callback_vtable_fido2userinterface(&UniffiCallbackInterfaceFido2UserInterface.vtable)
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_fido2userinterface(UniffiCallbackInterfaceFido2UserInterface.vtable)
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
 public struct FfiConverterTypeFido2UserInterface: FfiConverter {
-    fileprivate static var handleMap = UniffiHandleMap<Fido2UserInterface>()
+    fileprivate static let handleMap = UniffiHandleMap<Fido2UserInterface>()
 
     typealias FfiType = UnsafeMutableRawPointer
     typealias SwiftType = Fido2UserInterface
@@ -3283,8 +3352,6 @@ public struct FfiConverterTypeFido2UserInterface: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3302,7 +3369,9 @@ public func FfiConverterTypeFido2UserInterface_lower(_ value: Fido2UserInterface
 
 
 
-public protocol FoldersClientProtocol : AnyObject {
+
+
+public protocol FoldersClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt folder
@@ -3320,9 +3389,7 @@ public protocol FoldersClientProtocol : AnyObject {
     func encrypt(folder: FolderView) throws  -> Folder
     
 }
-
-open class FoldersClient:
-    FoldersClientProtocol {
+open class FoldersClient: FoldersClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -3336,6 +3403,9 @@ open class FoldersClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -3374,8 +3444,8 @@ open class FoldersClient:
     /**
      * Decrypt folder
      */
-open func decrypt(folder: Folder)throws  -> FolderView {
-    return try  FfiConverterTypeFolderView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decrypt(folder: Folder)throws  -> FolderView  {
+    return try  FfiConverterTypeFolderView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_foldersclient_decrypt(self.uniffiClonePointer(),
         FfiConverterTypeFolder_lower(folder),$0
     )
@@ -3385,8 +3455,8 @@ open func decrypt(folder: Folder)throws  -> FolderView {
     /**
      * Decrypt folder list
      */
-open func decryptList(folders: [Folder])throws  -> [FolderView] {
-    return try  FfiConverterSequenceTypeFolderView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptList(folders: [Folder])throws  -> [FolderView]  {
+    return try  FfiConverterSequenceTypeFolderView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_foldersclient_decrypt_list(self.uniffiClonePointer(),
         FfiConverterSequenceTypeFolder.lower(folders),$0
     )
@@ -3396,8 +3466,8 @@ open func decryptList(folders: [Folder])throws  -> [FolderView] {
     /**
      * Encrypt folder
      */
-open func encrypt(folder: FolderView)throws  -> Folder {
-    return try  FfiConverterTypeFolder_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encrypt(folder: FolderView)throws  -> Folder  {
+    return try  FfiConverterTypeFolder_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_foldersclient_encrypt(self.uniffiClonePointer(),
         FfiConverterTypeFolderView_lower(folder),$0
     )
@@ -3406,6 +3476,7 @@ open func encrypt(folder: FolderView)throws  -> Folder {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3442,8 +3513,6 @@ public struct FfiConverterTypeFoldersClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3461,7 +3530,9 @@ public func FfiConverterTypeFoldersClient_lower(_ value: FoldersClient) -> Unsaf
 
 
 
-public protocol GeneratorClientsProtocol : AnyObject {
+
+
+public protocol GeneratorClientsProtocol: AnyObject, Sendable {
     
     /**
      * Generate Passphrase
@@ -3479,9 +3550,7 @@ public protocol GeneratorClientsProtocol : AnyObject {
     func username(settings: UsernameGeneratorRequest) async throws  -> String
     
 }
-
-open class GeneratorClients:
-    GeneratorClientsProtocol {
+open class GeneratorClients: GeneratorClientsProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -3495,6 +3564,9 @@ open class GeneratorClients:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -3533,8 +3605,8 @@ open class GeneratorClients:
     /**
      * Generate Passphrase
      */
-open func passphrase(settings: PassphraseGeneratorRequest)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func passphrase(settings: PassphraseGeneratorRequest)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_generatorclients_passphrase(self.uniffiClonePointer(),
         FfiConverterTypePassphraseGeneratorRequest_lower(settings),$0
     )
@@ -3544,8 +3616,8 @@ open func passphrase(settings: PassphraseGeneratorRequest)throws  -> String {
     /**
      * Generate Password
      */
-open func password(settings: PasswordGeneratorRequest)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func password(settings: PasswordGeneratorRequest)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_generatorclients_password(self.uniffiClonePointer(),
         FfiConverterTypePasswordGeneratorRequest_lower(settings),$0
     )
@@ -3555,7 +3627,7 @@ open func password(settings: PasswordGeneratorRequest)throws  -> String {
     /**
      * Generate Username
      */
-open func username(settings: UsernameGeneratorRequest)async throws  -> String {
+open func username(settings: UsernameGeneratorRequest)async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3568,12 +3640,13 @@ open func username(settings: UsernameGeneratorRequest)async throws  -> String {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterString.lift,
-            errorHandler: FfiConverterTypeBitwardenError.lift
+            errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3610,8 +3683,6 @@ public struct FfiConverterTypeGeneratorClients: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3629,7 +3700,9 @@ public func FfiConverterTypeGeneratorClients_lower(_ value: GeneratorClients) ->
 
 
 
-public protocol PasswordHistoryClientProtocol : AnyObject {
+
+
+public protocol PasswordHistoryClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt password history
@@ -3642,9 +3715,7 @@ public protocol PasswordHistoryClientProtocol : AnyObject {
     func encrypt(passwordHistory: PasswordHistoryView) throws  -> PasswordHistory
     
 }
-
-open class PasswordHistoryClient:
-    PasswordHistoryClientProtocol {
+open class PasswordHistoryClient: PasswordHistoryClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -3658,6 +3729,9 @@ open class PasswordHistoryClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -3696,8 +3770,8 @@ open class PasswordHistoryClient:
     /**
      * Decrypt password history
      */
-open func decryptList(list: [PasswordHistory])throws  -> [PasswordHistoryView] {
-    return try  FfiConverterSequenceTypePasswordHistoryView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptList(list: [PasswordHistory])throws  -> [PasswordHistoryView]  {
+    return try  FfiConverterSequenceTypePasswordHistoryView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_passwordhistoryclient_decrypt_list(self.uniffiClonePointer(),
         FfiConverterSequenceTypePasswordHistory.lower(list),$0
     )
@@ -3707,8 +3781,8 @@ open func decryptList(list: [PasswordHistory])throws  -> [PasswordHistoryView] {
     /**
      * Encrypt password history
      */
-open func encrypt(passwordHistory: PasswordHistoryView)throws  -> PasswordHistory {
-    return try  FfiConverterTypePasswordHistory_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encrypt(passwordHistory: PasswordHistoryView)throws  -> PasswordHistory  {
+    return try  FfiConverterTypePasswordHistory_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_passwordhistoryclient_encrypt(self.uniffiClonePointer(),
         FfiConverterTypePasswordHistoryView_lower(passwordHistory),$0
     )
@@ -3717,6 +3791,7 @@ open func encrypt(passwordHistory: PasswordHistoryView)throws  -> PasswordHistor
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3753,8 +3828,6 @@ public struct FfiConverterTypePasswordHistoryClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3772,7 +3845,9 @@ public func FfiConverterTypePasswordHistoryClient_lower(_ value: PasswordHistory
 
 
 
-public protocol PlatformClientProtocol : AnyObject {
+
+
+public protocol PlatformClientProtocol: AnyObject, Sendable {
     
     /**
      * FIDO2 operations
@@ -3795,9 +3870,7 @@ public protocol PlatformClientProtocol : AnyObject {
     func userFingerprint(fingerprintMaterial: String) throws  -> String
     
 }
-
-open class PlatformClient:
-    PlatformClientProtocol {
+open class PlatformClient: PlatformClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -3811,6 +3884,9 @@ open class PlatformClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -3849,8 +3925,8 @@ open class PlatformClient:
     /**
      * FIDO2 operations
      */
-open func fido2() -> ClientFido2 {
-    return try!  FfiConverterTypeClientFido2.lift(try! rustCall() {
+open func fido2() -> ClientFido2  {
+    return try!  FfiConverterTypeClientFido2_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_platformclient_fido2(self.uniffiClonePointer(),$0
     )
 })
@@ -3859,8 +3935,8 @@ open func fido2() -> ClientFido2 {
     /**
      * Fingerprint (public key)
      */
-open func fingerprint(req: FingerprintRequest)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func fingerprint(req: FingerprintRequest)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_platformclient_fingerprint(self.uniffiClonePointer(),
         FfiConverterTypeFingerprintRequest_lower(req),$0
     )
@@ -3870,7 +3946,7 @@ open func fingerprint(req: FingerprintRequest)throws  -> String {
     /**
      * Load feature flags into the client
      */
-open func loadFlags(flags: [String: Bool])throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func loadFlags(flags: [String: Bool])throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_platformclient_load_flags(self.uniffiClonePointer(),
         FfiConverterDictionaryStringBool.lower(flags),$0
     )
@@ -3880,8 +3956,8 @@ open func loadFlags(flags: [String: Bool])throws  {try rustCallWithError(FfiConv
     /**
      * Fingerprint using logged in user's public key
      */
-open func userFingerprint(fingerprintMaterial: String)throws  -> String {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func userFingerprint(fingerprintMaterial: String)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_platformclient_user_fingerprint(self.uniffiClonePointer(),
         FfiConverterString.lower(fingerprintMaterial),$0
     )
@@ -3890,6 +3966,7 @@ open func userFingerprint(fingerprintMaterial: String)throws  -> String {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3926,8 +4003,6 @@ public struct FfiConverterTypePlatformClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3945,7 +4020,9 @@ public func FfiConverterTypePlatformClient_lower(_ value: PlatformClient) -> Uns
 
 
 
-public protocol SendClientProtocol : AnyObject {
+
+
+public protocol SendClientProtocol: AnyObject, Sendable {
     
     /**
      * Decrypt send
@@ -3983,9 +4060,7 @@ public protocol SendClientProtocol : AnyObject {
     func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: String) throws 
     
 }
-
-open class SendClient:
-    SendClientProtocol {
+open class SendClient: SendClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -3999,6 +4074,9 @@ open class SendClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -4037,8 +4115,8 @@ open class SendClient:
     /**
      * Decrypt send
      */
-open func decrypt(send: Send)throws  -> SendView {
-    return try  FfiConverterTypeSendView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decrypt(send: Send)throws  -> SendView  {
+    return try  FfiConverterTypeSendView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_decrypt(self.uniffiClonePointer(),
         FfiConverterTypeSend_lower(send),$0
     )
@@ -4048,8 +4126,8 @@ open func decrypt(send: Send)throws  -> SendView {
     /**
      * Decrypt a send file in memory
      */
-open func decryptBuffer(send: Send, buffer: Data)throws  -> Data {
-    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptBuffer(send: Send, buffer: Data)throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_decrypt_buffer(self.uniffiClonePointer(),
         FfiConverterTypeSend_lower(send),
         FfiConverterData.lower(buffer),$0
@@ -4060,7 +4138,7 @@ open func decryptBuffer(send: Send, buffer: Data)throws  -> Data {
     /**
      * Decrypt a send file located in the file system
      */
-open func decryptFile(send: Send, encryptedFilePath: String, decryptedFilePath: String)throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptFile(send: Send, encryptedFilePath: String, decryptedFilePath: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_decrypt_file(self.uniffiClonePointer(),
         FfiConverterTypeSend_lower(send),
         FfiConverterString.lower(encryptedFilePath),
@@ -4072,8 +4150,8 @@ open func decryptFile(send: Send, encryptedFilePath: String, decryptedFilePath: 
     /**
      * Decrypt send list
      */
-open func decryptList(sends: [Send])throws  -> [SendListView] {
-    return try  FfiConverterSequenceTypeSendListView.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func decryptList(sends: [Send])throws  -> [SendListView]  {
+    return try  FfiConverterSequenceTypeSendListView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_decrypt_list(self.uniffiClonePointer(),
         FfiConverterSequenceTypeSend.lower(sends),$0
     )
@@ -4083,8 +4161,8 @@ open func decryptList(sends: [Send])throws  -> [SendListView] {
     /**
      * Encrypt send
      */
-open func encrypt(send: SendView)throws  -> Send {
-    return try  FfiConverterTypeSend_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encrypt(send: SendView)throws  -> Send  {
+    return try  FfiConverterTypeSend_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_encrypt(self.uniffiClonePointer(),
         FfiConverterTypeSendView_lower(send),$0
     )
@@ -4094,8 +4172,8 @@ open func encrypt(send: SendView)throws  -> Send {
     /**
      * Encrypt a send file in memory
      */
-open func encryptBuffer(send: Send, buffer: Data)throws  -> Data {
-    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encryptBuffer(send: Send, buffer: Data)throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_encrypt_buffer(self.uniffiClonePointer(),
         FfiConverterTypeSend_lower(send),
         FfiConverterData.lower(buffer),$0
@@ -4106,7 +4184,7 @@ open func encryptBuffer(send: Send, buffer: Data)throws  -> Data {
     /**
      * Encrypt a send file located in the file system
      */
-open func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: String)throws  {try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sendclient_encrypt_file(self.uniffiClonePointer(),
         FfiConverterTypeSend_lower(send),
         FfiConverterString.lower(decryptedFilePath),
@@ -4117,6 +4195,7 @@ open func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: 
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4153,8 +4232,6 @@ public struct FfiConverterTypeSendClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4172,16 +4249,16 @@ public func FfiConverterTypeSendClient_lower(_ value: SendClient) -> UnsafeMutab
 
 
 
-public protocol SshClientProtocol : AnyObject {
+
+
+public protocol SshClientProtocol: AnyObject, Sendable {
     
     func generateSshKey(keyAlgorithm: KeyAlgorithm) throws  -> SshKeyView
     
     func importSshKey(importedKey: String, password: String?) throws  -> SshKeyView
     
 }
-
-open class SshClient:
-    SshClientProtocol {
+open class SshClient: SshClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -4195,6 +4272,9 @@ open class SshClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -4230,16 +4310,16 @@ open class SshClient:
     
 
     
-open func generateSshKey(keyAlgorithm: KeyAlgorithm)throws  -> SshKeyView {
-    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func generateSshKey(keyAlgorithm: KeyAlgorithm)throws  -> SshKeyView  {
+    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sshclient_generate_ssh_key(self.uniffiClonePointer(),
         FfiConverterTypeKeyAlgorithm_lower(keyAlgorithm),$0
     )
 })
 }
     
-open func importSshKey(importedKey: String, password: String?)throws  -> SshKeyView {
-    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func importSshKey(importedKey: String, password: String?)throws  -> SshKeyView  {
+    return try  FfiConverterTypeSshKeyView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_sshclient_import_ssh_key(self.uniffiClonePointer(),
         FfiConverterString.lower(importedKey),
         FfiConverterOptionString.lower(password),$0
@@ -4249,6 +4329,7 @@ open func importSshKey(importedKey: String, password: String?)throws  -> SshKeyV
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4285,8 +4366,6 @@ public struct FfiConverterTypeSshClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4304,7 +4383,9 @@ public func FfiConverterTypeSshClient_lower(_ value: SshClient) -> UnsafeMutable
 
 
 
-public protocol VaultClientProtocol : AnyObject {
+
+
+public protocol VaultClientProtocol: AnyObject, Sendable {
     
     /**
      * Attachment file operations
@@ -4347,9 +4428,7 @@ public protocol VaultClientProtocol : AnyObject {
     func passwordHistory()  -> PasswordHistoryClient
     
 }
-
-open class VaultClient:
-    VaultClientProtocol {
+open class VaultClient: VaultClientProtocol, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -4363,6 +4442,9 @@ open class VaultClient:
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
     }
@@ -4401,8 +4483,8 @@ open class VaultClient:
     /**
      * Attachment file operations
      */
-open func attachments() -> AttachmentsClient {
-    return try!  FfiConverterTypeAttachmentsClient.lift(try! rustCall() {
+open func attachments() -> AttachmentsClient  {
+    return try!  FfiConverterTypeAttachmentsClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_attachments(self.uniffiClonePointer(),$0
     )
 })
@@ -4411,8 +4493,8 @@ open func attachments() -> AttachmentsClient {
     /**
      * Ciphers operations
      */
-open func ciphers() -> CiphersClient {
-    return try!  FfiConverterTypeCiphersClient.lift(try! rustCall() {
+open func ciphers() -> CiphersClient  {
+    return try!  FfiConverterTypeCiphersClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_ciphers(self.uniffiClonePointer(),$0
     )
 })
@@ -4421,8 +4503,8 @@ open func ciphers() -> CiphersClient {
     /**
      * Collections operations
      */
-open func collections() -> CollectionsClient {
-    return try!  FfiConverterTypeCollectionsClient.lift(try! rustCall() {
+open func collections() -> CollectionsClient  {
+    return try!  FfiConverterTypeCollectionsClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_collections(self.uniffiClonePointer(),$0
     )
 })
@@ -4431,8 +4513,8 @@ open func collections() -> CollectionsClient {
     /**
      * Folder operations
      */
-open func folders() -> FoldersClient {
-    return try!  FfiConverterTypeFoldersClient.lift(try! rustCall() {
+open func folders() -> FoldersClient  {
+    return try!  FfiConverterTypeFoldersClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_folders(self.uniffiClonePointer(),$0
     )
 })
@@ -4446,8 +4528,8 @@ open func folders() -> FoldersClient {
      * - OTP Auth URI
      * - Steam URI
      */
-open func generateTotp(key: String, time: DateTime?)throws  -> TotpResponse {
-    return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func generateTotp(key: String, time: DateTime?)throws  -> TotpResponse  {
+    return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_generate_totp(self.uniffiClonePointer(),
         FfiConverterString.lower(key),
         FfiConverterOptionTypeDateTime.lower(time),$0
@@ -4458,8 +4540,8 @@ open func generateTotp(key: String, time: DateTime?)throws  -> TotpResponse {
     /**
      * Generate a TOTP code from a provided cipher list view.
      */
-open func generateTotpCipherView(view: CipherListView, time: DateTime?)throws  -> TotpResponse {
-    return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError.lift) {
+open func generateTotpCipherView(view: CipherListView, time: DateTime?)throws  -> TotpResponse  {
+    return try  FfiConverterTypeTotpResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_generate_totp_cipher_view(self.uniffiClonePointer(),
         FfiConverterTypeCipherListView_lower(view),
         FfiConverterOptionTypeDateTime.lower(time),$0
@@ -4470,8 +4552,8 @@ open func generateTotpCipherView(view: CipherListView, time: DateTime?)throws  -
     /**
      * Password history operations
      */
-open func passwordHistory() -> PasswordHistoryClient {
-    return try!  FfiConverterTypePasswordHistoryClient.lift(try! rustCall() {
+open func passwordHistory() -> PasswordHistoryClient  {
+    return try!  FfiConverterTypePasswordHistoryClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_vaultclient_password_history(self.uniffiClonePointer(),$0
     )
 })
@@ -4479,6 +4561,7 @@ open func passwordHistory() -> PasswordHistoryClient {
     
 
 }
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4515,8 +4598,6 @@ public struct FfiConverterTypeVaultClient: FfiConverter {
 }
 
 
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4532,6 +4613,8 @@ public func FfiConverterTypeVaultClient_lower(_ value: VaultClient) -> UnsafeMut
 }
 
 
+
+
 public struct CheckUserAndPickCredentialForCreationResult {
     public let cipher: CipherViewWrapper
     public let checkUserResult: CheckUserResult
@@ -4544,6 +4627,9 @@ public struct CheckUserAndPickCredentialForCreationResult {
     }
 }
 
+#if compiler(>=6)
+extension CheckUserAndPickCredentialForCreationResult: Sendable {}
+#endif
 
 
 extension CheckUserAndPickCredentialForCreationResult: Equatable, Hashable {
@@ -4562,6 +4648,7 @@ extension CheckUserAndPickCredentialForCreationResult: Equatable, Hashable {
         hasher.combine(checkUserResult)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4610,6 +4697,9 @@ public struct CheckUserResult {
     }
 }
 
+#if compiler(>=6)
+extension CheckUserResult: Sendable {}
+#endif
 
 
 extension CheckUserResult: Equatable, Hashable {
@@ -4628,6 +4718,7 @@ extension CheckUserResult: Equatable, Hashable {
         hasher.combine(userVerified)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4674,6 +4765,9 @@ public struct CipherViewWrapper {
     }
 }
 
+#if compiler(>=6)
+extension CipherViewWrapper: Sendable {}
+#endif
 
 
 extension CipherViewWrapper: Equatable, Hashable {
@@ -4688,6 +4782,7 @@ extension CipherViewWrapper: Equatable, Hashable {
         hasher.combine(cipher)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4722,7 +4817,7 @@ public func FfiConverterTypeCipherViewWrapper_lower(_ value: CipherViewWrapper) 
 }
 
 
-public enum BitwardenError {
+public enum BitwardenError: Swift.Error {
 
     
     
@@ -4768,7 +4863,24 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBitwardenError_lift(_ buf: RustBuffer) throws -> BitwardenError {
+    return try FfiConverterTypeBitwardenError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBitwardenError_lower(_ value: BitwardenError) -> RustBuffer {
+    return FfiConverterTypeBitwardenError.lower(value)
+}
+
+
 extension BitwardenError: Equatable, Hashable {}
+
+
 
 extension BitwardenError: Foundation.LocalizedError {
     public var errorDescription: String? {
@@ -4777,7 +4889,8 @@ extension BitwardenError: Foundation.LocalizedError {
 }
 
 
-public enum Fido2CallbackError {
+
+public enum Fido2CallbackError: Swift.Error {
 
     
     
@@ -4835,13 +4948,31 @@ public struct FfiConverterTypeFido2CallbackError: FfiConverterRustBuffer {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2CallbackError_lift(_ buf: RustBuffer) throws -> Fido2CallbackError {
+    return try FfiConverterTypeFido2CallbackError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2CallbackError_lower(_ value: Fido2CallbackError) -> RustBuffer {
+    return FfiConverterTypeFido2CallbackError.lower(value)
+}
+
+
 extension Fido2CallbackError: Equatable, Hashable {}
+
+
 
 extension Fido2CallbackError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
 }
+
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
@@ -4857,6 +4988,10 @@ public enum UiHint {
     )
 }
 
+
+#if compiler(>=6)
+extension UiHint: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4926,7 +5061,6 @@ public func FfiConverterTypeUIHint_lower(_ value: UiHint) -> RustBuffer {
 }
 
 
-
 extension UiHint: Equatable, Hashable {}
 
 
@@ -4958,30 +5092,6 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionSequenceData: FfiConverterRustBuffer {
-    typealias SwiftType = [Data]?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterSequenceData.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterSequenceData.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterOptionTypeClientSettings: FfiConverterRustBuffer {
     typealias SwiftType = ClientSettings?
 
@@ -4998,6 +5108,30 @@ fileprivate struct FfiConverterOptionTypeClientSettings: FfiConverterRustBuffer 
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeClientSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceData: FfiConverterRustBuffer {
+    typealias SwiftType = [Data]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceData.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -5427,120 +5561,6 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
         return dict
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
@@ -5554,9 +5574,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
-    // Make sure to call uniffiEnsureInitialized() since future creation doesn't have a
+    // Make sure to call the ensure init function since future creation doesn't have a
     // RustCallStatus param, so doesn't use makeRustCall()
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenUniffiInitialized()
     let rustFuture = rustFutureFunc()
     defer {
         freeFunc(rustFuture)
@@ -5625,13 +5645,13 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
 
 // Borrow the callback handle map implementation to store foreign future handles
 // TODO: consolidate the handle-map code (https://github.com/mozilla/uniffi-rs/pull/1823)
-fileprivate var UNIFFI_FOREIGN_FUTURE_HANDLE_MAP = UniffiHandleMap<UniffiForeignFutureTask>()
+fileprivate let UNIFFI_FOREIGN_FUTURE_HANDLE_MAP = UniffiHandleMap<UniffiForeignFutureTask>()
 
 // Protocol for tasks that handle foreign futures.
 //
 // Defining a protocol allows all tasks to be stored in the same handle map.  This can't be done
 // with the task object itself, since has generic parameters.
-protocol UniffiForeignFutureTask {
+fileprivate protocol UniffiForeignFutureTask {
     func cancel()
 }
 
@@ -5661,9 +5681,9 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_uniffi_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
@@ -5942,10 +5962,20 @@ private var initializationResult: InitializationResult = {
 
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenUniffiInitialized() {
     switch initializationResult {
     case .ok:
         break

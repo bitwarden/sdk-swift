@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -512,6 +513,9 @@ public struct AuthenticatorAssertionResponse {
     }
 }
 
+#if compiler(>=6)
+extension AuthenticatorAssertionResponse: Sendable {}
+#endif
 
 
 extension AuthenticatorAssertionResponse: Equatable, Hashable {
@@ -538,6 +542,7 @@ extension AuthenticatorAssertionResponse: Equatable, Hashable {
         hasher.combine(userHandle)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -598,6 +603,9 @@ public struct AuthenticatorAttestationResponse {
     }
 }
 
+#if compiler(>=6)
+extension AuthenticatorAttestationResponse: Sendable {}
+#endif
 
 
 extension AuthenticatorAttestationResponse: Equatable, Hashable {
@@ -632,6 +640,7 @@ extension AuthenticatorAttestationResponse: Equatable, Hashable {
         hasher.combine(transports)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -688,6 +697,9 @@ public struct CheckUserOptions {
     }
 }
 
+#if compiler(>=6)
+extension CheckUserOptions: Sendable {}
+#endif
 
 
 extension CheckUserOptions: Equatable, Hashable {
@@ -706,6 +718,7 @@ extension CheckUserOptions: Equatable, Hashable {
         hasher.combine(requireVerification)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -752,6 +765,9 @@ public struct ClientExtensionResults {
     }
 }
 
+#if compiler(>=6)
+extension ClientExtensionResults: Sendable {}
+#endif
 
 
 extension ClientExtensionResults: Equatable, Hashable {
@@ -766,6 +782,7 @@ extension ClientExtensionResults: Equatable, Hashable {
         hasher.combine(credProps)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -812,6 +829,9 @@ public struct CredPropsResult {
     }
 }
 
+#if compiler(>=6)
+extension CredPropsResult: Sendable {}
+#endif
 
 
 extension CredPropsResult: Equatable, Hashable {
@@ -830,6 +850,7 @@ extension CredPropsResult: Equatable, Hashable {
         hasher.combine(authenticatorDisplayName)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -884,6 +905,9 @@ public struct Fido2CredentialAutofillView {
     }
 }
 
+#if compiler(>=6)
+extension Fido2CredentialAutofillView: Sendable {}
+#endif
 
 
 extension Fido2CredentialAutofillView: Equatable, Hashable {
@@ -914,6 +938,7 @@ extension Fido2CredentialAutofillView: Equatable, Hashable {
         hasher.combine(userHandle)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -974,6 +999,9 @@ public struct GetAssertionRequest {
     }
 }
 
+#if compiler(>=6)
+extension GetAssertionRequest: Sendable {}
+#endif
 
 
 extension GetAssertionRequest: Equatable, Hashable {
@@ -1004,6 +1032,7 @@ extension GetAssertionRequest: Equatable, Hashable {
         hasher.combine(extensions)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1064,6 +1093,9 @@ public struct GetAssertionResult {
     }
 }
 
+#if compiler(>=6)
+extension GetAssertionResult: Sendable {}
+#endif
 
 
 extension GetAssertionResult: Equatable, Hashable {
@@ -1094,6 +1126,7 @@ extension GetAssertionResult: Equatable, Hashable {
         hasher.combine(selectedCredential)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1158,6 +1191,9 @@ public struct MakeCredentialRequest {
     }
 }
 
+#if compiler(>=6)
+extension MakeCredentialRequest: Sendable {}
+#endif
 
 
 extension MakeCredentialRequest: Equatable, Hashable {
@@ -1196,6 +1232,7 @@ extension MakeCredentialRequest: Equatable, Hashable {
         hasher.combine(extensions)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1256,6 +1293,9 @@ public struct MakeCredentialResult {
     }
 }
 
+#if compiler(>=6)
+extension MakeCredentialResult: Sendable {}
+#endif
 
 
 extension MakeCredentialResult: Equatable, Hashable {
@@ -1278,6 +1318,7 @@ extension MakeCredentialResult: Equatable, Hashable {
         hasher.combine(credentialId)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1328,6 +1369,9 @@ public struct Options {
     }
 }
 
+#if compiler(>=6)
+extension Options: Sendable {}
+#endif
 
 
 extension Options: Equatable, Hashable {
@@ -1346,6 +1390,7 @@ extension Options: Equatable, Hashable {
         hasher.combine(uv)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1404,6 +1449,9 @@ public struct PublicKeyCredentialAuthenticatorAssertionResponse {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialAuthenticatorAssertionResponse: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialAuthenticatorAssertionResponse: Equatable, Hashable {
@@ -1442,6 +1490,7 @@ extension PublicKeyCredentialAuthenticatorAssertionResponse: Equatable, Hashable
         hasher.combine(selectedCredential)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1510,6 +1559,9 @@ public struct PublicKeyCredentialAuthenticatorAttestationResponse {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialAuthenticatorAttestationResponse: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialAuthenticatorAttestationResponse: Equatable, Hashable {
@@ -1548,6 +1600,7 @@ extension PublicKeyCredentialAuthenticatorAttestationResponse: Equatable, Hashab
         hasher.combine(selectedCredential)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1608,6 +1661,9 @@ public struct PublicKeyCredentialDescriptor {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialDescriptor: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialDescriptor: Equatable, Hashable {
@@ -1630,6 +1686,7 @@ extension PublicKeyCredentialDescriptor: Equatable, Hashable {
         hasher.combine(transports)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1680,6 +1737,9 @@ public struct PublicKeyCredentialParameters {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialParameters: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialParameters: Equatable, Hashable {
@@ -1698,6 +1758,7 @@ extension PublicKeyCredentialParameters: Equatable, Hashable {
         hasher.combine(alg)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1746,6 +1807,9 @@ public struct PublicKeyCredentialRpEntity {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialRpEntity: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialRpEntity: Equatable, Hashable {
@@ -1764,6 +1828,7 @@ extension PublicKeyCredentialRpEntity: Equatable, Hashable {
         hasher.combine(name)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1814,6 +1879,9 @@ public struct PublicKeyCredentialUserEntity {
     }
 }
 
+#if compiler(>=6)
+extension PublicKeyCredentialUserEntity: Sendable {}
+#endif
 
 
 extension PublicKeyCredentialUserEntity: Equatable, Hashable {
@@ -1836,6 +1904,7 @@ extension PublicKeyCredentialUserEntity: Equatable, Hashable {
         hasher.combine(name)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1886,6 +1955,9 @@ public struct SelectedCredential {
     }
 }
 
+#if compiler(>=6)
+extension SelectedCredential: Sendable {}
+#endif
 
 
 extension SelectedCredential: Equatable, Hashable {
@@ -1904,6 +1976,7 @@ extension SelectedCredential: Equatable, Hashable {
         hasher.combine(credential)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1985,6 +2058,9 @@ public struct UnverifiedAssetLink {
     }
 }
 
+#if compiler(>=6)
+extension UnverifiedAssetLink: Sendable {}
+#endif
 
 
 extension UnverifiedAssetLink: Equatable, Hashable {
@@ -2011,6 +2087,7 @@ extension UnverifiedAssetLink: Equatable, Hashable {
         hasher.combine(assetLinkUrl)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2061,6 +2138,10 @@ public enum ClientData {
     )
 }
 
+
+#if compiler(>=6)
+extension ClientData: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2115,7 +2196,6 @@ public func FfiConverterTypeClientData_lower(_ value: ClientData) -> RustBuffer 
 }
 
 
-
 extension ClientData: Equatable, Hashable {}
 
 
@@ -2141,6 +2221,10 @@ public enum Origin {
     )
 }
 
+
+#if compiler(>=6)
+extension Origin: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2195,7 +2279,6 @@ public func FfiConverterTypeOrigin_lower(_ value: Origin) -> RustBuffer {
 }
 
 
-
 extension Origin: Equatable, Hashable {}
 
 
@@ -2210,6 +2293,10 @@ public enum Uv {
     case required
 }
 
+
+#if compiler(>=6)
+extension Uv: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2266,7 +2353,6 @@ public func FfiConverterTypeUV_lower(_ value: Uv) -> RustBuffer {
 }
 
 
-
 extension Uv: Equatable, Hashable {}
 
 
@@ -2281,6 +2367,10 @@ public enum Verification {
     case required
 }
 
+
+#if compiler(>=6)
+extension Verification: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2335,7 +2425,6 @@ public func FfiConverterTypeVerification_lift(_ buf: RustBuffer) throws -> Verif
 public func FfiConverterTypeVerification_lower(_ value: Verification) -> RustBuffer {
     return FfiConverterTypeVerification.lower(value)
 }
-
 
 
 extension Verification: Equatable, Hashable {}
@@ -2561,12 +2650,6 @@ fileprivate struct FfiConverterSequenceTypePublicKeyCredentialParameters: FfiCon
     }
 }
 
-
-
-
-
-
-
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -2574,19 +2657,23 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_fido_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenFidoInitialized() {
     switch initializationResult {
     case .ok:
         break

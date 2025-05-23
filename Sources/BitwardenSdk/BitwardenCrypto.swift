@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -483,6 +484,9 @@ public struct RsaKeyPair {
     }
 }
 
+#if compiler(>=6)
+extension RsaKeyPair: Sendable {}
+#endif
 
 
 extension RsaKeyPair: Equatable, Hashable {
@@ -501,6 +505,7 @@ extension RsaKeyPair: Equatable, Hashable {
         hasher.combine(`private`)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -577,6 +582,9 @@ public struct TrustDeviceResponse {
     }
 }
 
+#if compiler(>=6)
+extension TrustDeviceResponse: Sendable {}
+#endif
 
 
 extension TrustDeviceResponse: Equatable, Hashable {
@@ -603,6 +611,7 @@ extension TrustDeviceResponse: Equatable, Hashable {
         hasher.combine(protectedDevicePublicKey)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -651,6 +660,10 @@ public enum HashPurpose {
     case localAuthorization
 }
 
+
+#if compiler(>=6)
+extension HashPurpose: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -701,7 +714,6 @@ public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffe
 }
 
 
-
 extension HashPurpose: Equatable, Hashable {}
 
 
@@ -723,6 +735,10 @@ public enum Kdf {
     )
 }
 
+
+#if compiler(>=6)
+extension Kdf: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -777,7 +793,6 @@ public func FfiConverterTypeKdf_lift(_ buf: RustBuffer) throws -> Kdf {
 public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
     return FfiConverterTypeKdf.lower(value)
 }
-
 
 
 extension Kdf: Equatable, Hashable {}
@@ -923,9 +938,9 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_crypto_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
@@ -935,7 +950,9 @@ private var initializationResult: InitializationResult = {
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenCryptoInitialized() {
     switch initializationResult {
     case .ok:
         break

@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -495,6 +496,44 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
+        let seconds: Int64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        }
+    }
+
+    public static func write(_ value: Date, into buf: inout [UInt8]) {
+        var delta = value.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
+            sign = -1
+            delta = -delta
+        }
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        writeInt(&buf, sign * seconds)
+        writeInt(&buf, nanoseconds)
+    }
+}
+
 
 public struct Attachment {
     public let id: String?
@@ -522,6 +561,9 @@ public struct Attachment {
     }
 }
 
+#if compiler(>=6)
+extension Attachment: Sendable {}
+#endif
 
 
 extension Attachment: Equatable, Hashable {
@@ -556,6 +598,7 @@ extension Attachment: Equatable, Hashable {
         hasher.combine(key)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -612,6 +655,9 @@ public struct AttachmentEncryptResult {
     }
 }
 
+#if compiler(>=6)
+extension AttachmentEncryptResult: Sendable {}
+#endif
 
 
 extension AttachmentEncryptResult: Equatable, Hashable {
@@ -630,6 +676,7 @@ extension AttachmentEncryptResult: Equatable, Hashable {
         hasher.combine(contents)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -686,6 +733,9 @@ public struct AttachmentView {
     }
 }
 
+#if compiler(>=6)
+extension AttachmentView: Sendable {}
+#endif
 
 
 extension AttachmentView: Equatable, Hashable {
@@ -720,6 +770,7 @@ extension AttachmentView: Equatable, Hashable {
         hasher.combine(key)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -784,6 +835,9 @@ public struct Card {
     }
 }
 
+#if compiler(>=6)
+extension Card: Sendable {}
+#endif
 
 
 extension Card: Equatable, Hashable {
@@ -818,6 +872,7 @@ extension Card: Equatable, Hashable {
         hasher.combine(number)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -882,6 +937,9 @@ public struct CardView {
     }
 }
 
+#if compiler(>=6)
+extension CardView: Sendable {}
+#endif
 
 
 extension CardView: Equatable, Hashable {
@@ -916,6 +974,7 @@ extension CardView: Equatable, Hashable {
         hasher.combine(number)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1028,6 +1087,9 @@ public struct Cipher {
     }
 }
 
+#if compiler(>=6)
+extension Cipher: Sendable {}
+#endif
 
 
 extension Cipher: Equatable, Hashable {
@@ -1142,6 +1204,7 @@ extension Cipher: Equatable, Hashable {
         hasher.combine(revisionDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1282,6 +1345,9 @@ public struct CipherListView {
     }
 }
 
+#if compiler(>=6)
+extension CipherListView: Sendable {}
+#endif
 
 
 extension CipherListView: Equatable, Hashable {
@@ -1366,6 +1432,7 @@ extension CipherListView: Equatable, Hashable {
 }
 
 
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1444,6 +1511,9 @@ public struct CipherPermissions {
     }
 }
 
+#if compiler(>=6)
+extension CipherPermissions: Sendable {}
+#endif
 
 
 extension CipherPermissions: Equatable, Hashable {
@@ -1462,6 +1532,7 @@ extension CipherPermissions: Equatable, Hashable {
         hasher.combine(restore)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1564,6 +1635,9 @@ public struct CipherView {
     }
 }
 
+#if compiler(>=6)
+extension CipherView: Sendable {}
+#endif
 
 
 extension CipherView: Equatable, Hashable {
@@ -1680,6 +1754,7 @@ extension CipherView: Equatable, Hashable {
 }
 
 
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1784,6 +1859,9 @@ public struct Collection {
     }
 }
 
+#if compiler(>=6)
+extension Collection: Sendable {}
+#endif
 
 
 extension Collection: Equatable, Hashable {
@@ -1822,6 +1900,7 @@ extension Collection: Equatable, Hashable {
         hasher.combine(manage)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1890,6 +1969,9 @@ public struct CollectionView {
     }
 }
 
+#if compiler(>=6)
+extension CollectionView: Sendable {}
+#endif
 
 
 extension CollectionView: Equatable, Hashable {
@@ -1928,6 +2010,7 @@ extension CollectionView: Equatable, Hashable {
         hasher.combine(manage)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1994,6 +2077,9 @@ public struct EncryptionContext {
     }
 }
 
+#if compiler(>=6)
+extension EncryptionContext: Sendable {}
+#endif
 
 
 extension EncryptionContext: Equatable, Hashable {
@@ -2012,6 +2098,7 @@ extension EncryptionContext: Equatable, Hashable {
         hasher.combine(cipher)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2082,6 +2169,9 @@ public struct Fido2Credential {
     }
 }
 
+#if compiler(>=6)
+extension Fido2Credential: Sendable {}
+#endif
 
 
 extension Fido2Credential: Equatable, Hashable {
@@ -2144,6 +2234,7 @@ extension Fido2Credential: Equatable, Hashable {
         hasher.combine(creationDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2220,6 +2311,9 @@ public struct Fido2CredentialListView {
     }
 }
 
+#if compiler(>=6)
+extension Fido2CredentialListView: Sendable {}
+#endif
 
 
 extension Fido2CredentialListView: Equatable, Hashable {
@@ -2250,6 +2344,7 @@ extension Fido2CredentialListView: Equatable, Hashable {
         hasher.combine(userDisplayName)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2322,6 +2417,9 @@ public struct Fido2CredentialNewView {
     }
 }
 
+#if compiler(>=6)
+extension Fido2CredentialNewView: Sendable {}
+#endif
 
 
 extension Fido2CredentialNewView: Equatable, Hashable {
@@ -2376,6 +2474,7 @@ extension Fido2CredentialNewView: Equatable, Hashable {
         hasher.combine(creationDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2464,6 +2563,9 @@ public struct Fido2CredentialView {
     }
 }
 
+#if compiler(>=6)
+extension Fido2CredentialView: Sendable {}
+#endif
 
 
 extension Fido2CredentialView: Equatable, Hashable {
@@ -2526,6 +2628,7 @@ extension Fido2CredentialView: Equatable, Hashable {
         hasher.combine(creationDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2600,6 +2703,9 @@ public struct Field {
     }
 }
 
+#if compiler(>=6)
+extension Field: Sendable {}
+#endif
 
 
 extension Field: Equatable, Hashable {
@@ -2626,6 +2732,7 @@ extension Field: Equatable, Hashable {
         hasher.combine(linkedId)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2682,6 +2789,9 @@ public struct FieldView {
     }
 }
 
+#if compiler(>=6)
+extension FieldView: Sendable {}
+#endif
 
 
 extension FieldView: Equatable, Hashable {
@@ -2708,6 +2818,7 @@ extension FieldView: Equatable, Hashable {
         hasher.combine(linkedId)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2762,6 +2873,9 @@ public struct Folder {
     }
 }
 
+#if compiler(>=6)
+extension Folder: Sendable {}
+#endif
 
 
 extension Folder: Equatable, Hashable {
@@ -2784,6 +2898,7 @@ extension Folder: Equatable, Hashable {
         hasher.combine(revisionDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2836,6 +2951,9 @@ public struct FolderView {
     }
 }
 
+#if compiler(>=6)
+extension FolderView: Sendable {}
+#endif
 
 
 extension FolderView: Equatable, Hashable {
@@ -2858,6 +2976,7 @@ extension FolderView: Equatable, Hashable {
         hasher.combine(revisionDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -2940,6 +3059,9 @@ public struct Identity {
     }
 }
 
+#if compiler(>=6)
+extension Identity: Sendable {}
+#endif
 
 
 extension Identity: Equatable, Hashable {
@@ -3022,6 +3144,7 @@ extension Identity: Equatable, Hashable {
         hasher.combine(licenseNumber)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3134,6 +3257,9 @@ public struct IdentityView {
     }
 }
 
+#if compiler(>=6)
+extension IdentityView: Sendable {}
+#endif
 
 
 extension IdentityView: Equatable, Hashable {
@@ -3218,6 +3344,7 @@ extension IdentityView: Equatable, Hashable {
 }
 
 
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -3296,6 +3423,9 @@ public struct LocalData {
     }
 }
 
+#if compiler(>=6)
+extension LocalData: Sendable {}
+#endif
 
 
 extension LocalData: Equatable, Hashable {
@@ -3314,6 +3444,7 @@ extension LocalData: Equatable, Hashable {
         hasher.combine(lastLaunched)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3362,6 +3493,9 @@ public struct LocalDataView {
     }
 }
 
+#if compiler(>=6)
+extension LocalDataView: Sendable {}
+#endif
 
 
 extension LocalDataView: Equatable, Hashable {
@@ -3380,6 +3514,7 @@ extension LocalDataView: Equatable, Hashable {
         hasher.combine(lastLaunched)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3438,6 +3573,9 @@ public struct Login {
     }
 }
 
+#if compiler(>=6)
+extension Login: Sendable {}
+#endif
 
 
 extension Login: Equatable, Hashable {
@@ -3476,6 +3614,7 @@ extension Login: Equatable, Hashable {
         hasher.combine(fido2Credentials)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3546,6 +3685,9 @@ public struct LoginListView {
     }
 }
 
+#if compiler(>=6)
+extension LoginListView: Sendable {}
+#endif
 
 
 extension LoginListView: Equatable, Hashable {
@@ -3576,6 +3718,7 @@ extension LoginListView: Equatable, Hashable {
         hasher.combine(uris)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3632,6 +3775,9 @@ public struct LoginUri {
     }
 }
 
+#if compiler(>=6)
+extension LoginUri: Sendable {}
+#endif
 
 
 extension LoginUri: Equatable, Hashable {
@@ -3654,6 +3800,7 @@ extension LoginUri: Equatable, Hashable {
         hasher.combine(uriChecksum)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3706,6 +3853,9 @@ public struct LoginUriView {
     }
 }
 
+#if compiler(>=6)
+extension LoginUriView: Sendable {}
+#endif
 
 
 extension LoginUriView: Equatable, Hashable {
@@ -3728,6 +3878,7 @@ extension LoginUriView: Equatable, Hashable {
         hasher.combine(uriChecksum)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3788,6 +3939,9 @@ public struct LoginView {
     }
 }
 
+#if compiler(>=6)
+extension LoginView: Sendable {}
+#endif
 
 
 extension LoginView: Equatable, Hashable {
@@ -3826,6 +3980,7 @@ extension LoginView: Equatable, Hashable {
         hasher.combine(fido2Credentials)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3884,6 +4039,9 @@ public struct PasswordHistory {
     }
 }
 
+#if compiler(>=6)
+extension PasswordHistory: Sendable {}
+#endif
 
 
 extension PasswordHistory: Equatable, Hashable {
@@ -3902,6 +4060,7 @@ extension PasswordHistory: Equatable, Hashable {
         hasher.combine(lastUsedDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -3950,6 +4109,9 @@ public struct PasswordHistoryView {
     }
 }
 
+#if compiler(>=6)
+extension PasswordHistoryView: Sendable {}
+#endif
 
 
 extension PasswordHistoryView: Equatable, Hashable {
@@ -3968,6 +4130,7 @@ extension PasswordHistoryView: Equatable, Hashable {
         hasher.combine(lastUsedDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4014,6 +4177,9 @@ public struct SecureNote {
     }
 }
 
+#if compiler(>=6)
+extension SecureNote: Sendable {}
+#endif
 
 
 extension SecureNote: Equatable, Hashable {
@@ -4028,6 +4194,7 @@ extension SecureNote: Equatable, Hashable {
         hasher.combine(type)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4072,6 +4239,9 @@ public struct SecureNoteView {
     }
 }
 
+#if compiler(>=6)
+extension SecureNoteView: Sendable {}
+#endif
 
 
 extension SecureNoteView: Equatable, Hashable {
@@ -4086,6 +4256,7 @@ extension SecureNoteView: Equatable, Hashable {
         hasher.combine(type)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4152,6 +4323,9 @@ public struct SshKey {
     }
 }
 
+#if compiler(>=6)
+extension SshKey: Sendable {}
+#endif
 
 
 extension SshKey: Equatable, Hashable {
@@ -4174,6 +4348,7 @@ extension SshKey: Equatable, Hashable {
         hasher.combine(fingerprint)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4244,6 +4419,9 @@ public struct SshKeyView {
     }
 }
 
+#if compiler(>=6)
+extension SshKeyView: Sendable {}
+#endif
 
 
 extension SshKeyView: Equatable, Hashable {
@@ -4266,6 +4444,7 @@ extension SshKeyView: Equatable, Hashable {
         hasher.combine(fingerprint)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4328,6 +4507,9 @@ public struct TotpResponse {
     }
 }
 
+#if compiler(>=6)
+extension TotpResponse: Sendable {}
+#endif
 
 
 extension TotpResponse: Equatable, Hashable {
@@ -4346,6 +4528,7 @@ extension TotpResponse: Equatable, Hashable {
         hasher.combine(period)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -4394,6 +4577,10 @@ public enum CipherListViewType {
     case sshKey
 }
 
+
+#if compiler(>=6)
+extension CipherListViewType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4464,7 +4651,6 @@ public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType
 }
 
 
-
 extension CipherListViewType: Equatable, Hashable {}
 
 
@@ -4478,6 +4664,10 @@ public enum CipherRepromptType : UInt8 {
     case password = 1
 }
 
+
+#if compiler(>=6)
+extension CipherRepromptType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4528,7 +4718,6 @@ public func FfiConverterTypeCipherRepromptType_lower(_ value: CipherRepromptType
 }
 
 
-
 extension CipherRepromptType: Equatable, Hashable {}
 
 
@@ -4545,6 +4734,10 @@ public enum CipherType : UInt8 {
     case sshKey = 5
 }
 
+
+#if compiler(>=6)
+extension CipherType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4613,7 +4806,6 @@ public func FfiConverterTypeCipherType_lower(_ value: CipherType) -> RustBuffer 
 }
 
 
-
 extension CipherType: Equatable, Hashable {}
 
 
@@ -4629,6 +4821,10 @@ public enum FieldType : UInt8 {
     case linked = 3
 }
 
+
+#if compiler(>=6)
+extension FieldType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4691,7 +4887,6 @@ public func FfiConverterTypeFieldType_lower(_ value: FieldType) -> RustBuffer {
 }
 
 
-
 extension FieldType: Equatable, Hashable {}
 
 
@@ -4704,6 +4899,10 @@ public enum SecureNoteType : UInt8 {
     case generic = 0
 }
 
+
+#if compiler(>=6)
+extension SecureNoteType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4748,7 +4947,6 @@ public func FfiConverterTypeSecureNoteType_lower(_ value: SecureNoteType) -> Rus
 }
 
 
-
 extension SecureNoteType: Equatable, Hashable {}
 
 
@@ -4766,6 +4964,10 @@ public enum UriMatchType : UInt8 {
     case never = 5
 }
 
+
+#if compiler(>=6)
+extension UriMatchType: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4838,7 +5040,6 @@ public func FfiConverterTypeUriMatchType_lift(_ buf: RustBuffer) throws -> UriMa
 public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuffer {
     return FfiConverterTypeUriMatchType.lower(value)
 }
-
 
 
 extension UriMatchType: Equatable, Hashable {}
@@ -5841,12 +6042,6 @@ fileprivate struct FfiConverterSequenceTypeUuid: FfiConverterRustBuffer {
 }
 
 
-
-
-
-
-
-
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -5897,19 +6092,23 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_vault_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenVaultInitialized() {
     switch initializationResult {
     case .ok:
         break

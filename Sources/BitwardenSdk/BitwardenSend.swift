@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,9 +352,10 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
-fileprivate class UniffiHandleMap<T> {
-    private var map: [UInt64: T] = [:]
+fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
+    // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
+    private var map: [UInt64: T] = [:]
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {
@@ -477,6 +478,44 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
+        let seconds: Int64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        }
+    }
+
+    public static func write(_ value: Date, into buf: inout [UInt8]) {
+        var delta = value.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
+            sign = -1
+            delta = -delta
+        }
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        writeInt(&buf, sign * seconds)
+        writeInt(&buf, nanoseconds)
+    }
+}
+
 
 public struct Send {
     public let id: Uuid?
@@ -518,6 +557,9 @@ public struct Send {
     }
 }
 
+#if compiler(>=6)
+extension Send: Sendable {}
+#endif
 
 
 extension Send: Equatable, Hashable {
@@ -592,6 +634,7 @@ extension Send: Equatable, Hashable {
         hasher.combine(expirationDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -678,6 +721,9 @@ public struct SendFile {
     }
 }
 
+#if compiler(>=6)
+extension SendFile: Sendable {}
+#endif
 
 
 extension SendFile: Equatable, Hashable {
@@ -704,6 +750,7 @@ extension SendFile: Equatable, Hashable {
         hasher.combine(sizeName)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -766,6 +813,9 @@ public struct SendFileView {
     }
 }
 
+#if compiler(>=6)
+extension SendFileView: Sendable {}
+#endif
 
 
 extension SendFileView: Equatable, Hashable {
@@ -792,6 +842,7 @@ extension SendFileView: Equatable, Hashable {
         hasher.combine(sizeName)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -856,6 +907,9 @@ public struct SendListView {
     }
 }
 
+#if compiler(>=6)
+extension SendListView: Sendable {}
+#endif
 
 
 extension SendListView: Equatable, Hashable {
@@ -898,6 +952,7 @@ extension SendListView: Equatable, Hashable {
         hasher.combine(expirationDate)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -958,6 +1013,9 @@ public struct SendText {
     }
 }
 
+#if compiler(>=6)
+extension SendText: Sendable {}
+#endif
 
 
 extension SendText: Equatable, Hashable {
@@ -976,6 +1034,7 @@ extension SendText: Equatable, Hashable {
         hasher.combine(hidden)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1024,6 +1083,9 @@ public struct SendTextView {
     }
 }
 
+#if compiler(>=6)
+extension SendTextView: Sendable {}
+#endif
 
 
 extension SendTextView: Equatable, Hashable {
@@ -1042,6 +1104,7 @@ extension SendTextView: Equatable, Hashable {
         hasher.combine(hidden)
     }
 }
+
 
 
 #if swift(>=5.8)
@@ -1144,6 +1207,9 @@ public struct SendView {
     }
 }
 
+#if compiler(>=6)
+extension SendView: Sendable {}
+#endif
 
 
 extension SendView: Equatable, Hashable {
@@ -1224,6 +1290,7 @@ extension SendView: Equatable, Hashable {
 }
 
 
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1297,6 +1364,10 @@ public enum SendType : UInt8 {
 }
 
 
+#if compiler(>=6)
+extension SendType: Sendable {}
+#endif
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1344,7 +1415,6 @@ public func FfiConverterTypeSendType_lift(_ buf: RustBuffer) throws -> SendType 
 public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
     return FfiConverterTypeSendType.lower(value)
 }
-
 
 
 extension SendType: Equatable, Hashable {}
@@ -1567,12 +1637,6 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     }
 }
 
-
-
-
-
-
-
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -1580,19 +1644,23 @@ private enum InitializationResult {
 }
 // Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
-private var initializationResult: InitializationResult = {
+private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 26
+    let bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_send_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func uniffiEnsureBitwardenSendInitialized() {
     switch initializationResult {
     case .ok:
         break
