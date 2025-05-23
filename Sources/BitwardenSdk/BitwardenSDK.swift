@@ -5962,14 +5962,14 @@ private let initializationResult: InitializationResult = {
 
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     return InitializationResult.ok
 }()
 
