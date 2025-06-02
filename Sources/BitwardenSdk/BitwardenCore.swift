@@ -1129,7 +1129,7 @@ public struct InitUserCryptoRequest {
     /**
      * The user's encrypted private key
      */
-    public let privateKey: String
+    public let privateKey: EncString
     /**
      * The initialization method to use
      */
@@ -1146,7 +1146,7 @@ public struct InitUserCryptoRequest {
          */email: String, 
         /**
          * The user's encrypted private key
-         */privateKey: String, 
+         */privateKey: EncString, 
         /**
          * The initialization method to use
          */method: InitUserCryptoMethod) {
@@ -1204,7 +1204,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
                 userId: FfiConverterOptionTypeUuid.read(from: &buf), 
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
-                privateKey: FfiConverterString.read(from: &buf), 
+                privateKey: FfiConverterTypeEncString.read(from: &buf), 
                 method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf)
         )
     }
@@ -1213,7 +1213,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
         FfiConverterOptionTypeUuid.write(value.userId, into: &buf)
         FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
         FfiConverterString.write(value.email, into: &buf)
-        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
         FfiConverterTypeInitUserCryptoMethod.write(value.method, into: &buf)
     }
 }
@@ -1519,12 +1519,12 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 
 public struct RegisterKeyResponse {
     public let masterPasswordHash: String
-    public let encryptedUserKey: String
+    public let encryptedUserKey: EncString
     public let keys: RsaKeyPair
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(masterPasswordHash: String, encryptedUserKey: String, keys: RsaKeyPair) {
+    public init(masterPasswordHash: String, encryptedUserKey: EncString, keys: RsaKeyPair) {
         self.masterPasswordHash = masterPasswordHash
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
@@ -1567,14 +1567,14 @@ public struct FfiConverterTypeRegisterKeyResponse: FfiConverterRustBuffer {
         return
             try RegisterKeyResponse(
                 masterPasswordHash: FfiConverterString.read(from: &buf), 
-                encryptedUserKey: FfiConverterString.read(from: &buf), 
+                encryptedUserKey: FfiConverterTypeEncString.read(from: &buf), 
                 keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
         )
     }
 
     public static func write(_ value: RegisterKeyResponse, into buf: inout [UInt8]) {
         FfiConverterString.write(value.masterPasswordHash, into: &buf)
-        FfiConverterString.write(value.encryptedUserKey, into: &buf)
+        FfiConverterTypeEncString.write(value.encryptedUserKey, into: &buf)
         FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
     }
 }
@@ -2363,7 +2363,7 @@ public enum InitUserCryptoMethod {
          */password: String, 
         /**
          * The user's encrypted symmetric crypto key
-         */userKey: String
+         */userKey: EncString
     )
     /**
      * Never lock and/or biometric unlock
@@ -2419,7 +2419,7 @@ public enum InitUserCryptoMethod {
          */masterKey: String, 
         /**
          * The user's encrypted symmetric crypto key
-         */userKey: String
+         */userKey: EncString
     )
 }
 
@@ -2438,7 +2438,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .password(password: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
+        case 1: return .password(password: try FfiConverterString.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         case 2: return .decryptedKey(decryptedUserKey: try FfiConverterString.read(from: &buf)
@@ -2453,7 +2453,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
         )
         
-        case 6: return .keyConnector(masterKey: try FfiConverterString.read(from: &buf), userKey: try FfiConverterString.read(from: &buf)
+        case 6: return .keyConnector(masterKey: try FfiConverterString.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -2467,7 +2467,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case let .password(password,userKey):
             writeInt(&buf, Int32(1))
             FfiConverterString.write(password, into: &buf)
-            FfiConverterString.write(userKey, into: &buf)
+            FfiConverterTypeEncString.write(userKey, into: &buf)
             
         
         case let .decryptedKey(decryptedUserKey):
@@ -2497,7 +2497,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case let .keyConnector(masterKey,userKey):
             writeInt(&buf, Int32(6))
             FfiConverterString.write(masterKey, into: &buf)
-            FfiConverterString.write(userKey, into: &buf)
+            FfiConverterTypeEncString.write(userKey, into: &buf)
             
         }
     }
