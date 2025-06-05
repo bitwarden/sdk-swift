@@ -1117,6 +1117,9 @@ public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoReq
  * State used for initializing the user cryptographic state.
  */
 public struct InitUserCryptoRequest {
+    /**
+     * The user's ID.
+     */
     public let userId: Uuid?
     /**
      * The user's KDF parameters, as received from the prelogin request
@@ -1137,7 +1140,10 @@ public struct InitUserCryptoRequest {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(userId: Uuid?, 
+    public init(
+        /**
+         * The user's ID.
+         */userId: Uuid?, 
         /**
          * The user's KDF parameters, as received from the prelogin request
          */kdfParams: Kdf, 
