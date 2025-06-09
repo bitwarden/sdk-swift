@@ -5965,11 +5965,11 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenSendInitialized()
     return InitializationResult.ok
 }()
 
