@@ -917,6 +917,77 @@ public func FfiConverterTypeCard_lower(_ value: Card) -> RustBuffer {
 }
 
 
+/**
+ * Minimal CardView only including the needed details for list views
+ */
+public struct CardListView {
+    /**
+     * The brand of the card, e.g. Visa, Mastercard, etc.
+     */
+    public let brand: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The brand of the card, e.g. Visa, Mastercard, etc.
+         */brand: String?) {
+        self.brand = brand
+    }
+}
+
+#if compiler(>=6)
+extension CardListView: Sendable {}
+#endif
+
+
+extension CardListView: Equatable, Hashable {
+    public static func ==(lhs: CardListView, rhs: CardListView) -> Bool {
+        if lhs.brand != rhs.brand {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(brand)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCardListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CardListView {
+        return
+            try CardListView(
+                brand: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CardListView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.brand, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardListView_lift(_ buf: RustBuffer) throws -> CardListView {
+    return try FfiConverterTypeCardListView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardListView_lower(_ value: CardListView) -> RustBuffer {
+    return FfiConverterTypeCardListView.lower(value)
+}
+
+
 public struct CardView {
     public let cardholderName: String?
     public let expMonth: String?
@@ -4572,7 +4643,8 @@ public enum CipherListViewType {
     case login(LoginListView
     )
     case secureNote
-    case card
+    case card(CardListView
+    )
     case identity
     case sshKey
 }
@@ -4597,7 +4669,8 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         
         case 2: return .secureNote
         
-        case 3: return .card
+        case 3: return .card(try FfiConverterTypeCardListView.read(from: &buf)
+        )
         
         case 4: return .identity
         
@@ -4620,9 +4693,10 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         
         
-        case .card:
+        case let .card(v1):
             writeInt(&buf, Int32(3))
-        
+            FfiConverterTypeCardListView.write(v1, into: &buf)
+            
         
         case .identity:
             writeInt(&buf, Int32(4))
@@ -6101,8 +6175,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
