@@ -1134,6 +1134,10 @@ public struct InitUserCryptoRequest {
      */
     public let privateKey: EncString
     /**
+     * The user's signing key
+     */
+    public let signingKey: EncString?
+    /**
      * The initialization method to use
      */
     public let method: InitUserCryptoMethod
@@ -1154,12 +1158,16 @@ public struct InitUserCryptoRequest {
          * The user's encrypted private key
          */privateKey: EncString, 
         /**
+         * The user's signing key
+         */signingKey: EncString?, 
+        /**
          * The initialization method to use
          */method: InitUserCryptoMethod) {
         self.userId = userId
         self.kdfParams = kdfParams
         self.email = email
         self.privateKey = privateKey
+        self.signingKey = signingKey
         self.method = method
     }
 }
@@ -1183,6 +1191,9 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         if lhs.privateKey != rhs.privateKey {
             return false
         }
+        if lhs.signingKey != rhs.signingKey {
+            return false
+        }
         if lhs.method != rhs.method {
             return false
         }
@@ -1194,6 +1205,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         hasher.combine(kdfParams)
         hasher.combine(email)
         hasher.combine(privateKey)
+        hasher.combine(signingKey)
         hasher.combine(method)
     }
 }
@@ -1211,6 +1223,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
+                signingKey: FfiConverterOptionTypeEncString.read(from: &buf), 
                 method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf)
         )
     }
@@ -1220,6 +1233,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
         FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
         FfiConverterString.write(value.email, into: &buf)
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.signingKey, into: &buf)
         FfiConverterTypeInitUserCryptoMethod.write(value.method, into: &buf)
     }
 }
@@ -1400,6 +1414,105 @@ public func FfiConverterTypeMakeKeyPairResponse_lift(_ buf: RustBuffer) throws -
 #endif
 public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairResponse) -> RustBuffer {
     return FfiConverterTypeMakeKeyPairResponse.lower(value)
+}
+
+
+/**
+ * A new signing key pair along with the signed public key
+ */
+public struct MakeUserSigningKeysResponse {
+    /**
+     * Base64 encoded verifying key
+     */
+    public let verifyingKey: String
+    /**
+     * Signing key, encrypted with the user's symmetric key
+     */
+    public let signingKey: EncString
+    /**
+     * The user's public key, signed by the signing key
+     */
+    public let signedPublicKey: SignedPublicKey
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Base64 encoded verifying key
+         */verifyingKey: String, 
+        /**
+         * Signing key, encrypted with the user's symmetric key
+         */signingKey: EncString, 
+        /**
+         * The user's public key, signed by the signing key
+         */signedPublicKey: SignedPublicKey) {
+        self.verifyingKey = verifyingKey
+        self.signingKey = signingKey
+        self.signedPublicKey = signedPublicKey
+    }
+}
+
+#if compiler(>=6)
+extension MakeUserSigningKeysResponse: Sendable {}
+#endif
+
+
+extension MakeUserSigningKeysResponse: Equatable, Hashable {
+    public static func ==(lhs: MakeUserSigningKeysResponse, rhs: MakeUserSigningKeysResponse) -> Bool {
+        if lhs.verifyingKey != rhs.verifyingKey {
+            return false
+        }
+        if lhs.signingKey != rhs.signingKey {
+            return false
+        }
+        if lhs.signedPublicKey != rhs.signedPublicKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(verifyingKey)
+        hasher.combine(signingKey)
+        hasher.combine(signedPublicKey)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeUserSigningKeysResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeUserSigningKeysResponse {
+        return
+            try MakeUserSigningKeysResponse(
+                verifyingKey: FfiConverterString.read(from: &buf), 
+                signingKey: FfiConverterTypeEncString.read(from: &buf), 
+                signedPublicKey: FfiConverterTypeSignedPublicKey.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeUserSigningKeysResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.verifyingKey, into: &buf)
+        FfiConverterTypeEncString.write(value.signingKey, into: &buf)
+        FfiConverterTypeSignedPublicKey.write(value.signedPublicKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeUserSigningKeysResponse_lift(_ buf: RustBuffer) throws -> MakeUserSigningKeysResponse {
+    return try FfiConverterTypeMakeUserSigningKeysResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeUserSigningKeysResponse_lower(_ value: MakeUserSigningKeysResponse) -> RustBuffer {
+    return FfiConverterTypeMakeUserSigningKeysResponse.lower(value)
 }
 
 
@@ -2572,6 +2685,30 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeUuid.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
+    typealias SwiftType = EncString?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeEncString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeEncString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }

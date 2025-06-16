@@ -799,6 +799,72 @@ extension Kdf: Equatable, Hashable {}
 
 
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The type of key / signature scheme used for signing and verifying.
+ */
+
+public enum SignatureAlgorithm {
+    
+    /**
+     * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves.
+     */
+    case ed25519
+}
+
+
+#if compiler(>=6)
+extension SignatureAlgorithm: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignatureAlgorithm: FfiConverterRustBuffer {
+    typealias SwiftType = SignatureAlgorithm
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignatureAlgorithm {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .ed25519
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SignatureAlgorithm, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .ed25519:
+            writeInt(&buf, Int32(1))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignatureAlgorithm_lift(_ buf: RustBuffer) throws -> SignatureAlgorithm {
+    return try FfiConverterTypeSignatureAlgorithm.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignatureAlgorithm_lower(_ value: SignatureAlgorithm) -> RustBuffer {
+    return FfiConverterTypeSignatureAlgorithm.lower(value)
+}
+
+
+extension SignatureAlgorithm: Equatable, Hashable {}
+
+
+
 
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
@@ -884,6 +950,50 @@ public func FfiConverterTypeNonZeroU32_lift(_ value: UInt32) throws -> NonZeroU3
 #endif
 public func FfiConverterTypeNonZeroU32_lower(_ value: NonZeroU32) -> UInt32 {
     return FfiConverterTypeNonZeroU32.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias SignedPublicKey = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignedPublicKey: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignedPublicKey {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: SignedPublicKey, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> SignedPublicKey {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: SignedPublicKey) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignedPublicKey_lift(_ value: RustBuffer) throws -> SignedPublicKey {
+    return try FfiConverterTypeSignedPublicKey.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignedPublicKey_lower(_ value: SignedPublicKey) -> RustBuffer {
+    return FfiConverterTypeSignedPublicKey.lower(value)
 }
 
 
