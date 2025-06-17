@@ -1382,9 +1382,18 @@ public struct CipherListView {
      * The number of attachments
      */
     public let attachments: UInt32
+    /**
+     * Indicates if the cipher has old attachments that need to be re-uploaded
+     */
+    public let hasOldAttachments: Bool
     public let creationDate: DateTime
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
+    /**
+     * Hints for the presentation layer for which fields can be copied.
+     */
+    public let copyableFields: [CopyableCipherFields]
+    public let localData: LocalDataView?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1394,7 +1403,13 @@ public struct CipherListView {
          */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, 
         /**
          * The number of attachments
-         */attachments: UInt32, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */attachments: UInt32, 
+        /**
+         * Indicates if the cipher has old attachments that need to be re-uploaded
+         */hasOldAttachments: Bool, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, 
+        /**
+         * Hints for the presentation layer for which fields can be copied.
+         */copyableFields: [CopyableCipherFields], localData: LocalDataView?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1410,9 +1425,12 @@ public struct CipherListView {
         self.permissions = permissions
         self.viewPassword = viewPassword
         self.attachments = attachments
+        self.hasOldAttachments = hasOldAttachments
         self.creationDate = creationDate
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
+        self.copyableFields = copyableFields
+        self.localData = localData
     }
 }
 
@@ -1468,6 +1486,9 @@ extension CipherListView: Equatable, Hashable {
         if lhs.attachments != rhs.attachments {
             return false
         }
+        if lhs.hasOldAttachments != rhs.hasOldAttachments {
+            return false
+        }
         if lhs.creationDate != rhs.creationDate {
             return false
         }
@@ -1475,6 +1496,12 @@ extension CipherListView: Equatable, Hashable {
             return false
         }
         if lhs.revisionDate != rhs.revisionDate {
+            return false
+        }
+        if lhs.copyableFields != rhs.copyableFields {
+            return false
+        }
+        if lhs.localData != rhs.localData {
             return false
         }
         return true
@@ -1496,9 +1523,12 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(permissions)
         hasher.combine(viewPassword)
         hasher.combine(attachments)
+        hasher.combine(hasOldAttachments)
         hasher.combine(creationDate)
         hasher.combine(deletedDate)
         hasher.combine(revisionDate)
+        hasher.combine(copyableFields)
+        hasher.combine(localData)
     }
 }
 
@@ -1526,9 +1556,12 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 permissions: FfiConverterOptionTypeCipherPermissions.read(from: &buf), 
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 attachments: FfiConverterUInt32.read(from: &buf), 
+                hasOldAttachments: FfiConverterBool.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
-                revisionDate: FfiConverterTypeDateTime.read(from: &buf)
+                revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
+                copyableFields: FfiConverterSequenceTypeCopyableCipherFields.read(from: &buf), 
+                localData: FfiConverterOptionTypeLocalDataView.read(from: &buf)
         )
     }
 
@@ -1548,9 +1581,12 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterOptionTypeCipherPermissions.write(value.permissions, into: &buf)
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterUInt32.write(value.attachments, into: &buf)
+        FfiConverterBool.write(value.hasOldAttachments, into: &buf)
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
+        FfiConverterSequenceTypeCopyableCipherFields.write(value.copyableFields, into: &buf)
+        FfiConverterOptionTypeLocalDataView.write(value.localData, into: &buf)
     }
 }
 
@@ -4886,6 +4922,139 @@ extension CipherType: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Available fields on a cipher and can be copied from a the list view in the UI.
+ */
+
+public enum CopyableCipherFields {
+    
+    case loginUsername
+    case loginPassword
+    case loginTotp
+    case cardNumber
+    case cardSecurityCode
+    case identityUsername
+    case identityEmail
+    case identityPhone
+    case identityAddress
+    case sshKey
+    case secureNotes
+}
+
+
+#if compiler(>=6)
+extension CopyableCipherFields: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCopyableCipherFields: FfiConverterRustBuffer {
+    typealias SwiftType = CopyableCipherFields
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CopyableCipherFields {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .loginUsername
+        
+        case 2: return .loginPassword
+        
+        case 3: return .loginTotp
+        
+        case 4: return .cardNumber
+        
+        case 5: return .cardSecurityCode
+        
+        case 6: return .identityUsername
+        
+        case 7: return .identityEmail
+        
+        case 8: return .identityPhone
+        
+        case 9: return .identityAddress
+        
+        case 10: return .sshKey
+        
+        case 11: return .secureNotes
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CopyableCipherFields, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .loginUsername:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .loginPassword:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .loginTotp:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .cardNumber:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .cardSecurityCode:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .identityUsername:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .identityEmail:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .identityPhone:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .identityAddress:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .sshKey:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .secureNotes:
+            writeInt(&buf, Int32(11))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCopyableCipherFields_lift(_ buf: RustBuffer) throws -> CopyableCipherFields {
+    return try FfiConverterTypeCopyableCipherFields.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCopyableCipherFields_lower(_ value: CopyableCipherFields) -> RustBuffer {
+    return FfiConverterTypeCopyableCipherFields.lower(value)
+}
+
+
+extension CopyableCipherFields: Equatable, Hashable {}
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
 public enum FieldType : UInt8 {
     
@@ -6085,6 +6254,31 @@ fileprivate struct FfiConverterSequenceTypePasswordHistoryView: FfiConverterRust
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypePasswordHistoryView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCopyableCipherFields: FfiConverterRustBuffer {
+    typealias SwiftType = [CopyableCipherFields]
+
+    public static func write(_ value: [CopyableCipherFields], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCopyableCipherFields.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CopyableCipherFields] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CopyableCipherFields]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCopyableCipherFields.read(from: &buf))
         }
         return seq
     }
