@@ -1800,6 +1800,133 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKey
 }
 
 
+/**
+ * A rotated set of account keys for a user
+ */
+public struct RotateUserKeysResponse {
+    /**
+     * The verifying key
+     */
+    public let verifyingKey: String
+    /**
+     * Signing key, encrypted with a symmetric key (user key, org key)
+     */
+    public let signingKey: EncString
+    /**
+     * The user's public key, signed by the signing key
+     */
+    public let signedPublicKey: String
+    /**
+     * The user's public key, without signature
+     */
+    public let publicKey: String
+    /**
+     * The user's private key, encrypted with the user key
+     */
+    public let privateKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The verifying key
+         */verifyingKey: String, 
+        /**
+         * Signing key, encrypted with a symmetric key (user key, org key)
+         */signingKey: EncString, 
+        /**
+         * The user's public key, signed by the signing key
+         */signedPublicKey: String, 
+        /**
+         * The user's public key, without signature
+         */publicKey: String, 
+        /**
+         * The user's private key, encrypted with the user key
+         */privateKey: EncString) {
+        self.verifyingKey = verifyingKey
+        self.signingKey = signingKey
+        self.signedPublicKey = signedPublicKey
+        self.publicKey = publicKey
+        self.privateKey = privateKey
+    }
+}
+
+#if compiler(>=6)
+extension RotateUserKeysResponse: Sendable {}
+#endif
+
+
+extension RotateUserKeysResponse: Equatable, Hashable {
+    public static func ==(lhs: RotateUserKeysResponse, rhs: RotateUserKeysResponse) -> Bool {
+        if lhs.verifyingKey != rhs.verifyingKey {
+            return false
+        }
+        if lhs.signingKey != rhs.signingKey {
+            return false
+        }
+        if lhs.signedPublicKey != rhs.signedPublicKey {
+            return false
+        }
+        if lhs.publicKey != rhs.publicKey {
+            return false
+        }
+        if lhs.privateKey != rhs.privateKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(verifyingKey)
+        hasher.combine(signingKey)
+        hasher.combine(signedPublicKey)
+        hasher.combine(publicKey)
+        hasher.combine(privateKey)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRotateUserKeysResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RotateUserKeysResponse {
+        return
+            try RotateUserKeysResponse(
+                verifyingKey: FfiConverterString.read(from: &buf), 
+                signingKey: FfiConverterTypeEncString.read(from: &buf), 
+                signedPublicKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                privateKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RotateUserKeysResponse, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.verifyingKey, into: &buf)
+        FfiConverterTypeEncString.write(value.signingKey, into: &buf)
+        FfiConverterString.write(value.signedPublicKey, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateUserKeysResponse_lift(_ buf: RustBuffer) throws -> RotateUserKeysResponse {
+    return try FfiConverterTypeRotateUserKeysResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateUserKeysResponse_lower(_ value: RotateUserKeysResponse) -> RustBuffer {
+    return FfiConverterTypeRotateUserKeysResponse.lower(value)
+}
+
+
 public struct UniffiConverterDummyRecord {
     public let uuid: Uuid
     public let date: DateTime
