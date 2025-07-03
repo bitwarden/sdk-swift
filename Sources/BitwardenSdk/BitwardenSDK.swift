@@ -1543,6 +1543,12 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
     func decryptList(ciphers: [Cipher]) throws  -> [CipherListView]
     
     /**
+     * Decrypt cipher list with failures
+     * Returns both successfully decrypted ciphers and any that failed to decrypt
+     */
+    func decryptListWithFailures(ciphers: [Cipher])  -> DecryptCipherListResult
+    
+    /**
      * Encrypt cipher
      */
     func encrypt(cipherView: CipherView) throws  -> EncryptionContext
@@ -1630,6 +1636,18 @@ open func decryptFido2Credentials(cipherView: CipherView)throws  -> [Fido2Creden
 open func decryptList(ciphers: [Cipher])throws  -> [CipherListView]  {
     return try  FfiConverterSequenceTypeCipherListView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_list(self.uniffiClonePointer(),
+        FfiConverterSequenceTypeCipher.lower(ciphers),$0
+    )
+})
+}
+    
+    /**
+     * Decrypt cipher list with failures
+     * Returns both successfully decrypted ciphers and any that failed to decrypt
+     */
+open func decryptListWithFailures(ciphers: [Cipher]) -> DecryptCipherListResult  {
+    return try!  FfiConverterTypeDecryptCipherListResult_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_list_with_failures(self.uniffiClonePointer(),
         FfiConverterSequenceTypeCipher.lower(ciphers),$0
     )
 })
@@ -6435,6 +6453,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 63651) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 3642) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 31667) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -6658,14 +6679,14 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 

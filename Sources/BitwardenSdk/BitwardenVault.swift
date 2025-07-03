@@ -2164,6 +2164,95 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 }
 
 
+/**
+ * Represents the result of decrypting a list of ciphers.
+ *
+ * This struct contains two vectors: `successes` and `failures`.
+ * `successes` contains the decrypted `CipherListView` objects,
+ * while `failures` contains the original `Cipher` objects that failed to decrypt.
+ */
+public struct DecryptCipherListResult {
+    /**
+     * The decrypted `CipherListView` objects.
+     */
+    public let successes: [CipherListView]
+    /**
+     * The original `Cipher` objects that failed to decrypt.
+     */
+    public let failures: [Cipher]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The decrypted `CipherListView` objects.
+         */successes: [CipherListView], 
+        /**
+         * The original `Cipher` objects that failed to decrypt.
+         */failures: [Cipher]) {
+        self.successes = successes
+        self.failures = failures
+    }
+}
+
+#if compiler(>=6)
+extension DecryptCipherListResult: Sendable {}
+#endif
+
+
+extension DecryptCipherListResult: Equatable, Hashable {
+    public static func ==(lhs: DecryptCipherListResult, rhs: DecryptCipherListResult) -> Bool {
+        if lhs.successes != rhs.successes {
+            return false
+        }
+        if lhs.failures != rhs.failures {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(successes)
+        hasher.combine(failures)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptCipherListResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptCipherListResult {
+        return
+            try DecryptCipherListResult(
+                successes: FfiConverterSequenceTypeCipherListView.read(from: &buf), 
+                failures: FfiConverterSequenceTypeCipher.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DecryptCipherListResult, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeCipherListView.write(value.successes, into: &buf)
+        FfiConverterSequenceTypeCipher.write(value.failures, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCipherListResult_lift(_ buf: RustBuffer) throws -> DecryptCipherListResult {
+    return try FfiConverterTypeDecryptCipherListResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCipherListResult_lower(_ value: DecryptCipherListResult) -> RustBuffer {
+    return FfiConverterTypeDecryptCipherListResult.lower(value)
+}
+
+
 public struct EncryptionContext {
     /**
      * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
@@ -6062,6 +6151,56 @@ fileprivate struct FfiConverterSequenceTypeAttachmentView: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeCipher: FfiConverterRustBuffer {
+    typealias SwiftType = [Cipher]
+
+    public static func write(_ value: [Cipher], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCipher.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Cipher] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Cipher]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCipher.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCipherListView: FfiConverterRustBuffer {
+    typealias SwiftType = [CipherListView]
+
+    public static func write(_ value: [CipherListView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCipherListView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CipherListView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CipherListView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCipherListView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuffer {
     typealias SwiftType = [Fido2Credential]
 
@@ -6369,8 +6508,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
