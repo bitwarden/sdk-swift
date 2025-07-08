@@ -6679,14 +6679,14 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     return InitializationResult.ok
 }()
 
