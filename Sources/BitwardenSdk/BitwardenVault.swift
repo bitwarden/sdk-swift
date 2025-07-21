@@ -3133,6 +3133,77 @@ public func FfiConverterTypeFolder_lower(_ value: Folder) -> RustBuffer {
 }
 
 
+/**
+ * Request to add or edit a folder.
+ */
+public struct FolderAddEditRequest {
+    /**
+     * The new name of the folder.
+     */
+    public let name: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The new name of the folder.
+         */name: String) {
+        self.name = name
+    }
+}
+
+#if compiler(>=6)
+extension FolderAddEditRequest: Sendable {}
+#endif
+
+
+extension FolderAddEditRequest: Equatable, Hashable {
+    public static func ==(lhs: FolderAddEditRequest, rhs: FolderAddEditRequest) -> Bool {
+        if lhs.name != rhs.name {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFolderAddEditRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FolderAddEditRequest {
+        return
+            try FolderAddEditRequest(
+                name: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FolderAddEditRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.name, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFolderAddEditRequest_lift(_ buf: RustBuffer) throws -> FolderAddEditRequest {
+    return try FfiConverterTypeFolderAddEditRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFolderAddEditRequest_lower(_ value: FolderAddEditRequest) -> RustBuffer {
+    return FfiConverterTypeFolderAddEditRequest.lower(value)
+}
+
+
 public struct FolderView {
     public let id: Uuid?
     public let name: String
@@ -6508,8 +6579,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
