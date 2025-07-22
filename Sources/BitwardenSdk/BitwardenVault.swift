@@ -5215,12 +5215,27 @@ extension CopyableCipherFields: Equatable, Hashable {}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Represents the type of a [FieldView].
+ */
 
 public enum FieldType : UInt8 {
     
+    /**
+     * Text field
+     */
     case text = 0
+    /**
+     * Hidden text field
+     */
     case hidden = 1
+    /**
+     * Boolean field
+     */
     case boolean = 2
+    /**
+     * Linked field
+     */
     case linked = 3
 }
 
@@ -6579,8 +6594,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
