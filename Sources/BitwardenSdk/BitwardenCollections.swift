@@ -7,8 +7,8 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(bitwarden_collectionsFFI)
-import bitwarden_collectionsFFI
+#if canImport(BitwardenCollectionsFFI)
+import BitwardenCollectionsFFI
 #endif
 
 fileprivate extension RustBuffer {
@@ -464,13 +464,13 @@ fileprivate struct FfiConverterString: FfiConverter {
 
 
 public struct Collection {
-    public var id: Uuid?
-    public var organizationId: Uuid
-    public var name: EncString
-    public var externalId: String?
-    public var hidePasswords: Bool
-    public var readOnly: Bool
-    public var manage: Bool
+    public let id: Uuid?
+    public let organizationId: Uuid
+    public let name: EncString
+    public let externalId: String?
+    public let hidePasswords: Bool
+    public let readOnly: Bool
+    public let manage: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -574,13 +574,13 @@ public func FfiConverterTypeCollection_lower(_ value: Collection) -> RustBuffer 
 
 
 public struct CollectionView {
-    public var id: Uuid?
-    public var organizationId: Uuid
-    public var name: String
-    public var externalId: String?
-    public var hidePasswords: Bool
-    public var readOnly: Bool
-    public var manage: Bool
+    public let id: Uuid?
+    public let organizationId: Uuid
+    public let name: String
+    public let externalId: String?
+    public let hidePasswords: Bool
+    public let readOnly: Bool
+    public let manage: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -746,8 +746,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
