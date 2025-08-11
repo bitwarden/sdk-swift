@@ -471,10 +471,12 @@ public struct Collection {
     public let hidePasswords: Bool
     public let readOnly: Bool
     public let manage: Bool
+    public let defaultUserCollectionEmail: String?
+    public let type: CollectionType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool) {
+    public init(id: Uuid?, organizationId: Uuid, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, defaultUserCollectionEmail: String?, type: CollectionType) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -482,6 +484,8 @@ public struct Collection {
         self.hidePasswords = hidePasswords
         self.readOnly = readOnly
         self.manage = manage
+        self.defaultUserCollectionEmail = defaultUserCollectionEmail
+        self.type = type
     }
 }
 
@@ -513,6 +517,12 @@ extension Collection: Equatable, Hashable {
         if lhs.manage != rhs.manage {
             return false
         }
+        if lhs.defaultUserCollectionEmail != rhs.defaultUserCollectionEmail {
+            return false
+        }
+        if lhs.type != rhs.type {
+            return false
+        }
         return true
     }
 
@@ -524,6 +534,8 @@ extension Collection: Equatable, Hashable {
         hasher.combine(hidePasswords)
         hasher.combine(readOnly)
         hasher.combine(manage)
+        hasher.combine(defaultUserCollectionEmail)
+        hasher.combine(type)
     }
 }
 
@@ -542,7 +554,9 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
                 readOnly: FfiConverterBool.read(from: &buf), 
-                manage: FfiConverterBool.read(from: &buf)
+                manage: FfiConverterBool.read(from: &buf), 
+                defaultUserCollectionEmail: FfiConverterOptionString.read(from: &buf), 
+                type: FfiConverterTypeCollectionType.read(from: &buf)
         )
     }
 
@@ -554,6 +568,8 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
         FfiConverterBool.write(value.hidePasswords, into: &buf)
         FfiConverterBool.write(value.readOnly, into: &buf)
         FfiConverterBool.write(value.manage, into: &buf)
+        FfiConverterOptionString.write(value.defaultUserCollectionEmail, into: &buf)
+        FfiConverterTypeCollectionType.write(value.type, into: &buf)
     }
 }
 
@@ -581,10 +597,11 @@ public struct CollectionView {
     public let hidePasswords: Bool
     public let readOnly: Bool
     public let manage: Bool
+    public let type: CollectionType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool) {
+    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, type: CollectionType) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -592,6 +609,7 @@ public struct CollectionView {
         self.hidePasswords = hidePasswords
         self.readOnly = readOnly
         self.manage = manage
+        self.type = type
     }
 }
 
@@ -623,6 +641,9 @@ extension CollectionView: Equatable, Hashable {
         if lhs.manage != rhs.manage {
             return false
         }
+        if lhs.type != rhs.type {
+            return false
+        }
         return true
     }
 
@@ -634,6 +655,7 @@ extension CollectionView: Equatable, Hashable {
         hasher.combine(hidePasswords)
         hasher.combine(readOnly)
         hasher.combine(manage)
+        hasher.combine(type)
     }
 }
 
@@ -652,7 +674,8 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
                 readOnly: FfiConverterBool.read(from: &buf), 
-                manage: FfiConverterBool.read(from: &buf)
+                manage: FfiConverterBool.read(from: &buf), 
+                type: FfiConverterTypeCollectionType.read(from: &buf)
         )
     }
 
@@ -664,6 +687,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
         FfiConverterBool.write(value.hidePasswords, into: &buf)
         FfiConverterBool.write(value.readOnly, into: &buf)
         FfiConverterBool.write(value.manage, into: &buf)
+        FfiConverterTypeCollectionType.write(value.type, into: &buf)
     }
 }
 
@@ -681,6 +705,83 @@ public func FfiConverterTypeCollectionView_lift(_ buf: RustBuffer) throws -> Col
 public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> RustBuffer {
     return FfiConverterTypeCollectionView.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Type of collection
+ */
+
+public enum CollectionType : UInt8 {
+    
+    /**
+     * Default collection type. Can be assigned by an organization to user(s) or group(s)
+     */
+    case sharedCollection = 0
+    /**
+     * Default collection assigned to a user for an organization that has
+     * OrganizationDataOwnership (formerly PersonalOwnership) policy enabled.
+     */
+    case defaultUserCollection = 1
+}
+
+
+#if compiler(>=6)
+extension CollectionType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCollectionType: FfiConverterRustBuffer {
+    typealias SwiftType = CollectionType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CollectionType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .sharedCollection
+        
+        case 2: return .defaultUserCollection
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CollectionType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .sharedCollection:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .defaultUserCollection:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionType_lift(_ buf: RustBuffer) throws -> CollectionType {
+    return try FfiConverterTypeCollectionType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionType_lower(_ value: CollectionType) -> RustBuffer {
+    return FfiConverterTypeCollectionType.lower(value)
+}
+
+
+extension CollectionType: Equatable, Hashable {}
+
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
