@@ -1065,14 +1065,14 @@ public struct InitOrgCryptoRequest {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
-    public let organizationKeys: [Uuid: UnsignedSharedKey]
+    public let organizationKeys: [OrganizationId: UnsignedSharedKey]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * The encryption keys for all the organizations the user is a part of
-         */organizationKeys: [Uuid: UnsignedSharedKey]) {
+         */organizationKeys: [OrganizationId: UnsignedSharedKey]) {
         self.organizationKeys = organizationKeys
     }
 }
@@ -1104,12 +1104,12 @@ public struct FfiConverterTypeInitOrgCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitOrgCryptoRequest {
         return
             try InitOrgCryptoRequest(
-                organizationKeys: FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey.read(from: &buf)
+                organizationKeys: FfiConverterDictionaryTypeOrganizationIdTypeUnsignedSharedKey.read(from: &buf)
         )
     }
 
     public static func write(_ value: InitOrgCryptoRequest, into buf: inout [UInt8]) {
-        FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey.write(value.organizationKeys, into: &buf)
+        FfiConverterDictionaryTypeOrganizationIdTypeUnsignedSharedKey.write(value.organizationKeys, into: &buf)
     }
 }
 
@@ -1136,7 +1136,7 @@ public struct InitUserCryptoRequest {
     /**
      * The user's ID.
      */
-    public let userId: Uuid?
+    public let userId: UserId?
     /**
      * The user's KDF parameters, as received from the prelogin request
      */
@@ -1167,7 +1167,7 @@ public struct InitUserCryptoRequest {
     public init(
         /**
          * The user's ID.
-         */userId: Uuid?, 
+         */userId: UserId?, 
         /**
          * The user's KDF parameters, as received from the prelogin request
          */kdfParams: Kdf, 
@@ -1247,7 +1247,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> InitUserCryptoRequest {
         return
             try InitUserCryptoRequest(
-                userId: FfiConverterOptionTypeUuid.read(from: &buf), 
+                userId: FfiConverterOptionTypeUserId.read(from: &buf), 
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
@@ -1258,7 +1258,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: InitUserCryptoRequest, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.userId, into: &buf)
+        FfiConverterOptionTypeUserId.write(value.userId, into: &buf)
         FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
         FfiConverterString.write(value.email, into: &buf)
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
@@ -2793,8 +2793,8 @@ fileprivate struct FfiConverterOptionTypeSignedSecurityState: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
-    typealias SwiftType = Uuid?
+fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
+    typealias SwiftType = UserId?
 
     public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         guard let value = value else {
@@ -2802,13 +2802,13 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
             return
         }
         writeInt(&buf, Int8(1))
-        FfiConverterTypeUuid.write(value, into: &buf)
+        FfiConverterTypeUserId.write(value, into: &buf)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
-        case 1: return try FfiConverterTypeUuid.read(from: &buf)
+        case 1: return try FfiConverterTypeUserId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -2841,22 +2841,22 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterDictionaryTypeUuidTypeUnsignedSharedKey: FfiConverterRustBuffer {
-    public static func write(_ value: [Uuid: UnsignedSharedKey], into buf: inout [UInt8]) {
+fileprivate struct FfiConverterDictionaryTypeOrganizationIdTypeUnsignedSharedKey: FfiConverterRustBuffer {
+    public static func write(_ value: [OrganizationId: UnsignedSharedKey], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for (key, value) in value {
-            FfiConverterTypeUuid.write(key, into: &buf)
+            FfiConverterTypeOrganizationId.write(key, into: &buf)
             FfiConverterTypeUnsignedSharedKey.write(value, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: UnsignedSharedKey] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [OrganizationId: UnsignedSharedKey] {
         let len: Int32 = try readInt(&buf)
-        var dict = [Uuid: UnsignedSharedKey]()
+        var dict = [OrganizationId: UnsignedSharedKey]()
         dict.reserveCapacity(Int(len))
         for _ in 0..<len {
-            let key = try FfiConverterTypeUuid.read(from: &buf)
+            let key = try FfiConverterTypeOrganizationId.read(from: &buf)
             let value = try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
             dict[key] = value
         }
@@ -3037,6 +3037,50 @@ public func FfiConverterTypeSignedSecurityState_lift(_ value: RustBuffer) throws
 #endif
 public func FfiConverterTypeSignedSecurityState_lower(_ value: SignedSecurityState) -> RustBuffer {
     return FfiConverterTypeSignedSecurityState.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias UserId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUserId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: UserId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> UserId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: UserId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserId_lift(_ value: RustBuffer) throws -> UserId {
+    return try FfiConverterTypeUserId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserId_lower(_ value: UserId) -> RustBuffer {
+    return FfiConverterTypeUserId.lower(value)
 }
 
 

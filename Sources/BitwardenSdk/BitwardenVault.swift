@@ -1091,10 +1091,10 @@ public func FfiConverterTypeCardView_lower(_ value: CardView) -> RustBuffer {
 
 
 public struct Cipher {
-    public let id: Uuid?
-    public let organizationId: Uuid?
-    public let folderId: Uuid?
-    public let collectionIds: [Uuid]
+    public let id: CipherId?
+    public let organizationId: OrganizationId?
+    public let folderId: FolderId?
+    public let collectionIds: [CollectionId]
     /**
      * More recent ciphers uses individual encryption keys to encrypt the other fields of the
      * Cipher.
@@ -1124,7 +1124,7 @@ public struct Cipher {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
+    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
@@ -1285,10 +1285,10 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Cipher {
         return
             try Cipher(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeCipherId.read(from: &buf), 
+                organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 notes: FfiConverterOptionTypeEncString.read(from: &buf), 
@@ -1315,10 +1315,10 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: Cipher, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.organizationId, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
-        FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
+        FfiConverterOptionTypeCipherId.write(value.id, into: &buf)
+        FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionTypeEncString.write(value.notes, into: &buf)
@@ -1361,10 +1361,10 @@ public func FfiConverterTypeCipher_lower(_ value: Cipher) -> RustBuffer {
 
 
 public struct CipherListView {
-    public let id: Uuid?
-    public let organizationId: Uuid?
-    public let folderId: Uuid?
-    public let collectionIds: [Uuid]
+    public let id: CipherId?
+    public let organizationId: OrganizationId?
+    public let folderId: FolderId?
+    public let collectionIds: [CollectionId]
     /**
      * Temporary, required to support calculating TOTP from CipherListView.
      */
@@ -1397,7 +1397,7 @@ public struct CipherListView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
+    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * Temporary, required to support calculating TOTP from CipherListView.
          */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, 
@@ -1541,10 +1541,10 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherListView {
         return
             try CipherListView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeCipherId.read(from: &buf), 
+                organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 subtitle: FfiConverterString.read(from: &buf), 
@@ -1566,10 +1566,10 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: CipherListView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.organizationId, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
-        FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
+        FfiConverterOptionTypeCipherId.write(value.id, into: &buf)
+        FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterString.write(value.subtitle, into: &buf)
@@ -1677,10 +1677,10 @@ public func FfiConverterTypeCipherPermissions_lower(_ value: CipherPermissions) 
 
 
 public struct CipherView {
-    public let id: Uuid?
-    public let organizationId: Uuid?
-    public let folderId: Uuid?
-    public let collectionIds: [Uuid]
+    public let id: CipherId?
+    public let organizationId: OrganizationId?
+    public let folderId: FolderId?
+    public let collectionIds: [CollectionId]
     /**
      * Temporary, required to support re-encrypting existing items.
      */
@@ -1709,7 +1709,7 @@ public struct CipherView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid?, folderId: Uuid?, collectionIds: [Uuid], 
+    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * Temporary, required to support re-encrypting existing items.
          */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
@@ -1869,10 +1869,10 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherView {
         return
             try CipherView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                folderId: FfiConverterOptionTypeUuid.read(from: &buf), 
-                collectionIds: FfiConverterSequenceTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeCipherId.read(from: &buf), 
+                organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
@@ -1899,10 +1899,10 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: CipherView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.organizationId, into: &buf)
-        FfiConverterOptionTypeUuid.write(value.folderId, into: &buf)
-        FfiConverterSequenceTypeUuid.write(value.collectionIds, into: &buf)
+        FfiConverterOptionTypeCipherId.write(value.id, into: &buf)
+        FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
@@ -2038,7 +2038,7 @@ public struct EncryptionContext {
      * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
      * Organization-owned ciphers
      */
-    public let encryptedFor: Uuid
+    public let encryptedFor: UserId
     public let cipher: Cipher
 
     // Default memberwise initializers are never public by default, so we
@@ -2047,7 +2047,7 @@ public struct EncryptionContext {
         /**
          * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
          * Organization-owned ciphers
-         */encryptedFor: Uuid, cipher: Cipher) {
+         */encryptedFor: UserId, cipher: Cipher) {
         self.encryptedFor = encryptedFor
         self.cipher = cipher
     }
@@ -2084,13 +2084,13 @@ public struct FfiConverterTypeEncryptionContext: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncryptionContext {
         return
             try EncryptionContext(
-                encryptedFor: FfiConverterTypeUuid.read(from: &buf), 
+                encryptedFor: FfiConverterTypeUserId.read(from: &buf), 
                 cipher: FfiConverterTypeCipher.read(from: &buf)
         )
     }
 
     public static func write(_ value: EncryptionContext, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.encryptedFor, into: &buf)
+        FfiConverterTypeUserId.write(value.encryptedFor, into: &buf)
         FfiConverterTypeCipher.write(value.cipher, into: &buf)
     }
 }
@@ -2836,13 +2836,13 @@ public func FfiConverterTypeFieldView_lower(_ value: FieldView) -> RustBuffer {
 
 
 public struct Folder {
-    public let id: Uuid?
+    public let id: FolderId?
     public let name: EncString
     public let revisionDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, name: EncString, revisionDate: DateTime) {
+    public init(id: FolderId?, name: EncString, revisionDate: DateTime) {
         self.id = id
         self.name = name
         self.revisionDate = revisionDate
@@ -2884,14 +2884,14 @@ public struct FfiConverterTypeFolder: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Folder {
         return
             try Folder(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: Folder, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.id, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
     }
@@ -2985,13 +2985,13 @@ public func FfiConverterTypeFolderAddEditRequest_lower(_ value: FolderAddEditReq
 
 
 public struct FolderView {
-    public let id: Uuid?
+    public let id: FolderId?
     public let name: String
     public let revisionDate: DateTime
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, name: String, revisionDate: DateTime) {
+    public init(id: FolderId?, name: String, revisionDate: DateTime) {
         self.id = id
         self.name = name
         self.revisionDate = revisionDate
@@ -3033,14 +3033,14 @@ public struct FfiConverterTypeFolderView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FolderView {
         return
             try FolderView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: FolderView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.id, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
     }
@@ -5895,8 +5895,8 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
-    typealias SwiftType = Uuid?
+fileprivate struct FfiConverterOptionTypeOrganizationId: FfiConverterRustBuffer {
+    typealias SwiftType = OrganizationId?
 
     public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         guard let value = value else {
@@ -5904,13 +5904,13 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
             return
         }
         writeInt(&buf, Int8(1))
-        FfiConverterTypeUuid.write(value, into: &buf)
+        FfiConverterTypeOrganizationId.write(value, into: &buf)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
-        case 1: return try FfiConverterTypeUuid.read(from: &buf)
+        case 1: return try FfiConverterTypeOrganizationId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -5935,6 +5935,54 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeCipherId: FfiConverterRustBuffer {
+    typealias SwiftType = CipherId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCipherId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCipherId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeFolderId: FfiConverterRustBuffer {
+    typealias SwiftType = FolderId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeFolderId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeFolderId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -6292,27 +6340,115 @@ fileprivate struct FfiConverterSequenceTypeCopyableCipherFields: FfiConverterRus
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypeUuid: FfiConverterRustBuffer {
-    typealias SwiftType = [Uuid]
+fileprivate struct FfiConverterSequenceTypeCollectionId: FfiConverterRustBuffer {
+    typealias SwiftType = [CollectionId]
 
-    public static func write(_ value: [Uuid], into buf: inout [UInt8]) {
+    public static func write(_ value: [CollectionId], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for item in value {
-            FfiConverterTypeUuid.write(item, into: &buf)
+            FfiConverterTypeCollectionId.write(item, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionId] {
         let len: Int32 = try readInt(&buf)
-        var seq = [Uuid]()
+        var seq = [CollectionId]()
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeUuid.read(from: &buf))
+            seq.append(try FfiConverterTypeCollectionId.read(from: &buf))
         }
         return seq
     }
 }
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias CipherId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: CipherId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> CipherId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: CipherId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherId_lift(_ value: RustBuffer) throws -> CipherId {
+    return try FfiConverterTypeCipherId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherId_lower(_ value: CipherId) -> RustBuffer {
+    return FfiConverterTypeCipherId.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias FolderId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFolderId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FolderId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: FolderId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> FolderId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: FolderId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFolderId_lift(_ value: RustBuffer) throws -> FolderId {
+    return try FfiConverterTypeFolderId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFolderId_lower(_ value: FolderId) -> RustBuffer {
+    return FfiConverterTypeFolderId.lower(value)
+}
+
 
 
 /**
@@ -6374,8 +6510,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 

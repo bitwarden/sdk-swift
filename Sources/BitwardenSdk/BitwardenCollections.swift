@@ -464,8 +464,8 @@ fileprivate struct FfiConverterString: FfiConverter {
 
 
 public struct Collection {
-    public let id: Uuid?
-    public let organizationId: Uuid
+    public let id: CollectionId?
+    public let organizationId: OrganizationId
     public let name: EncString
     public let externalId: String?
     public let hidePasswords: Bool
@@ -476,7 +476,7 @@ public struct Collection {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, defaultUserCollectionEmail: String?, type: CollectionType) {
+    public init(id: CollectionId?, organizationId: OrganizationId, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, defaultUserCollectionEmail: String?, type: CollectionType) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -548,8 +548,8 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Collection {
         return
             try Collection(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeCollectionId.read(from: &buf), 
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
@@ -561,8 +561,8 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: Collection, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterTypeUuid.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeCollectionId.write(value.id, into: &buf)
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.externalId, into: &buf)
         FfiConverterBool.write(value.hidePasswords, into: &buf)
@@ -590,8 +590,8 @@ public func FfiConverterTypeCollection_lower(_ value: Collection) -> RustBuffer 
 
 
 public struct CollectionView {
-    public let id: Uuid?
-    public let organizationId: Uuid
+    public let id: CollectionId?
+    public let organizationId: OrganizationId
     public let name: String
     public let externalId: String?
     public let hidePasswords: Bool
@@ -601,7 +601,7 @@ public struct CollectionView {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, organizationId: Uuid, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, type: CollectionType) {
+    public init(id: CollectionId?, organizationId: OrganizationId, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, type: CollectionType) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -668,8 +668,8 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CollectionView {
         return
             try CollectionView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeCollectionId.read(from: &buf), 
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 externalId: FfiConverterOptionString.read(from: &buf), 
                 hidePasswords: FfiConverterBool.read(from: &buf), 
@@ -680,8 +680,8 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: CollectionView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
-        FfiConverterTypeUuid.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeCollectionId.write(value.id, into: &buf)
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.externalId, into: &buf)
         FfiConverterBool.write(value.hidePasswords, into: &buf)
@@ -810,8 +810,8 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
-    typealias SwiftType = Uuid?
+fileprivate struct FfiConverterOptionTypeCollectionId: FfiConverterRustBuffer {
+    typealias SwiftType = CollectionId?
 
     public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         guard let value = value else {
@@ -819,17 +819,61 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
             return
         }
         writeInt(&buf, Int8(1))
-        FfiConverterTypeUuid.write(value, into: &buf)
+        FfiConverterTypeCollectionId.write(value, into: &buf)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
-        case 1: return try FfiConverterTypeUuid.read(from: &buf)
+        case 1: return try FfiConverterTypeCollectionId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
 }
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias CollectionId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCollectionId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CollectionId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: CollectionId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> CollectionId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: CollectionId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionId_lift(_ value: RustBuffer) throws -> CollectionId {
+    return try FfiConverterTypeCollectionId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionId_lower(_ value: CollectionId) -> RustBuffer {
+    return FfiConverterTypeCollectionId.lower(value)
+}
+
 
 private enum InitializationResult {
     case ok
@@ -847,8 +891,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 

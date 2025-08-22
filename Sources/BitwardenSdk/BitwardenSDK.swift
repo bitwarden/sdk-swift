@@ -1556,7 +1556,7 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
     /**
      * Move a cipher to an organization, reencrypting the cipher key if necessary
      */
-    func moveToOrganization(cipher: CipherView, organizationId: Uuid) throws  -> CipherView
+    func moveToOrganization(cipher: CipherView, organizationId: OrganizationId) throws  -> CipherView
     
 }
 open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
@@ -1667,11 +1667,11 @@ open func encrypt(cipherView: CipherView)throws  -> EncryptionContext  {
     /**
      * Move a cipher to an organization, reencrypting the cipher key if necessary
      */
-open func moveToOrganization(cipher: CipherView, organizationId: Uuid)throws  -> CipherView  {
+open func moveToOrganization(cipher: CipherView, organizationId: OrganizationId)throws  -> CipherView  {
     return try  FfiConverterTypeCipherView_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_move_to_organization(self.uniffiClonePointer(),
         FfiConverterTypeCipherView_lower(cipher),
-        FfiConverterTypeUuid_lower(organizationId),$0
+        FfiConverterTypeOrganizationId_lower(organizationId),$0
     )
 })
 }
@@ -6859,7 +6859,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 31667) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 64767) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 57722) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 4128) {
@@ -7101,14 +7101,14 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
