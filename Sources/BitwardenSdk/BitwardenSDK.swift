@@ -748,7 +748,7 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
     /**
      * Generate keys needed for TDE process
      */
-    func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool) throws  -> RegisterTdeKeyResponse
+    func makeRegisterTdeKeys(email: String, orgPublicKey: B64, rememberDevice: Bool) throws  -> RegisterTdeKeyResponse
     
     /**
      * Initialize a new auth request
@@ -910,11 +910,11 @@ open func makeRegisterKeys(email: String, password: String, kdf: Kdf)throws  -> 
     /**
      * Generate keys needed for TDE process
      */
-open func makeRegisterTdeKeys(email: String, orgPublicKey: String, rememberDevice: Bool)throws  -> RegisterTdeKeyResponse  {
+open func makeRegisterTdeKeys(email: String, orgPublicKey: B64, rememberDevice: Bool)throws  -> RegisterTdeKeyResponse  {
     return try  FfiConverterTypeRegisterTdeKeyResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_make_register_tde_keys(self.uniffiClonePointer(),
         FfiConverterString.lower(email),
-        FfiConverterString.lower(orgPublicKey),
+        FfiConverterTypeB64_lower(orgPublicKey),
         FfiConverterBool.lower(rememberDevice),$0
     )
 })
@@ -6805,7 +6805,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_keys() != 40755) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_tde_keys() != 23772) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_tde_keys() != 55088) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_new_auth_request() != 19097) {
@@ -7100,15 +7100,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
     return InitializationResult.ok
 }()
 
