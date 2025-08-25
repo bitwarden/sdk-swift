@@ -1546,7 +1546,7 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
      * Decrypt cipher list with failures
      * Returns both successfully decrypted ciphers and any that failed to decrypt
      */
-    func decryptListWithFailures(ciphers: [Cipher])  -> DecryptCipherListResult
+    func decryptListWithFailures(ciphers: [Cipher]) throws  -> DecryptCipherListResult
     
     /**
      * Encrypt cipher
@@ -1645,8 +1645,8 @@ open func decryptList(ciphers: [Cipher])throws  -> [CipherListView]  {
      * Decrypt cipher list with failures
      * Returns both successfully decrypted ciphers and any that failed to decrypt
      */
-open func decryptListWithFailures(ciphers: [Cipher]) -> DecryptCipherListResult  {
-    return try!  FfiConverterTypeDecryptCipherListResult_lift(try! rustCall() {
+open func decryptListWithFailures(ciphers: [Cipher])throws  -> DecryptCipherListResult  {
+    return try  FfiConverterTypeDecryptCipherListResult_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_list_with_failures(self.uniffiClonePointer(),
         FfiConverterSequenceTypeCipher.lower(ciphers),$0
     )
@@ -5719,6 +5719,8 @@ public enum BitwardenError: Swift.Error {
     
     case E(message: String)
     
+    case ConversionError(message: String)
+    
 }
 
 
@@ -5739,6 +5741,10 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 2: return .ConversionError(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -5752,6 +5758,8 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         
         case .E(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
+        case .ConversionError(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
 
         
         }
@@ -6853,7 +6861,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 63651) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 3642) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 44847) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 31667) {
@@ -7100,16 +7108,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 
