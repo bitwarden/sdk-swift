@@ -728,12 +728,12 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
     /**
      * Approve an auth request
      */
-    func approveAuthRequest(publicKey: String) throws  -> UnsignedSharedKey
+    func approveAuthRequest(publicKey: B64) throws  -> UnsignedSharedKey
     
     /**
      * Hash the user password
      */
-    func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> String
+    func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose) async throws  -> B64
     
     /**
      * Generate keys needed to onboard a new user without master key to key connector
@@ -777,7 +777,7 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
      * `HashPurpose::LocalAuthentication` during login and persist it. If the login method has no
      * password, use the email OTP.
      */
-    func validatePassword(password: String, passwordHash: String) throws  -> Bool
+    func validatePassword(password: String, passwordHash: B64) throws  -> Bool
     
     /**
      * Validate the user password without knowing the password hash
@@ -787,7 +787,7 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
      *
      * This works by comparing the provided password against the encrypted user key.
      */
-    func validatePasswordUserKey(password: String, encryptedUserKey: String) throws  -> String
+    func validatePasswordUserKey(password: String, encryptedUserKey: String) throws  -> B64
     
     /**
      * Validate the user PIN
@@ -856,10 +856,10 @@ open class AuthClient: AuthClientProtocol, @unchecked Sendable {
     /**
      * Approve an auth request
      */
-open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey  {
+open func approveAuthRequest(publicKey: B64)throws  -> UnsignedSharedKey  {
     return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_approve_auth_request(self.uniffiClonePointer(),
-        FfiConverterString.lower(publicKey),$0
+        FfiConverterTypeB64_lower(publicKey),$0
     )
 })
 }
@@ -867,7 +867,7 @@ open func approveAuthRequest(publicKey: String)throws  -> UnsignedSharedKey  {
     /**
      * Hash the user password
      */
-open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose)async throws  -> String  {
+open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose: HashPurpose)async throws  -> B64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -879,7 +879,7 @@ open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose:
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterString.lift,
+            liftFunc: FfiConverterTypeB64_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -974,11 +974,11 @@ open func trustDevice()throws  -> TrustDeviceResponse  {
      * `HashPurpose::LocalAuthentication` during login and persist it. If the login method has no
      * password, use the email OTP.
      */
-open func validatePassword(password: String, passwordHash: String)throws  -> Bool  {
+open func validatePassword(password: String, passwordHash: B64)throws  -> Bool  {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_validate_password(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
-        FfiConverterString.lower(passwordHash),$0
+        FfiConverterTypeB64_lower(passwordHash),$0
     )
 })
 }
@@ -991,8 +991,8 @@ open func validatePassword(password: String, passwordHash: String)throws  -> Boo
      *
      * This works by comparing the provided password against the encrypted user key.
      */
-open func validatePasswordUserKey(password: String, encryptedUserKey: String)throws  -> String  {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+open func validatePasswordUserKey(password: String, encryptedUserKey: String)throws  -> B64  {
+    return try  FfiConverterTypeB64_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_authclient_validate_password_user_key(self.uniffiClonePointer(),
         FfiConverterString.lower(password),
         FfiConverterString.lower(encryptedUserKey),$0
@@ -2949,7 +2949,7 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     /**
      * Derive the master key for migrating to the key connector
      */
-    func deriveKeyConnector(request: DeriveKeyConnectorRequest) throws  -> String
+    func deriveKeyConnector(request: DeriveKeyConnectorRequest) throws  -> B64
     
     /**
      * Generates a PIN protected user key from the provided PIN. The result can be stored and later
@@ -2964,13 +2964,13 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
      */
     func derivePinUserKey(encryptedPin: EncString) throws  -> EncString
     
-    func enrollAdminPasswordReset(publicKey: String) throws  -> UnsignedSharedKey
+    func enrollAdminPasswordReset(publicKey: B64) throws  -> UnsignedSharedKey
     
     /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
-    func getUserEncryptionKey() async throws  -> String
+    func getUserEncryptionKey() async throws  -> B64
     
     /**
      * Initialization method for the organization crypto. Needs to be called after
@@ -3046,8 +3046,8 @@ open class CryptoClient: CryptoClientProtocol, @unchecked Sendable {
     /**
      * Derive the master key for migrating to the key connector
      */
-open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> String  {
-    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+open func deriveKeyConnector(request: DeriveKeyConnectorRequest)throws  -> B64  {
+    return try  FfiConverterTypeB64_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_derive_key_connector(self.uniffiClonePointer(),
         FfiConverterTypeDeriveKeyConnectorRequest_lower(request),$0
     )
@@ -3079,10 +3079,10 @@ open func derivePinUserKey(encryptedPin: EncString)throws  -> EncString  {
 })
 }
     
-open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKey  {
+open func enrollAdminPasswordReset(publicKey: B64)throws  -> UnsignedSharedKey  {
     return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_admin_password_reset(self.uniffiClonePointer(),
-        FfiConverterString.lower(publicKey),$0
+        FfiConverterTypeB64_lower(publicKey),$0
     )
 })
 }
@@ -3091,7 +3091,7 @@ open func enrollAdminPasswordReset(publicKey: String)throws  -> UnsignedSharedKe
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
-open func getUserEncryptionKey()async throws  -> String  {
+open func getUserEncryptionKey()async throws  -> B64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -3103,7 +3103,7 @@ open func getUserEncryptionKey()async throws  -> String  {
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterString.lift,
+            liftFunc: FfiConverterTypeB64_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -6801,10 +6801,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_file() != 30690) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 40672) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 38643) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 62158) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 50707) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_key_connector_keys() != 27013) {
@@ -6828,10 +6828,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_trust_device() != 6930) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password() != 57088) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password() != 29694) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password_user_key() != 36731) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password_user_key() != 27283) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin() != 64836) {
@@ -6954,7 +6954,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_get_collection_tree() != 8212) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_key_connector() != 29705) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_key_connector() != 37483) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_key() != 33066) {
@@ -6963,10 +6963,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_user_key() != 36786) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 16090) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 47066) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 18343) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 58176) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_org_crypto() != 40659) {
@@ -7108,16 +7108,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
+    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     return InitializationResult.ok
 }()
 

@@ -464,7 +464,7 @@ public struct RsaKeyPair {
     /**
      * Base64 encoded DER representation of the public key
      */
-    public let `public`: String
+    public let `public`: B64
     /**
      * Encrypted PKCS8 private key
      */
@@ -475,7 +475,7 @@ public struct RsaKeyPair {
     public init(
         /**
          * Base64 encoded DER representation of the public key
-         */`public`: String, 
+         */`public`: B64, 
         /**
          * Encrypted PKCS8 private key
          */`private`: EncString) {
@@ -515,13 +515,13 @@ public struct FfiConverterTypeRsaKeyPair: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RsaKeyPair {
         return
             try RsaKeyPair(
-                public: FfiConverterString.read(from: &buf), 
+                public: FfiConverterTypeB64.read(from: &buf), 
                 private: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: RsaKeyPair, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.`public`, into: &buf)
+        FfiConverterTypeB64.write(value.`public`, into: &buf)
         FfiConverterTypeEncString.write(value.`private`, into: &buf)
     }
 }
@@ -546,7 +546,7 @@ public struct TrustDeviceResponse {
     /**
      * Base64 encoded device key
      */
-    public let deviceKey: String
+    public let deviceKey: B64
     /**
      * UserKey encrypted with DevicePublicKey
      */
@@ -565,7 +565,7 @@ public struct TrustDeviceResponse {
     public init(
         /**
          * Base64 encoded device key
-         */deviceKey: String, 
+         */deviceKey: B64, 
         /**
          * UserKey encrypted with DevicePublicKey
          */protectedUserKey: UnsignedSharedKey, 
@@ -621,7 +621,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceResponse {
         return
             try TrustDeviceResponse(
-                deviceKey: FfiConverterString.read(from: &buf), 
+                deviceKey: FfiConverterTypeB64.read(from: &buf), 
                 protectedUserKey: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
                 protectedDevicePrivateKey: FfiConverterTypeEncString.read(from: &buf), 
                 protectedDevicePublicKey: FfiConverterTypeEncString.read(from: &buf)
@@ -629,7 +629,7 @@ public struct FfiConverterTypeTrustDeviceResponse: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: TrustDeviceResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.deviceKey, into: &buf)
+        FfiConverterTypeB64.write(value.deviceKey, into: &buf)
         FfiConverterTypeUnsignedSharedKey.write(value.protectedUserKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePrivateKey, into: &buf)
         FfiConverterTypeEncString.write(value.protectedDevicePublicKey, into: &buf)
@@ -1057,6 +1057,7 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 

@@ -541,11 +541,11 @@ public struct AuthRequestResponse {
      * Base64 encoded private key
      * This key is temporarily passed back and will most likely not be available in the future
      */
-    public let privateKey: String
+    public let privateKey: B64
     /**
      * Base64 encoded public key
      */
-    public let publicKey: String
+    public let publicKey: B64
     /**
      * Fingerprint of the public key
      */
@@ -561,10 +561,10 @@ public struct AuthRequestResponse {
         /**
          * Base64 encoded private key
          * This key is temporarily passed back and will most likely not be available in the future
-         */privateKey: String, 
+         */privateKey: B64, 
         /**
          * Base64 encoded public key
-         */publicKey: String, 
+         */publicKey: B64, 
         /**
          * Fingerprint of the public key
          */fingerprint: String, 
@@ -617,16 +617,16 @@ public struct FfiConverterTypeAuthRequestResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthRequestResponse {
         return
             try AuthRequestResponse(
-                privateKey: FfiConverterString.read(from: &buf), 
-                publicKey: FfiConverterString.read(from: &buf), 
+                privateKey: FfiConverterTypeB64.read(from: &buf), 
+                publicKey: FfiConverterTypeB64.read(from: &buf), 
                 fingerprint: FfiConverterString.read(from: &buf), 
                 accessCode: FfiConverterString.read(from: &buf)
         )
     }
 
     public static func write(_ value: AuthRequestResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.privateKey, into: &buf)
-        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeB64.write(value.privateKey, into: &buf)
+        FfiConverterTypeB64.write(value.publicKey, into: &buf)
         FfiConverterString.write(value.fingerprint, into: &buf)
         FfiConverterString.write(value.accessCode, into: &buf)
     }
@@ -984,7 +984,7 @@ public struct FingerprintRequest {
     /**
      * The user's public key encoded with base64.
      */
-    public let publicKey: String
+    public let publicKey: B64
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -994,7 +994,7 @@ public struct FingerprintRequest {
          */fingerprintMaterial: String, 
         /**
          * The user's public key encoded with base64.
-         */publicKey: String) {
+         */publicKey: B64) {
         self.fingerprintMaterial = fingerprintMaterial
         self.publicKey = publicKey
     }
@@ -1032,13 +1032,13 @@ public struct FfiConverterTypeFingerprintRequest: FfiConverterRustBuffer {
         return
             try FingerprintRequest(
                 fingerprintMaterial: FfiConverterString.read(from: &buf), 
-                publicKey: FfiConverterString.read(from: &buf)
+                publicKey: FfiConverterTypeB64.read(from: &buf)
         )
     }
 
     public static func write(_ value: FingerprintRequest, into buf: inout [UInt8]) {
         FfiConverterString.write(value.fingerprintMaterial, into: &buf)
-        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeB64.write(value.publicKey, into: &buf)
     }
 }
 
@@ -1285,13 +1285,13 @@ public func FfiConverterTypeInitUserCryptoRequest_lower(_ value: InitUserCryptoR
 
 
 public struct KeyConnectorResponse {
-    public let masterKey: String
+    public let masterKey: B64
     public let encryptedUserKey: String
     public let keys: RsaKeyPair
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(masterKey: String, encryptedUserKey: String, keys: RsaKeyPair) {
+    public init(masterKey: B64, encryptedUserKey: String, keys: RsaKeyPair) {
         self.masterKey = masterKey
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
@@ -1333,14 +1333,14 @@ public struct FfiConverterTypeKeyConnectorResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyConnectorResponse {
         return
             try KeyConnectorResponse(
-                masterKey: FfiConverterString.read(from: &buf), 
+                masterKey: FfiConverterTypeB64.read(from: &buf), 
                 encryptedUserKey: FfiConverterString.read(from: &buf), 
                 keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
         )
     }
 
     public static func write(_ value: KeyConnectorResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.masterKey, into: &buf)
+        FfiConverterTypeB64.write(value.masterKey, into: &buf)
         FfiConverterString.write(value.encryptedUserKey, into: &buf)
         FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
     }
@@ -1369,7 +1369,7 @@ public struct MakeKeyPairResponse {
     /**
      * The user's public key
      */
-    public let userPublicKey: String
+    public let userPublicKey: B64
     /**
      * User's private key, encrypted with the user key
      */
@@ -1380,7 +1380,7 @@ public struct MakeKeyPairResponse {
     public init(
         /**
          * The user's public key
-         */userPublicKey: String, 
+         */userPublicKey: B64, 
         /**
          * User's private key, encrypted with the user key
          */userKeyEncryptedPrivateKey: EncString) {
@@ -1420,13 +1420,13 @@ public struct FfiConverterTypeMakeKeyPairResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeKeyPairResponse {
         return
             try MakeKeyPairResponse(
-                userPublicKey: FfiConverterString.read(from: &buf), 
+                userPublicKey: FfiConverterTypeB64.read(from: &buf), 
                 userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: MakeKeyPairResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.userPublicKey, into: &buf)
+        FfiConverterTypeB64.write(value.userPublicKey, into: &buf)
         FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
     }
 }
@@ -1568,13 +1568,13 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 
 
 public struct RegisterKeyResponse {
-    public let masterPasswordHash: String
+    public let masterPasswordHash: B64
     public let encryptedUserKey: EncString
     public let keys: RsaKeyPair
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(masterPasswordHash: String, encryptedUserKey: EncString, keys: RsaKeyPair) {
+    public init(masterPasswordHash: B64, encryptedUserKey: EncString, keys: RsaKeyPair) {
         self.masterPasswordHash = masterPasswordHash
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
@@ -1616,14 +1616,14 @@ public struct FfiConverterTypeRegisterKeyResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegisterKeyResponse {
         return
             try RegisterKeyResponse(
-                masterPasswordHash: FfiConverterString.read(from: &buf), 
+                masterPasswordHash: FfiConverterTypeB64.read(from: &buf), 
                 encryptedUserKey: FfiConverterTypeEncString.read(from: &buf), 
                 keys: FfiConverterTypeRsaKeyPair.read(from: &buf)
         )
     }
 
     public static func write(_ value: RegisterKeyResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.masterPasswordHash, into: &buf)
+        FfiConverterTypeB64.write(value.masterPasswordHash, into: &buf)
         FfiConverterTypeEncString.write(value.encryptedUserKey, into: &buf)
         FfiConverterTypeRsaKeyPair.write(value.keys, into: &buf)
     }
@@ -1647,13 +1647,13 @@ public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyRespon
 
 public struct RegisterTdeKeyResponse {
     public let privateKey: EncString
-    public let publicKey: String
+    public let publicKey: B64
     public let adminReset: UnsignedSharedKey
     public let deviceKey: TrustDeviceResponse?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(privateKey: EncString, publicKey: String, adminReset: UnsignedSharedKey, deviceKey: TrustDeviceResponse?) {
+    public init(privateKey: EncString, publicKey: B64, adminReset: UnsignedSharedKey, deviceKey: TrustDeviceResponse?) {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.adminReset = adminReset
@@ -1701,7 +1701,7 @@ public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
         return
             try RegisterTdeKeyResponse(
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
-                publicKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterTypeB64.read(from: &buf), 
                 adminReset: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
                 deviceKey: FfiConverterOptionTypeTrustDeviceResponse.read(from: &buf)
         )
@@ -1709,7 +1709,7 @@ public struct FfiConverterTypeRegisterTdeKeyResponse: FfiConverterRustBuffer {
 
     public static func write(_ value: RegisterTdeKeyResponse, into buf: inout [UInt8]) {
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
-        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeB64.write(value.publicKey, into: &buf)
         FfiConverterTypeUnsignedSharedKey.write(value.adminReset, into: &buf)
         FfiConverterOptionTypeTrustDeviceResponse.write(value.deviceKey, into: &buf)
     }
@@ -1808,7 +1808,7 @@ public struct UpdatePasswordResponse {
     /**
      * Hash of the new password
      */
-    public let passwordHash: String
+    public let passwordHash: B64
     /**
      * User key, encrypted with the new password
      */
@@ -1819,7 +1819,7 @@ public struct UpdatePasswordResponse {
     public init(
         /**
          * Hash of the new password
-         */passwordHash: String, 
+         */passwordHash: B64, 
         /**
          * User key, encrypted with the new password
          */newKey: EncString) {
@@ -1859,13 +1859,13 @@ public struct FfiConverterTypeUpdatePasswordResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UpdatePasswordResponse {
         return
             try UpdatePasswordResponse(
-                passwordHash: FfiConverterString.read(from: &buf), 
+                passwordHash: FfiConverterTypeB64.read(from: &buf), 
                 newKey: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: UpdatePasswordResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.passwordHash, into: &buf)
+        FfiConverterTypeB64.write(value.passwordHash, into: &buf)
         FfiConverterTypeEncString.write(value.newKey, into: &buf)
     }
 }
@@ -1893,7 +1893,7 @@ public struct UserCryptoV2KeysResponse {
     /**
      * User key
      */
-    public let userKey: String
+    public let userKey: B64
     /**
      * Wrapped private key
      */
@@ -1901,7 +1901,7 @@ public struct UserCryptoV2KeysResponse {
     /**
      * Public key
      */
-    public let publicKey: String
+    public let publicKey: B64
     /**
      * The user's public key, signed by the signing key
      */
@@ -1913,7 +1913,7 @@ public struct UserCryptoV2KeysResponse {
     /**
      * Base64 encoded verifying key
      */
-    public let verifyingKey: String
+    public let verifyingKey: B64
     /**
      * The user's signed security state
      */
@@ -1928,13 +1928,13 @@ public struct UserCryptoV2KeysResponse {
     public init(
         /**
          * User key
-         */userKey: String, 
+         */userKey: B64, 
         /**
          * Wrapped private key
          */privateKey: EncString, 
         /**
          * Public key
-         */publicKey: String, 
+         */publicKey: B64, 
         /**
          * The user's public key, signed by the signing key
          */signedPublicKey: SignedPublicKey, 
@@ -1943,7 +1943,7 @@ public struct UserCryptoV2KeysResponse {
          */signingKey: EncString, 
         /**
          * Base64 encoded verifying key
-         */verifyingKey: String, 
+         */verifyingKey: B64, 
         /**
          * The user's signed security state
          */securityState: SignedSecurityState, 
@@ -2016,24 +2016,24 @@ public struct FfiConverterTypeUserCryptoV2KeysResponse: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserCryptoV2KeysResponse {
         return
             try UserCryptoV2KeysResponse(
-                userKey: FfiConverterString.read(from: &buf), 
+                userKey: FfiConverterTypeB64.read(from: &buf), 
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
-                publicKey: FfiConverterString.read(from: &buf), 
+                publicKey: FfiConverterTypeB64.read(from: &buf), 
                 signedPublicKey: FfiConverterTypeSignedPublicKey.read(from: &buf), 
                 signingKey: FfiConverterTypeEncString.read(from: &buf), 
-                verifyingKey: FfiConverterString.read(from: &buf), 
+                verifyingKey: FfiConverterTypeB64.read(from: &buf), 
                 securityState: FfiConverterTypeSignedSecurityState.read(from: &buf), 
                 securityVersion: FfiConverterUInt64.read(from: &buf)
         )
     }
 
     public static func write(_ value: UserCryptoV2KeysResponse, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.userKey, into: &buf)
+        FfiConverterTypeB64.write(value.userKey, into: &buf)
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
-        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterTypeB64.write(value.publicKey, into: &buf)
         FfiConverterTypeSignedPublicKey.write(value.signedPublicKey, into: &buf)
         FfiConverterTypeEncString.write(value.signingKey, into: &buf)
-        FfiConverterString.write(value.verifyingKey, into: &buf)
+        FfiConverterTypeB64.write(value.verifyingKey, into: &buf)
         FfiConverterTypeSignedSecurityState.write(value.securityState, into: &buf)
         FfiConverterUInt64.write(value.securityVersion, into: &buf)
     }
@@ -2062,11 +2062,11 @@ public struct VerifyAsymmetricKeysRequest {
     /**
      * The user's user key
      */
-    public let userKey: String
+    public let userKey: B64
     /**
      * The user's public key
      */
-    public let userPublicKey: String
+    public let userPublicKey: B64
     /**
      * User's private key, encrypted with the user key
      */
@@ -2077,10 +2077,10 @@ public struct VerifyAsymmetricKeysRequest {
     public init(
         /**
          * The user's user key
-         */userKey: String, 
+         */userKey: B64, 
         /**
          * The user's public key
-         */userPublicKey: String, 
+         */userPublicKey: B64, 
         /**
          * User's private key, encrypted with the user key
          */userKeyEncryptedPrivateKey: EncString) {
@@ -2125,15 +2125,15 @@ public struct FfiConverterTypeVerifyAsymmetricKeysRequest: FfiConverterRustBuffe
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VerifyAsymmetricKeysRequest {
         return
             try VerifyAsymmetricKeysRequest(
-                userKey: FfiConverterString.read(from: &buf), 
-                userPublicKey: FfiConverterString.read(from: &buf), 
+                userKey: FfiConverterTypeB64.read(from: &buf), 
+                userPublicKey: FfiConverterTypeB64.read(from: &buf), 
                 userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: VerifyAsymmetricKeysRequest, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.userKey, into: &buf)
-        FfiConverterString.write(value.userPublicKey, into: &buf)
+        FfiConverterTypeB64.write(value.userKey, into: &buf)
+        FfiConverterTypeB64.write(value.userPublicKey, into: &buf)
         FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
     }
 }
@@ -2610,7 +2610,7 @@ public enum InitUserCryptoMethod {
     case authRequest(
         /**
          * Private Key generated by the `crate::auth::new_auth_request`.
-         */requestPrivateKey: String, 
+         */requestPrivateKey: B64, 
         /**
          * The type of auth request
          */method: AuthRequestMethod
@@ -2635,7 +2635,7 @@ public enum InitUserCryptoMethod {
     case keyConnector(
         /**
          * Base64 encoded master key, retrieved from the key connector.
-         */masterKey: String, 
+         */masterKey: B64, 
         /**
          * The user's encrypted symmetric crypto key
          */userKey: EncString
@@ -2666,13 +2666,13 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 4: return .authRequest(requestPrivateKey: try FfiConverterString.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        case 4: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
         case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
         )
         
-        case 6: return .keyConnector(masterKey: try FfiConverterString.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 6: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -2702,7 +2702,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         
         case let .authRequest(requestPrivateKey,method):
             writeInt(&buf, Int32(4))
-            FfiConverterString.write(requestPrivateKey, into: &buf)
+            FfiConverterTypeB64.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
             
         
@@ -2715,7 +2715,7 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         
         case let .keyConnector(masterKey,userKey):
             writeInt(&buf, Int32(6))
-            FfiConverterString.write(masterKey, into: &buf)
+            FfiConverterTypeB64.write(masterKey, into: &buf)
             FfiConverterTypeEncString.write(userKey, into: &buf)
             
         }
@@ -3145,6 +3145,7 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 
