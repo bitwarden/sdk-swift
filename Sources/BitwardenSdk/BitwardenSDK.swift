@@ -2967,6 +2967,20 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     func enrollAdminPasswordReset(publicKey: B64) throws  -> UnsignedSharedKey
     
     /**
+     * Protects the current user key with the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`.
+     */
+    func enrollPin(pin: String) throws  -> EnrollPinResponse
+    
+    /**
+     * Protects the current user key with the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`. The provided pin is encrypted with the user key.
+     */
+    func enrollPinWithEncryptedPin(encryptedPin: EncString) throws  -> EnrollPinResponse
+    
+    /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
@@ -3083,6 +3097,32 @@ open func enrollAdminPasswordReset(publicKey: B64)throws  -> UnsignedSharedKey  
     return try  FfiConverterTypeUnsignedSharedKey_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_admin_password_reset(self.uniffiClonePointer(),
         FfiConverterTypeB64_lower(publicKey),$0
+    )
+})
+}
+    
+    /**
+     * Protects the current user key with the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`.
+     */
+open func enrollPin(pin: String)throws  -> EnrollPinResponse  {
+    return try  FfiConverterTypeEnrollPinResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_pin(self.uniffiClonePointer(),
+        FfiConverterString.lower(pin),$0
+    )
+})
+}
+    
+    /**
+     * Protects the current user key with the provided PIN. The result can be stored and later
+     * used to initialize another client instance by using the PIN and the PIN key with
+     * `initialize_user_crypto`. The provided pin is encrypted with the user key.
+     */
+open func enrollPinWithEncryptedPin(encryptedPin: EncString)throws  -> EnrollPinResponse  {
+    return try  FfiConverterTypeEnrollPinResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_pin_with_encrypted_pin(self.uniffiClonePointer(),
+        FfiConverterTypeEncString_lower(encryptedPin),$0
     )
 })
 }
@@ -6966,6 +7006,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 47066) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin() != 30399) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin_with_encrypted_pin() != 52668) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 58176) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -7108,16 +7154,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 

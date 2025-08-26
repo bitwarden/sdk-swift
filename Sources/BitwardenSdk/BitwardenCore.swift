@@ -974,6 +974,91 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
 
 
 /**
+ * Request for deriving a pin protected user key
+ */
+public struct EnrollPinResponse {
+    /**
+     * [UserKey] protected by PIN
+     */
+    public let pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope
+    /**
+     * PIN protected by [UserKey]
+     */
+    public let userKeyEncryptedPin: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * [UserKey] protected by PIN
+         */pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope, 
+        /**
+         * PIN protected by [UserKey]
+         */userKeyEncryptedPin: EncString) {
+        self.pinProtectedUserKeyEnvelope = pinProtectedUserKeyEnvelope
+        self.userKeyEncryptedPin = userKeyEncryptedPin
+    }
+}
+
+#if compiler(>=6)
+extension EnrollPinResponse: Sendable {}
+#endif
+
+
+extension EnrollPinResponse: Equatable, Hashable {
+    public static func ==(lhs: EnrollPinResponse, rhs: EnrollPinResponse) -> Bool {
+        if lhs.pinProtectedUserKeyEnvelope != rhs.pinProtectedUserKeyEnvelope {
+            return false
+        }
+        if lhs.userKeyEncryptedPin != rhs.userKeyEncryptedPin {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pinProtectedUserKeyEnvelope)
+        hasher.combine(userKeyEncryptedPin)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEnrollPinResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EnrollPinResponse {
+        return
+            try EnrollPinResponse(
+                pinProtectedUserKeyEnvelope: FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf), 
+                userKeyEncryptedPin: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: EnrollPinResponse, into buf: inout [UInt8]) {
+        FfiConverterTypePasswordProtectedKeyEnvelope.write(value.pinProtectedUserKeyEnvelope, into: &buf)
+        FfiConverterTypeEncString.write(value.userKeyEncryptedPin, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnrollPinResponse_lift(_ buf: RustBuffer) throws -> EnrollPinResponse {
+    return try FfiConverterTypeEnrollPinResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnrollPinResponse_lower(_ value: EnrollPinResponse) -> RustBuffer {
+    return FfiConverterTypeEnrollPinResponse.lower(value)
+}
+
+
+/**
  * Request to generate a fingerprint.
  */
 public struct FingerprintRequest {
@@ -2605,6 +2690,17 @@ public enum InitUserCryptoMethod {
          */pinProtectedUserKey: EncString
     )
     /**
+     * PIN Envelope
+     */
+    case pinEnvelope(
+        /**
+         * The user's PIN
+         */pin: String, 
+        /**
+         * The user's symmetric crypto key, encrypted with the PIN-protected key envelope.
+         */pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope
+    )
+    /**
      * Auth request
      */
     case authRequest(
@@ -2666,13 +2762,16 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 4: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        case 4: return .pinEnvelope(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKeyEnvelope: try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
         )
         
-        case 5: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        case 5: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
-        case 6: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 6: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        )
+        
+        case 7: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -2700,21 +2799,27 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
             
         
-        case let .authRequest(requestPrivateKey,method):
+        case let .pinEnvelope(pin,pinProtectedUserKeyEnvelope):
             writeInt(&buf, Int32(4))
+            FfiConverterString.write(pin, into: &buf)
+            FfiConverterTypePasswordProtectedKeyEnvelope.write(pinProtectedUserKeyEnvelope, into: &buf)
+            
+        
+        case let .authRequest(requestPrivateKey,method):
+            writeInt(&buf, Int32(5))
             FfiConverterTypeB64.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
             
         
         case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(6))
             FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
             FfiConverterTypeUnsignedSharedKey.write(deviceProtectedUserKey, into: &buf)
             
         
         case let .keyConnector(masterKey,userKey):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(7))
             FfiConverterTypeB64.write(masterKey, into: &buf)
             FfiConverterTypeEncString.write(userKey, into: &buf)
             
