@@ -5201,7 +5201,9 @@ public func FfiConverterTypeSshClient_lower(_ value: SshClient) -> UnsafeMutable
 
 public protocol StateClientProtocol: AnyObject, Sendable {
     
-    func registerCipherRepository(store: CipherRepository) 
+    func initializeState(configuration: SqliteConfiguration) async throws 
+    
+    func registerCipherRepository(repository: CipherRepository) 
     
 }
 open class StateClient: StateClientProtocol, @unchecked Sendable {
@@ -5256,9 +5258,26 @@ open class StateClient: StateClientProtocol, @unchecked Sendable {
     
 
     
-open func registerCipherRepository(store: CipherRepository)  {try! rustCall() {
+open func initializeState(configuration: SqliteConfiguration)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_stateclient_initialize_state(
+                    self.uniffiClonePointer(),
+                    FfiConverterTypeSqliteConfiguration_lower(configuration)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+open func registerCipherRepository(repository: CipherRepository)  {try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_stateclient_register_cipher_repository(self.uniffiClonePointer(),
-        FfiConverterTypeCipherRepository_lower(store),$0
+        FfiConverterTypeCipherRepository_lower(repository),$0
     )
 }
 }
@@ -5750,6 +5769,76 @@ public func FfiConverterTypeCipherViewWrapper_lift(_ buf: RustBuffer) throws -> 
 #endif
 public func FfiConverterTypeCipherViewWrapper_lower(_ value: CipherViewWrapper) -> RustBuffer {
     return FfiConverterTypeCipherViewWrapper.lower(value)
+}
+
+
+public struct SqliteConfiguration {
+    public let dbName: String
+    public let folderPath: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(dbName: String, folderPath: String) {
+        self.dbName = dbName
+        self.folderPath = folderPath
+    }
+}
+
+#if compiler(>=6)
+extension SqliteConfiguration: Sendable {}
+#endif
+
+
+extension SqliteConfiguration: Equatable, Hashable {
+    public static func ==(lhs: SqliteConfiguration, rhs: SqliteConfiguration) -> Bool {
+        if lhs.dbName != rhs.dbName {
+            return false
+        }
+        if lhs.folderPath != rhs.folderPath {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(dbName)
+        hasher.combine(folderPath)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSqliteConfiguration: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SqliteConfiguration {
+        return
+            try SqliteConfiguration(
+                dbName: FfiConverterString.read(from: &buf), 
+                folderPath: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SqliteConfiguration, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.dbName, into: &buf)
+        FfiConverterString.write(value.folderPath, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSqliteConfiguration_lift(_ buf: RustBuffer) throws -> SqliteConfiguration {
+    return try FfiConverterTypeSqliteConfiguration.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSqliteConfiguration_lower(_ value: SqliteConfiguration) -> RustBuffer {
+    return FfiConverterTypeSqliteConfiguration.lower(value)
 }
 
 
@@ -7123,7 +7212,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 34814) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 64881) {
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_initialize_state() != 27371) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 63324) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 23471) {
@@ -7154,16 +7246,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     return InitializationResult.ok
 }()
 
