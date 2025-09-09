@@ -893,15 +893,27 @@ public struct Fido2CredentialAutofillView {
     public let rpId: String
     public let userNameForUi: String?
     public let userHandle: Data
+    /**
+     * Indicates if this credential uses a signature counter (legacy passkeys).
+     * When true, mobile clients must sync before authentication to ensure
+     * counter values are current. Modern passkeys (counter = 0) can work offline.
+     */
+    public let hasCounter: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: Data, cipherId: Uuid, rpId: String, userNameForUi: String?, userHandle: Data) {
+    public init(credentialId: Data, cipherId: Uuid, rpId: String, userNameForUi: String?, userHandle: Data, 
+        /**
+         * Indicates if this credential uses a signature counter (legacy passkeys).
+         * When true, mobile clients must sync before authentication to ensure
+         * counter values are current. Modern passkeys (counter = 0) can work offline.
+         */hasCounter: Bool) {
         self.credentialId = credentialId
         self.cipherId = cipherId
         self.rpId = rpId
         self.userNameForUi = userNameForUi
         self.userHandle = userHandle
+        self.hasCounter = hasCounter
     }
 }
 
@@ -927,6 +939,9 @@ extension Fido2CredentialAutofillView: Equatable, Hashable {
         if lhs.userHandle != rhs.userHandle {
             return false
         }
+        if lhs.hasCounter != rhs.hasCounter {
+            return false
+        }
         return true
     }
 
@@ -936,6 +951,7 @@ extension Fido2CredentialAutofillView: Equatable, Hashable {
         hasher.combine(rpId)
         hasher.combine(userNameForUi)
         hasher.combine(userHandle)
+        hasher.combine(hasCounter)
     }
 }
 
@@ -952,7 +968,8 @@ public struct FfiConverterTypeFido2CredentialAutofillView: FfiConverterRustBuffe
                 cipherId: FfiConverterTypeUuid.read(from: &buf), 
                 rpId: FfiConverterString.read(from: &buf), 
                 userNameForUi: FfiConverterOptionString.read(from: &buf), 
-                userHandle: FfiConverterData.read(from: &buf)
+                userHandle: FfiConverterData.read(from: &buf), 
+                hasCounter: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -962,6 +979,7 @@ public struct FfiConverterTypeFido2CredentialAutofillView: FfiConverterRustBuffe
         FfiConverterString.write(value.rpId, into: &buf)
         FfiConverterOptionString.write(value.userNameForUi, into: &buf)
         FfiConverterData.write(value.userHandle, into: &buf)
+        FfiConverterBool.write(value.hasCounter, into: &buf)
     }
 }
 

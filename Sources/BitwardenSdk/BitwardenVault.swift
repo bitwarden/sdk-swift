@@ -2275,15 +2275,17 @@ public struct Fido2CredentialListView {
     public let userHandle: String?
     public let userName: String?
     public let userDisplayName: String?
+    public let counter: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: String, rpId: String, userHandle: String?, userName: String?, userDisplayName: String?) {
+    public init(credentialId: String, rpId: String, userHandle: String?, userName: String?, userDisplayName: String?, counter: String) {
         self.credentialId = credentialId
         self.rpId = rpId
         self.userHandle = userHandle
         self.userName = userName
         self.userDisplayName = userDisplayName
+        self.counter = counter
     }
 }
 
@@ -2309,6 +2311,9 @@ extension Fido2CredentialListView: Equatable, Hashable {
         if lhs.userDisplayName != rhs.userDisplayName {
             return false
         }
+        if lhs.counter != rhs.counter {
+            return false
+        }
         return true
     }
 
@@ -2318,6 +2323,7 @@ extension Fido2CredentialListView: Equatable, Hashable {
         hasher.combine(userHandle)
         hasher.combine(userName)
         hasher.combine(userDisplayName)
+        hasher.combine(counter)
     }
 }
 
@@ -2334,7 +2340,8 @@ public struct FfiConverterTypeFido2CredentialListView: FfiConverterRustBuffer {
                 rpId: FfiConverterString.read(from: &buf), 
                 userHandle: FfiConverterOptionString.read(from: &buf), 
                 userName: FfiConverterOptionString.read(from: &buf), 
-                userDisplayName: FfiConverterOptionString.read(from: &buf)
+                userDisplayName: FfiConverterOptionString.read(from: &buf), 
+                counter: FfiConverterString.read(from: &buf)
         )
     }
 
@@ -2344,6 +2351,7 @@ public struct FfiConverterTypeFido2CredentialListView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.userHandle, into: &buf)
         FfiConverterOptionString.write(value.userName, into: &buf)
         FfiConverterOptionString.write(value.userDisplayName, into: &buf)
+        FfiConverterString.write(value.counter, into: &buf)
     }
 }
 
@@ -6510,9 +6518,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 
