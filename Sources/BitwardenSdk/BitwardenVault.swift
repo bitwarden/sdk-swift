@@ -1121,6 +1121,7 @@ public struct Cipher {
     public let creationDate: DateTime
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
+    public let archivedDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1128,7 +1129,7 @@ public struct Cipher {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1155,6 +1156,7 @@ public struct Cipher {
         self.creationDate = creationDate
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
+        self.archivedDate = archivedDate
     }
 }
 
@@ -1243,6 +1245,9 @@ extension Cipher: Equatable, Hashable {
         if lhs.revisionDate != rhs.revisionDate {
             return false
         }
+        if lhs.archivedDate != rhs.archivedDate {
+            return false
+        }
         return true
     }
 
@@ -1273,6 +1278,7 @@ extension Cipher: Equatable, Hashable {
         hasher.combine(creationDate)
         hasher.combine(deletedDate)
         hasher.combine(revisionDate)
+        hasher.combine(archivedDate)
     }
 }
 
@@ -1310,7 +1316,8 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 passwordHistory: FfiConverterOptionSequenceTypePasswordHistory.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
-                revisionDate: FfiConverterTypeDateTime.read(from: &buf)
+                revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
@@ -1341,6 +1348,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
     }
 }
 
@@ -1389,6 +1397,7 @@ public struct CipherListView {
     public let creationDate: DateTime
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
+    public let archivedDate: DateTime?
     /**
      * Hints for the presentation layer for which fields can be copied.
      */
@@ -1406,7 +1415,7 @@ public struct CipherListView {
          */attachments: UInt32, 
         /**
          * Indicates if the cipher has old attachments that need to be re-uploaded
-         */hasOldAttachments: Bool, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, 
+         */hasOldAttachments: Bool, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, 
         /**
          * Hints for the presentation layer for which fields can be copied.
          */copyableFields: [CopyableCipherFields], localData: LocalDataView?) {
@@ -1429,6 +1438,7 @@ public struct CipherListView {
         self.creationDate = creationDate
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
+        self.archivedDate = archivedDate
         self.copyableFields = copyableFields
         self.localData = localData
     }
@@ -1498,6 +1508,9 @@ extension CipherListView: Equatable, Hashable {
         if lhs.revisionDate != rhs.revisionDate {
             return false
         }
+        if lhs.archivedDate != rhs.archivedDate {
+            return false
+        }
         if lhs.copyableFields != rhs.copyableFields {
             return false
         }
@@ -1527,6 +1540,7 @@ extension CipherListView: Equatable, Hashable {
         hasher.combine(creationDate)
         hasher.combine(deletedDate)
         hasher.combine(revisionDate)
+        hasher.combine(archivedDate)
         hasher.combine(copyableFields)
         hasher.combine(localData)
     }
@@ -1560,6 +1574,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 copyableFields: FfiConverterSequenceTypeCopyableCipherFields.read(from: &buf), 
                 localData: FfiConverterOptionTypeLocalDataView.read(from: &buf)
         )
@@ -1585,6 +1600,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
         FfiConverterSequenceTypeCopyableCipherFields.write(value.copyableFields, into: &buf)
         FfiConverterOptionTypeLocalDataView.write(value.localData, into: &buf)
     }
@@ -1706,13 +1722,14 @@ public struct CipherView {
     public let creationDate: DateTime
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
+    public let archivedDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime) {
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1739,6 +1756,7 @@ public struct CipherView {
         self.creationDate = creationDate
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
+        self.archivedDate = archivedDate
     }
 }
 
@@ -1827,6 +1845,9 @@ extension CipherView: Equatable, Hashable {
         if lhs.revisionDate != rhs.revisionDate {
             return false
         }
+        if lhs.archivedDate != rhs.archivedDate {
+            return false
+        }
         return true
     }
 
@@ -1857,6 +1878,7 @@ extension CipherView: Equatable, Hashable {
         hasher.combine(creationDate)
         hasher.combine(deletedDate)
         hasher.combine(revisionDate)
+        hasher.combine(archivedDate)
     }
 }
 
@@ -1894,7 +1916,8 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 passwordHistory: FfiConverterOptionSequenceTypePasswordHistoryView.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
-                revisionDate: FfiConverterTypeDateTime.read(from: &buf)
+                revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
@@ -1925,6 +1948,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
     }
 }
 
@@ -6518,9 +6542,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
