@@ -1532,6 +1532,87 @@ public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairRespon
 }
 
 
+/**
+ * Represents the data required to authenticate with the master password.
+ */
+public struct MasterPasswordAuthenticationData {
+    public let kdf: Kdf
+    public let salt: String
+    public let masterPasswordAuthenticationHash: B64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(kdf: Kdf, salt: String, masterPasswordAuthenticationHash: B64) {
+        self.kdf = kdf
+        self.salt = salt
+        self.masterPasswordAuthenticationHash = masterPasswordAuthenticationHash
+    }
+}
+
+#if compiler(>=6)
+extension MasterPasswordAuthenticationData: Sendable {}
+#endif
+
+
+extension MasterPasswordAuthenticationData: Equatable, Hashable {
+    public static func ==(lhs: MasterPasswordAuthenticationData, rhs: MasterPasswordAuthenticationData) -> Bool {
+        if lhs.kdf != rhs.kdf {
+            return false
+        }
+        if lhs.salt != rhs.salt {
+            return false
+        }
+        if lhs.masterPasswordAuthenticationHash != rhs.masterPasswordAuthenticationHash {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(kdf)
+        hasher.combine(salt)
+        hasher.combine(masterPasswordAuthenticationHash)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMasterPasswordAuthenticationData: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MasterPasswordAuthenticationData {
+        return
+            try MasterPasswordAuthenticationData(
+                kdf: FfiConverterTypeKdf.read(from: &buf), 
+                salt: FfiConverterString.read(from: &buf), 
+                masterPasswordAuthenticationHash: FfiConverterTypeB64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MasterPasswordAuthenticationData, into buf: inout [UInt8]) {
+        FfiConverterTypeKdf.write(value.kdf, into: &buf)
+        FfiConverterString.write(value.salt, into: &buf)
+        FfiConverterTypeB64.write(value.masterPasswordAuthenticationHash, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordAuthenticationData_lift(_ buf: RustBuffer) throws -> MasterPasswordAuthenticationData {
+    return try FfiConverterTypeMasterPasswordAuthenticationData.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordAuthenticationData_lower(_ value: MasterPasswordAuthenticationData) -> RustBuffer {
+    return FfiConverterTypeMasterPasswordAuthenticationData.lower(value)
+}
+
+
 public struct MasterPasswordPolicyOptions {
     public let minComplexity: UInt8
     public let minLength: UInt8
@@ -1649,6 +1730,105 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lift(_ buf: RustBuffer) 
 #endif
 public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPasswordPolicyOptions) -> RustBuffer {
     return FfiConverterTypeMasterPasswordPolicyOptions.lower(value)
+}
+
+
+/**
+ * Represents the data required to unlock with the master password.
+ */
+public struct MasterPasswordUnlockData {
+    /**
+     * The key derivation function used to derive the master key
+     */
+    public let kdf: Kdf
+    /**
+     * The master key wrapped user key
+     */
+    public let masterKeyWrappedUserKey: EncString
+    /**
+     * The salt used in the KDF, typically the user's email
+     */
+    public let salt: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The key derivation function used to derive the master key
+         */kdf: Kdf, 
+        /**
+         * The master key wrapped user key
+         */masterKeyWrappedUserKey: EncString, 
+        /**
+         * The salt used in the KDF, typically the user's email
+         */salt: String) {
+        self.kdf = kdf
+        self.masterKeyWrappedUserKey = masterKeyWrappedUserKey
+        self.salt = salt
+    }
+}
+
+#if compiler(>=6)
+extension MasterPasswordUnlockData: Sendable {}
+#endif
+
+
+extension MasterPasswordUnlockData: Equatable, Hashable {
+    public static func ==(lhs: MasterPasswordUnlockData, rhs: MasterPasswordUnlockData) -> Bool {
+        if lhs.kdf != rhs.kdf {
+            return false
+        }
+        if lhs.masterKeyWrappedUserKey != rhs.masterKeyWrappedUserKey {
+            return false
+        }
+        if lhs.salt != rhs.salt {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(kdf)
+        hasher.combine(masterKeyWrappedUserKey)
+        hasher.combine(salt)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMasterPasswordUnlockData: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MasterPasswordUnlockData {
+        return
+            try MasterPasswordUnlockData(
+                kdf: FfiConverterTypeKdf.read(from: &buf), 
+                masterKeyWrappedUserKey: FfiConverterTypeEncString.read(from: &buf), 
+                salt: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MasterPasswordUnlockData, into buf: inout [UInt8]) {
+        FfiConverterTypeKdf.write(value.kdf, into: &buf)
+        FfiConverterTypeEncString.write(value.masterKeyWrappedUserKey, into: &buf)
+        FfiConverterString.write(value.salt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordUnlockData_lift(_ buf: RustBuffer) throws -> MasterPasswordUnlockData {
+    return try FfiConverterTypeMasterPasswordUnlockData.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordUnlockData_lower(_ value: MasterPasswordUnlockData) -> RustBuffer {
+    return FfiConverterTypeMasterPasswordUnlockData.lower(value)
 }
 
 
@@ -1883,6 +2063,105 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lift(_ buf: RustBuffer) t
 #endif
 public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConverterDummyRecord) -> RustBuffer {
     return FfiConverterTypeUniffiConverterDummyRecord.lower(value)
+}
+
+
+/**
+ * Response from the `update_kdf` function
+ */
+public struct UpdateKdfResponse {
+    /**
+     * The authentication data for the new KDF setting
+     */
+    public let masterPasswordAuthenticationData: MasterPasswordAuthenticationData
+    /**
+     * The unlock data for the new KDF setting
+     */
+    public let masterPasswordUnlockData: MasterPasswordUnlockData
+    /**
+     * The authentication data for the KDF setting prior to the change
+     */
+    public let oldMasterPasswordAuthenticationData: MasterPasswordAuthenticationData
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The authentication data for the new KDF setting
+         */masterPasswordAuthenticationData: MasterPasswordAuthenticationData, 
+        /**
+         * The unlock data for the new KDF setting
+         */masterPasswordUnlockData: MasterPasswordUnlockData, 
+        /**
+         * The authentication data for the KDF setting prior to the change
+         */oldMasterPasswordAuthenticationData: MasterPasswordAuthenticationData) {
+        self.masterPasswordAuthenticationData = masterPasswordAuthenticationData
+        self.masterPasswordUnlockData = masterPasswordUnlockData
+        self.oldMasterPasswordAuthenticationData = oldMasterPasswordAuthenticationData
+    }
+}
+
+#if compiler(>=6)
+extension UpdateKdfResponse: Sendable {}
+#endif
+
+
+extension UpdateKdfResponse: Equatable, Hashable {
+    public static func ==(lhs: UpdateKdfResponse, rhs: UpdateKdfResponse) -> Bool {
+        if lhs.masterPasswordAuthenticationData != rhs.masterPasswordAuthenticationData {
+            return false
+        }
+        if lhs.masterPasswordUnlockData != rhs.masterPasswordUnlockData {
+            return false
+        }
+        if lhs.oldMasterPasswordAuthenticationData != rhs.oldMasterPasswordAuthenticationData {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(masterPasswordAuthenticationData)
+        hasher.combine(masterPasswordUnlockData)
+        hasher.combine(oldMasterPasswordAuthenticationData)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUpdateKdfResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UpdateKdfResponse {
+        return
+            try UpdateKdfResponse(
+                masterPasswordAuthenticationData: FfiConverterTypeMasterPasswordAuthenticationData.read(from: &buf), 
+                masterPasswordUnlockData: FfiConverterTypeMasterPasswordUnlockData.read(from: &buf), 
+                oldMasterPasswordAuthenticationData: FfiConverterTypeMasterPasswordAuthenticationData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UpdateKdfResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeMasterPasswordAuthenticationData.write(value.masterPasswordAuthenticationData, into: &buf)
+        FfiConverterTypeMasterPasswordUnlockData.write(value.masterPasswordUnlockData, into: &buf)
+        FfiConverterTypeMasterPasswordAuthenticationData.write(value.oldMasterPasswordAuthenticationData, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUpdateKdfResponse_lift(_ buf: RustBuffer) throws -> UpdateKdfResponse {
+    return try FfiConverterTypeUpdateKdfResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUpdateKdfResponse_lower(_ value: UpdateKdfResponse) -> RustBuffer {
+    return FfiConverterTypeUpdateKdfResponse.lower(value)
 }
 
 
@@ -3249,8 +3528,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 

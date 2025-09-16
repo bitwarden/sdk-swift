@@ -2999,8 +2999,25 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     func initializeUserCrypto(req: InitUserCryptoRequest) async throws 
     
     /**
-     * Update the user's password, which will re-encrypt the user's encryption key with the new
-     * password. This returns the new encrypted user key and the new password hash.
+     * Create the data necessary to update the user's kdf settings. The user's encryption key is
+     * re-encrypted for the password under the new kdf settings. This returns the new encrypted
+     * user key and the new password hash but does not update sdk state.
+     */
+    func makeUpdateKdf(password: String, kdf: Kdf) throws  -> UpdateKdfResponse
+    
+    /**
+     * Create the data necessary to update the user's password. The user's encryption key is
+     * re-encrypted with the new password. This returns the new encrypted user key and the new
+     * password hash but does not update sdk state.
+     */
+    func makeUpdatePassword(newPassword: String) throws  -> UpdatePasswordResponse
+    
+    /**
+     * Create the data necessary to update the user's password. The user's encryption key is
+     * re-encrypted with the new password. This returns the new encrypted user key and the new
+     * password hash but does not update sdk state.
+     *
+     * Note: This is deprecated and `make_update_password` should be used instead
      */
     func updatePassword(newPassword: String) throws  -> UpdatePasswordResponse
     
@@ -3191,8 +3208,38 @@ open func initializeUserCrypto(req: InitUserCryptoRequest)async throws   {
 }
     
     /**
-     * Update the user's password, which will re-encrypt the user's encryption key with the new
-     * password. This returns the new encrypted user key and the new password hash.
+     * Create the data necessary to update the user's kdf settings. The user's encryption key is
+     * re-encrypted for the password under the new kdf settings. This returns the new encrypted
+     * user key and the new password hash but does not update sdk state.
+     */
+open func makeUpdateKdf(password: String, kdf: Kdf)throws  -> UpdateKdfResponse  {
+    return try  FfiConverterTypeUpdateKdfResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_make_update_kdf(self.uniffiClonePointer(),
+        FfiConverterString.lower(password),
+        FfiConverterTypeKdf_lower(kdf),$0
+    )
+})
+}
+    
+    /**
+     * Create the data necessary to update the user's password. The user's encryption key is
+     * re-encrypted with the new password. This returns the new encrypted user key and the new
+     * password hash but does not update sdk state.
+     */
+open func makeUpdatePassword(newPassword: String)throws  -> UpdatePasswordResponse  {
+    return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_make_update_password(self.uniffiClonePointer(),
+        FfiConverterString.lower(newPassword),$0
+    )
+})
+}
+    
+    /**
+     * Create the data necessary to update the user's password. The user's encryption key is
+     * re-encrypted with the new password. This returns the new encrypted user key and the new
+     * password hash but does not update sdk state.
+     *
+     * Note: This is deprecated and `make_update_password` should be used instead
      */
 open func updatePassword(newPassword: String)throws  -> UpdatePasswordResponse  {
     return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
@@ -7110,7 +7157,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_user_crypto() != 14921) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_update_password() != 3984) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 38445) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_password() != 31827) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_update_password() != 47825) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 54193) {
@@ -7246,16 +7299,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 
