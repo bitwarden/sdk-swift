@@ -12,8 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "BitwardenSdk",
-            targets: ["BitwardenSdk", "BitwardenFFI"]
-        ),
+            targets: ["BitwardenSdk", "BitwardenFFI"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -25,16 +24,13 @@ let package = Package(
         .target(
             name: "BitwardenSdk",
             dependencies: ["BitwardenFFI"],
-            swiftSettings: [.unsafeFlags(["-suppress-warnings"])]
-        ),
+            swiftSettings: [.unsafeFlags(["-suppress-warnings"])]),
         .testTarget(
             name: "BitwardenSdkTests",
-            dependencies: ["BitwardenSdk"]
-        ),
+            dependencies: ["BitwardenSdk"]),
         .binaryTarget(
-            name: "BitwardenFFI",
-            url: "https://github.com/bitwarden/sdk-swift/releases/download/v1.0.0-unstable-9b1253a/BitwardenFFI-1.0.0-9b1253a.xcframework.zip",
-            checksum: "515ffdbc128e032f24939707a78bfb4f9bd58d83c747fdbb7350ed934568d31f"
-        ),
+  name: "BitwardenFFI",
+  url: "https://github.com/bitwarden/sdk-swift/releases/download/v1.0.0-2394-72f4866/BitwardenFFI-1.0.0-72f4866.xcframework.zip",
+  checksum: "52809b7bd3057a68b70ecefa99646fece101148d5e24000b004d0430989dbf96")
     ]
 )
