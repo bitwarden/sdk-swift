@@ -5248,6 +5248,9 @@ public func FfiConverterTypeSshClient_lower(_ value: SshClient) -> UnsafeMutable
 
 public protocol StateClientProtocol: AnyObject, Sendable {
     
+    /**
+     * Initialize the database for SDK managed repositories.
+     */
     func initializeState(configuration: SqliteConfiguration) async throws 
     
     func registerCipherRepository(repository: CipherRepository) 
@@ -5305,6 +5308,9 @@ open class StateClient: StateClientProtocol, @unchecked Sendable {
     
 
     
+    /**
+     * Initialize the database for SDK managed repositories.
+     */
 open func initializeState(configuration: SqliteConfiguration)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -7265,7 +7271,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 34814) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_initialize_state() != 27371) {
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_initialize_state() != 46901) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 63324) {
@@ -7299,16 +7305,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     return InitializationResult.ok
 }()
 
