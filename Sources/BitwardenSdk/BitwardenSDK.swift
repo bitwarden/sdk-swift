@@ -5901,7 +5901,7 @@ public enum BitwardenError: Swift.Error {
     
     case E(message: String)
     
-    case ConversionError(message: String)
+    case Conversion(message: String)
     
 }
 
@@ -5923,7 +5923,7 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .ConversionError(
+        case 2: return .Conversion(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -5940,7 +5940,7 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         
         case .E(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .ConversionError(_ /* message is ignored*/):
+        case .Conversion(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
 
         
@@ -7305,16 +7305,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     return InitializationResult.ok
 }()
 
