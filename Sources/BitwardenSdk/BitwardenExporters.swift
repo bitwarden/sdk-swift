@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -463,6 +482,9 @@ extension Account: Sendable {}
 #endif
 
 
+
+
+
 extension Account: Equatable, Hashable {
     public static func ==(lhs: Account, rhs: Account) -> Bool {
         if lhs.id != rhs.id {
@@ -521,6 +543,138 @@ public func FfiConverterTypeAccount_lower(_ value: Account) -> RustBuffer {
     return FfiConverterTypeAccount.lower(value)
 }
 
+
+public enum ExportError: Swift.Error {
+
+    
+    
+    case MissingField(message: String)
+    
+    case NotAuthenticated(message: String)
+    
+    case Csv(message: String)
+    
+    case Cxf(message: String)
+    
+    case Json(message: String)
+    
+    case EncryptedJson(message: String)
+    
+    case BitwardenCrypto(message: String)
+    
+    case Cipher(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExportError: FfiConverterRustBuffer {
+    typealias SwiftType = ExportError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExportError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Csv(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Cxf(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Json(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .EncryptedJson(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .BitwardenCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .Cipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ExportError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Csv(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Cxf(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Json(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .EncryptedJson(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .BitwardenCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .Cipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportError_lift(_ buf: RustBuffer) throws -> ExportError {
+    return try FfiConverterTypeExportError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportError_lower(_ value: ExportError) -> RustBuffer {
+    return FfiConverterTypeExportError.lower(value)
+}
+
+
+extension ExportError: Equatable, Hashable {}
+
+
+
+
+extension ExportError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -530,9 +684,8 @@ public enum ExportFormat {
     case json
     case encryptedJson(password: String
     )
+
 }
-
-
 #if compiler(>=6)
 extension ExportFormat: Sendable {}
 #endif
@@ -594,7 +747,14 @@ public func FfiConverterTypeExportFormat_lower(_ value: ExportFormat) -> RustBuf
 }
 
 
+
+
 extension ExportFormat: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -631,7 +791,7 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_exporters_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {

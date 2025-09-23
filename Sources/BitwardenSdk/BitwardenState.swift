@@ -7,8 +7,8 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(BitwardenSshFFI)
-import BitwardenSshFFI
+#if canImport(BitwardenStateFFI)
+import BitwardenStateFFI
 #endif
 
 fileprivate extension RustBuffer {
@@ -25,13 +25,13 @@ fileprivate extension RustBuffer {
     }
 
     static func from(_ ptr: UnsafeBufferPointer<UInt8>) -> RustBuffer {
-        try! rustCall { ffi_bitwarden_ssh_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
+        try! rustCall { ffi_bitwarden_state_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.
     // The buffer must not be used after this is called.
     func deallocate() {
-        try! rustCall { ffi_bitwarden_ssh_rustbuffer_free(self, $0) }
+        try! rustCall { ffi_bitwarden_state_rustbuffer_free(self, $0) }
     }
 }
 
@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -457,310 +457,78 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum KeyAlgorithm {
+public enum DatabaseError: Swift.Error {
+
     
-    case ed25519
-    case rsa3072
-    case rsa4096
-
+    
+    case UnsupportedConfiguration(message: String)
+    
+    case ThreadBoundRunner(message: String)
+    
+    case Serialization(message: String)
+    
+    case Js(message: String)
+    
+    case Internal(message: String)
+    
 }
-#if compiler(>=6)
-extension KeyAlgorithm: Sendable {}
-#endif
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public struct FfiConverterTypeKeyAlgorithm: FfiConverterRustBuffer {
-    typealias SwiftType = KeyAlgorithm
+public struct FfiConverterTypeDatabaseError: FfiConverterRustBuffer {
+    typealias SwiftType = DatabaseError
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyAlgorithm {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DatabaseError {
         let variant: Int32 = try readInt(&buf)
         switch variant {
+
         
-        case 1: return .ed25519
+
         
-        case 2: return .rsa3072
+        case 1: return .UnsupportedConfiguration(
+            message: try FfiConverterString.read(from: &buf)
+        )
         
-        case 3: return .rsa4096
+        case 2: return .ThreadBoundRunner(
+            message: try FfiConverterString.read(from: &buf)
+        )
         
+        case 3: return .Serialization(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Js(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Internal(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
-    public static func write(_ value: KeyAlgorithm, into buf: inout [UInt8]) {
+    public static func write(_ value: DatabaseError, into buf: inout [UInt8]) {
         switch value {
+
         
+
         
-        case .ed25519:
+        case .UnsupportedConfiguration(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        
-        
-        case .rsa3072:
+        case .ThreadBoundRunner(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        
-        
-        case .rsa4096:
+        case .Serialization(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
-        
-        }
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeKeyAlgorithm_lift(_ buf: RustBuffer) throws -> KeyAlgorithm {
-    return try FfiConverterTypeKeyAlgorithm.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeKeyAlgorithm_lower(_ value: KeyAlgorithm) -> RustBuffer {
-    return FfiConverterTypeKeyAlgorithm.lower(value)
-}
-
-
-
-
-extension KeyAlgorithm: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum KeyGenerationError: Swift.Error {
-
-    
-    
-    case KeyGeneration(message: String)
-    
-    case KeyConversion(message: String)
-    
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeKeyGenerationError: FfiConverterRustBuffer {
-    typealias SwiftType = KeyGenerationError
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyGenerationError {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-
-        
-
-        
-        case 1: return .KeyGeneration(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 2: return .KeyConversion(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: KeyGenerationError, into buf: inout [UInt8]) {
-        switch value {
-
-        
-
-        
-        case .KeyGeneration(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
-        case .KeyConversion(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
-
-        
-        }
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeKeyGenerationError_lift(_ buf: RustBuffer) throws -> KeyGenerationError {
-    return try FfiConverterTypeKeyGenerationError.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeKeyGenerationError_lower(_ value: KeyGenerationError) -> RustBuffer {
-    return FfiConverterTypeKeyGenerationError.lower(value)
-}
-
-
-extension KeyGenerationError: Equatable, Hashable {}
-
-
-
-
-extension KeyGenerationError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum SshKeyExportError: Swift.Error {
-
-    
-    
-    case KeyConversion(message: String)
-    
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeSshKeyExportError: FfiConverterRustBuffer {
-    typealias SwiftType = SshKeyExportError
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKeyExportError {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-
-        
-
-        
-        case 1: return .KeyConversion(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: SshKeyExportError, into buf: inout [UInt8]) {
-        switch value {
-
-        
-
-        
-        case .KeyConversion(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
-
-        
-        }
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeSshKeyExportError_lift(_ buf: RustBuffer) throws -> SshKeyExportError {
-    return try FfiConverterTypeSshKeyExportError.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeSshKeyExportError_lower(_ value: SshKeyExportError) -> RustBuffer {
-    return FfiConverterTypeSshKeyExportError.lower(value)
-}
-
-
-extension SshKeyExportError: Equatable, Hashable {}
-
-
-
-
-extension SshKeyExportError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum SshKeyImportError: Swift.Error {
-
-    
-    
-    case Parsing(message: String)
-    
-    case PasswordRequired(message: String)
-    
-    case WrongPassword(message: String)
-    
-    case UnsupportedKeyType(message: String)
-    
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeSshKeyImportError: FfiConverterRustBuffer {
-    typealias SwiftType = SshKeyImportError
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SshKeyImportError {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-
-        
-
-        
-        case 1: return .Parsing(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 2: return .PasswordRequired(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 3: return .WrongPassword(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 4: return .UnsupportedKeyType(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: SshKeyImportError, into buf: inout [UInt8]) {
-        switch value {
-
-        
-
-        
-        case .Parsing(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
-        case .PasswordRequired(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
-        case .WrongPassword(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
-        case .UnsupportedKeyType(_ /* message is ignored*/):
+        case .Js(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
+        case .Internal(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
 
         
         }
@@ -771,24 +539,116 @@ public struct FfiConverterTypeSshKeyImportError: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeSshKeyImportError_lift(_ buf: RustBuffer) throws -> SshKeyImportError {
-    return try FfiConverterTypeSshKeyImportError.lift(buf)
+public func FfiConverterTypeDatabaseError_lift(_ buf: RustBuffer) throws -> DatabaseError {
+    return try FfiConverterTypeDatabaseError.lift(buf)
 }
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeSshKeyImportError_lower(_ value: SshKeyImportError) -> RustBuffer {
-    return FfiConverterTypeSshKeyImportError.lower(value)
+public func FfiConverterTypeDatabaseError_lower(_ value: DatabaseError) -> RustBuffer {
+    return FfiConverterTypeDatabaseError.lower(value)
 }
 
 
-extension SshKeyImportError: Equatable, Hashable {}
+extension DatabaseError: Equatable, Hashable {}
 
 
 
 
-extension SshKeyImportError: Foundation.LocalizedError {
+extension DatabaseError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum StateRegistryError: Swift.Error {
+
+    
+    
+    case DatabaseAlreadyInitialized(message: String)
+    
+    case DatabaseNotInitialized(message: String)
+    
+    case Database(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeStateRegistryError: FfiConverterRustBuffer {
+    typealias SwiftType = StateRegistryError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> StateRegistryError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .DatabaseAlreadyInitialized(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .DatabaseNotInitialized(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Database(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: StateRegistryError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .DatabaseAlreadyInitialized(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .DatabaseNotInitialized(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Database(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStateRegistryError_lift(_ buf: RustBuffer) throws -> StateRegistryError {
+    return try FfiConverterTypeStateRegistryError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStateRegistryError_lower(_ value: StateRegistryError) -> RustBuffer {
+    return FfiConverterTypeStateRegistryError.lower(value)
+}
+
+
+extension StateRegistryError: Equatable, Hashable {}
+
+
+
+
+extension StateRegistryError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
@@ -808,7 +668,7 @@ private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
     let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
-    let scaffolding_contract_version = ffi_bitwarden_ssh_uniffi_contract_version()
+    let scaffolding_contract_version = ffi_bitwarden_state_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
@@ -818,7 +678,7 @@ private let initializationResult: InitializationResult = {
 
 // Make the ensure init function public so that other modules which have external type references to
 // our types can call it.
-public func uniffiEnsureBitwardenSshInitialized() {
+public func uniffiEnsureBitwardenStateInitialized() {
     switch initializationResult {
     case .ok:
         break

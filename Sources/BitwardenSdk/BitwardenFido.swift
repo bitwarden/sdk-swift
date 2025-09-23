@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -518,6 +537,9 @@ extension AuthenticatorAssertionResponse: Sendable {}
 #endif
 
 
+
+
+
 extension AuthenticatorAssertionResponse: Equatable, Hashable {
     public static func ==(lhs: AuthenticatorAssertionResponse, rhs: AuthenticatorAssertionResponse) -> Bool {
         if lhs.clientDataJson != rhs.clientDataJson {
@@ -606,6 +628,9 @@ public struct AuthenticatorAttestationResponse {
 #if compiler(>=6)
 extension AuthenticatorAttestationResponse: Sendable {}
 #endif
+
+
+
 
 
 extension AuthenticatorAttestationResponse: Equatable, Hashable {
@@ -702,6 +727,9 @@ extension CheckUserOptions: Sendable {}
 #endif
 
 
+
+
+
 extension CheckUserOptions: Equatable, Hashable {
     public static func ==(lhs: CheckUserOptions, rhs: CheckUserOptions) -> Bool {
         if lhs.requirePresence != rhs.requirePresence {
@@ -770,6 +798,9 @@ extension ClientExtensionResults: Sendable {}
 #endif
 
 
+
+
+
 extension ClientExtensionResults: Equatable, Hashable {
     public static func ==(lhs: ClientExtensionResults, rhs: ClientExtensionResults) -> Bool {
         if lhs.credProps != rhs.credProps {
@@ -832,6 +863,9 @@ public struct CredPropsResult {
 #if compiler(>=6)
 extension CredPropsResult: Sendable {}
 #endif
+
+
+
 
 
 extension CredPropsResult: Equatable, Hashable {
@@ -920,6 +954,9 @@ public struct Fido2CredentialAutofillView {
 #if compiler(>=6)
 extension Fido2CredentialAutofillView: Sendable {}
 #endif
+
+
+
 
 
 extension Fido2CredentialAutofillView: Equatable, Hashable {
@@ -1022,6 +1059,9 @@ extension GetAssertionRequest: Sendable {}
 #endif
 
 
+
+
+
 extension GetAssertionRequest: Equatable, Hashable {
     public static func ==(lhs: GetAssertionRequest, rhs: GetAssertionRequest) -> Bool {
         if lhs.rpId != rhs.rpId {
@@ -1114,6 +1154,9 @@ public struct GetAssertionResult {
 #if compiler(>=6)
 extension GetAssertionResult: Sendable {}
 #endif
+
+
+
 
 
 extension GetAssertionResult: Equatable, Hashable {
@@ -1212,6 +1255,9 @@ public struct MakeCredentialRequest {
 #if compiler(>=6)
 extension MakeCredentialRequest: Sendable {}
 #endif
+
+
+
 
 
 extension MakeCredentialRequest: Equatable, Hashable {
@@ -1316,6 +1362,9 @@ extension MakeCredentialResult: Sendable {}
 #endif
 
 
+
+
+
 extension MakeCredentialResult: Equatable, Hashable {
     public static func ==(lhs: MakeCredentialResult, rhs: MakeCredentialResult) -> Bool {
         if lhs.authenticatorData != rhs.authenticatorData {
@@ -1390,6 +1439,9 @@ public struct Options {
 #if compiler(>=6)
 extension Options: Sendable {}
 #endif
+
+
+
 
 
 extension Options: Equatable, Hashable {
@@ -1470,6 +1522,9 @@ public struct PublicKeyCredentialAuthenticatorAssertionResponse {
 #if compiler(>=6)
 extension PublicKeyCredentialAuthenticatorAssertionResponse: Sendable {}
 #endif
+
+
+
 
 
 extension PublicKeyCredentialAuthenticatorAssertionResponse: Equatable, Hashable {
@@ -1582,6 +1637,9 @@ extension PublicKeyCredentialAuthenticatorAttestationResponse: Sendable {}
 #endif
 
 
+
+
+
 extension PublicKeyCredentialAuthenticatorAttestationResponse: Equatable, Hashable {
     public static func ==(lhs: PublicKeyCredentialAuthenticatorAttestationResponse, rhs: PublicKeyCredentialAuthenticatorAttestationResponse) -> Bool {
         if lhs.id != rhs.id {
@@ -1684,6 +1742,9 @@ extension PublicKeyCredentialDescriptor: Sendable {}
 #endif
 
 
+
+
+
 extension PublicKeyCredentialDescriptor: Equatable, Hashable {
     public static func ==(lhs: PublicKeyCredentialDescriptor, rhs: PublicKeyCredentialDescriptor) -> Bool {
         if lhs.ty != rhs.ty {
@@ -1760,6 +1821,9 @@ extension PublicKeyCredentialParameters: Sendable {}
 #endif
 
 
+
+
+
 extension PublicKeyCredentialParameters: Equatable, Hashable {
     public static func ==(lhs: PublicKeyCredentialParameters, rhs: PublicKeyCredentialParameters) -> Bool {
         if lhs.ty != rhs.ty {
@@ -1828,6 +1892,9 @@ public struct PublicKeyCredentialRpEntity {
 #if compiler(>=6)
 extension PublicKeyCredentialRpEntity: Sendable {}
 #endif
+
+
+
 
 
 extension PublicKeyCredentialRpEntity: Equatable, Hashable {
@@ -1900,6 +1967,9 @@ public struct PublicKeyCredentialUserEntity {
 #if compiler(>=6)
 extension PublicKeyCredentialUserEntity: Sendable {}
 #endif
+
+
+
 
 
 extension PublicKeyCredentialUserEntity: Equatable, Hashable {
@@ -1976,6 +2046,9 @@ public struct SelectedCredential {
 #if compiler(>=6)
 extension SelectedCredential: Sendable {}
 #endif
+
+
+
 
 
 extension SelectedCredential: Equatable, Hashable {
@@ -2081,6 +2154,9 @@ extension UnverifiedAssetLink: Sendable {}
 #endif
 
 
+
+
+
 extension UnverifiedAssetLink: Equatable, Hashable {
     public static func ==(lhs: UnverifiedAssetLink, rhs: UnverifiedAssetLink) -> Bool {
         if lhs.packageName != rhs.packageName {
@@ -2154,9 +2230,8 @@ public enum ClientData {
     )
     case defaultWithCustomHash(hash: Data
     )
+
 }
-
-
 #if compiler(>=6)
 extension ClientData: Sendable {}
 #endif
@@ -2214,7 +2289,514 @@ public func FfiConverterTypeClientData_lower(_ value: ClientData) -> RustBuffer 
 }
 
 
+
+
 extension ClientData: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum CredentialsForAutofillError: Swift.Error {
+
+    
+    
+    case Cipher(message: String)
+    
+    case InvalidGuid(message: String)
+    
+    case Fido2Callback(message: String)
+    
+    case FromCipherView(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCredentialsForAutofillError: FfiConverterRustBuffer {
+    typealias SwiftType = CredentialsForAutofillError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CredentialsForAutofillError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Cipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidGuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Fido2Callback(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .FromCipherView(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CredentialsForAutofillError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Cipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidGuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Fido2Callback(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .FromCipherView(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredentialsForAutofillError_lift(_ buf: RustBuffer) throws -> CredentialsForAutofillError {
+    return try FfiConverterTypeCredentialsForAutofillError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredentialsForAutofillError_lower(_ value: CredentialsForAutofillError) -> RustBuffer {
+    return FfiConverterTypeCredentialsForAutofillError.lower(value)
+}
+
+
+extension CredentialsForAutofillError: Equatable, Hashable {}
+
+
+
+
+extension CredentialsForAutofillError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum DecryptFido2AutofillCredentialsError: Swift.Error {
+
+    
+    
+    case Fido2CredentialAutofillView(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptFido2AutofillCredentialsError: FfiConverterRustBuffer {
+    typealias SwiftType = DecryptFido2AutofillCredentialsError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptFido2AutofillCredentialsError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Fido2CredentialAutofillView(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DecryptFido2AutofillCredentialsError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Fido2CredentialAutofillView(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lift(_ buf: RustBuffer) throws -> DecryptFido2AutofillCredentialsError {
+    return try FfiConverterTypeDecryptFido2AutofillCredentialsError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lower(_ value: DecryptFido2AutofillCredentialsError) -> RustBuffer {
+    return FfiConverterTypeDecryptFido2AutofillCredentialsError.lower(value)
+}
+
+
+extension DecryptFido2AutofillCredentialsError: Equatable, Hashable {}
+
+
+
+
+extension DecryptFido2AutofillCredentialsError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum Fido2ClientError: Swift.Error {
+
+    
+    
+    case InvalidOrigin(message: String)
+    
+    case Serde(message: String)
+    
+    case GetSelectedCredential(message: String)
+    
+    case Webauthn(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFido2ClientError: FfiConverterRustBuffer {
+    typealias SwiftType = Fido2ClientError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Fido2ClientError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidOrigin(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Serde(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .GetSelectedCredential(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Webauthn(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: Fido2ClientError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .InvalidOrigin(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Serde(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .GetSelectedCredential(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Webauthn(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2ClientError_lift(_ buf: RustBuffer) throws -> Fido2ClientError {
+    return try FfiConverterTypeFido2ClientError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFido2ClientError_lower(_ value: Fido2ClientError) -> RustBuffer {
+    return FfiConverterTypeFido2ClientError.lower(value)
+}
+
+
+extension Fido2ClientError: Equatable, Hashable {}
+
+
+
+
+extension Fido2ClientError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum GetAssertionError: Swift.Error {
+
+    
+    
+    case UnknownEnum(message: String)
+    
+    case Serde(message: String)
+    
+    case GetSelectedCredential(message: String)
+    
+    case InvalidGuid(message: String)
+    
+    case MissingUser(message: String)
+    
+    case Other(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssertionError: FfiConverterRustBuffer {
+    typealias SwiftType = GetAssertionError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssertionError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .UnknownEnum(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Serde(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .GetSelectedCredential(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .InvalidGuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingUser(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .Other(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetAssertionError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .UnknownEnum(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Serde(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .GetSelectedCredential(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .InvalidGuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingUser(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .Other(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionError_lift(_ buf: RustBuffer) throws -> GetAssertionError {
+    return try FfiConverterTypeGetAssertionError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionError_lower(_ value: GetAssertionError) -> RustBuffer {
+    return FfiConverterTypeGetAssertionError.lower(value)
+}
+
+
+extension GetAssertionError: Equatable, Hashable {}
+
+
+
+
+extension GetAssertionError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum MakeCredentialError: Swift.Error {
+
+    
+    
+    case PublicKeyCredentialParameters(message: String)
+    
+    case UnknownEnum(message: String)
+    
+    case Serde(message: String)
+    
+    case MissingAttestedCredentialData(message: String)
+    
+    case Other(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeCredentialError: FfiConverterRustBuffer {
+    typealias SwiftType = MakeCredentialError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .PublicKeyCredentialParameters(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .UnknownEnum(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Serde(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingAttestedCredentialData(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Other(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MakeCredentialError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .PublicKeyCredentialParameters(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .UnknownEnum(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Serde(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingAttestedCredentialData(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Other(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialError_lift(_ buf: RustBuffer) throws -> MakeCredentialError {
+    return try FfiConverterTypeMakeCredentialError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialError_lower(_ value: MakeCredentialError) -> RustBuffer {
+    return FfiConverterTypeMakeCredentialError.lower(value)
+}
+
+
+extension MakeCredentialError: Equatable, Hashable {}
+
+
+
+
+extension MakeCredentialError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -2237,9 +2819,8 @@ public enum Origin {
      */
     case android(UnverifiedAssetLink
     )
+
 }
-
-
 #if compiler(>=6)
 extension Origin: Sendable {}
 #endif
@@ -2297,7 +2878,114 @@ public func FfiConverterTypeOrigin_lower(_ value: Origin) -> RustBuffer {
 }
 
 
+
+
 extension Origin: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum SilentlyDiscoverCredentialsError: Swift.Error {
+
+    
+    
+    case Cipher(message: String)
+    
+    case InvalidGuid(message: String)
+    
+    case Fido2Callback(message: String)
+    
+    case FromCipherView(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSilentlyDiscoverCredentialsError: FfiConverterRustBuffer {
+    typealias SwiftType = SilentlyDiscoverCredentialsError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SilentlyDiscoverCredentialsError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Cipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidGuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Fido2Callback(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .FromCipherView(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SilentlyDiscoverCredentialsError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Cipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidGuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Fido2Callback(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .FromCipherView(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSilentlyDiscoverCredentialsError_lift(_ buf: RustBuffer) throws -> SilentlyDiscoverCredentialsError {
+    return try FfiConverterTypeSilentlyDiscoverCredentialsError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSilentlyDiscoverCredentialsError_lower(_ value: SilentlyDiscoverCredentialsError) -> RustBuffer {
+    return FfiConverterTypeSilentlyDiscoverCredentialsError.lower(value)
+}
+
+
+extension SilentlyDiscoverCredentialsError: Equatable, Hashable {}
+
+
+
+
+extension SilentlyDiscoverCredentialsError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -2309,9 +2997,8 @@ public enum Uv {
     case discouraged
     case preferred
     case required
+
 }
-
-
 #if compiler(>=6)
 extension Uv: Sendable {}
 #endif
@@ -2371,7 +3058,14 @@ public func FfiConverterTypeUV_lower(_ value: Uv) -> RustBuffer {
 }
 
 
+
+
 extension Uv: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -2383,9 +3077,8 @@ public enum Verification {
     case discouraged
     case preferred
     case required
+
 }
-
-
 #if compiler(>=6)
 extension Verification: Sendable {}
 #endif
@@ -2445,7 +3138,14 @@ public func FfiConverterTypeVerification_lower(_ value: Verification) -> RustBuf
 }
 
 
+
+
 extension Verification: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -2677,7 +3377,7 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_fido_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {

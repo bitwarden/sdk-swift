@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -529,6 +548,9 @@ public struct PassphraseGeneratorRequest {
 #if compiler(>=6)
 extension PassphraseGeneratorRequest: Sendable {}
 #endif
+
+
+
 
 
 extension PassphraseGeneratorRequest: Equatable, Hashable {
@@ -704,6 +726,9 @@ extension PasswordGeneratorRequest: Sendable {}
 #endif
 
 
+
+
+
 extension PasswordGeneratorRequest: Equatable, Hashable {
     public static func ==(lhs: PasswordGeneratorRequest, rhs: PasswordGeneratorRequest) -> Bool {
         if lhs.lowercase != rhs.lowercase {
@@ -818,9 +843,8 @@ public enum AppendType {
      */
     case websiteName(website: String
     )
+
 }
-
-
 #if compiler(>=6)
 extension AppendType: Sendable {}
 #endif
@@ -876,7 +900,14 @@ public func FfiConverterTypeAppendType_lower(_ value: AppendType) -> RustBuffer 
 }
 
 
+
+
 extension AppendType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -905,9 +936,8 @@ public enum ForwarderServiceType {
     )
     case simpleLogin(apiKey: String, baseUrl: String
     )
+
 }
-
-
 #if compiler(>=6)
 extension ForwarderServiceType: Sendable {}
 #endif
@@ -1001,7 +1031,276 @@ public func FfiConverterTypeForwarderServiceType_lower(_ value: ForwarderService
 }
 
 
+
+
 extension ForwarderServiceType: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum PassphraseError: Swift.Error {
+
+    
+    
+    case InvalidNumWords(minimum: UInt8, maximum: UInt8
+    )
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePassphraseError: FfiConverterRustBuffer {
+    typealias SwiftType = PassphraseError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassphraseError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidNumWords(
+            minimum: try FfiConverterUInt8.read(from: &buf), 
+            maximum: try FfiConverterUInt8.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PassphraseError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .InvalidNumWords(minimum,maximum):
+            writeInt(&buf, Int32(1))
+            FfiConverterUInt8.write(minimum, into: &buf)
+            FfiConverterUInt8.write(maximum, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassphraseError_lift(_ buf: RustBuffer) throws -> PassphraseError {
+    return try FfiConverterTypePassphraseError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassphraseError_lower(_ value: PassphraseError) -> RustBuffer {
+    return FfiConverterTypePassphraseError.lower(value)
+}
+
+
+extension PassphraseError: Equatable, Hashable {}
+
+
+
+
+extension PassphraseError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum PasswordError: Swift.Error {
+
+    
+    
+    case NoCharacterSetEnabled(message: String)
+    
+    case InvalidLength(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePasswordError: FfiConverterRustBuffer {
+    typealias SwiftType = PasswordError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NoCharacterSetEnabled(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidLength(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PasswordError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .NoCharacterSetEnabled(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidLength(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordError_lift(_ buf: RustBuffer) throws -> PasswordError {
+    return try FfiConverterTypePasswordError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordError_lower(_ value: PasswordError) -> RustBuffer {
+    return FfiConverterTypePasswordError.lower(value)
+}
+
+
+extension PasswordError: Equatable, Hashable {}
+
+
+
+
+extension PasswordError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum UsernameError: Swift.Error {
+
+    
+    
+    case InvalidApiKey(message: String)
+    
+    case Unknown(message: String)
+    
+    case ResponseContent(message: String)
+    
+    case Reqwest(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUsernameError: FfiConverterRustBuffer {
+    typealias SwiftType = UsernameError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UsernameError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidApiKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Unknown(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .ResponseContent(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Reqwest(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UsernameError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .InvalidApiKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Unknown(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .ResponseContent(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Reqwest(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUsernameError_lift(_ buf: RustBuffer) throws -> UsernameError {
+    return try FfiConverterTypeUsernameError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUsernameError_lower(_ value: UsernameError) -> RustBuffer {
+    return FfiConverterTypeUsernameError.lower(value)
+}
+
+
+extension UsernameError: Equatable, Hashable {}
+
+
+
+
+extension UsernameError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -1052,9 +1351,8 @@ public enum UsernameGeneratorRequest {
          * This is not used in all services, and is only used for display purposes
          */website: String?
     )
+
 }
-
-
 #if compiler(>=6)
 extension UsernameGeneratorRequest: Sendable {}
 #endif
@@ -1132,7 +1430,14 @@ public func FfiConverterTypeUsernameGeneratorRequest_lower(_ value: UsernameGene
 }
 
 
+
+
 extension UsernameGeneratorRequest: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -1193,7 +1498,7 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_generators_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {

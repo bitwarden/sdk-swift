@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -583,6 +602,9 @@ extension AuthRequestResponse: Sendable {}
 #endif
 
 
+
+
+
 extension AuthRequestResponse: Equatable, Hashable {
     public static func ==(lhs: AuthRequestResponse, rhs: AuthRequestResponse) -> Bool {
         if lhs.privateKey != rhs.privateKey {
@@ -710,6 +732,9 @@ extension ClientSettings: Sendable {}
 #endif
 
 
+
+
+
 extension ClientSettings: Equatable, Hashable {
     public static func ==(lhs: ClientSettings, rhs: ClientSettings) -> Bool {
         if lhs.identityUrl != rhs.identityUrl {
@@ -823,6 +848,9 @@ extension DeriveKeyConnectorRequest: Sendable {}
 #endif
 
 
+
+
+
 extension DeriveKeyConnectorRequest: Equatable, Hashable {
     public static func ==(lhs: DeriveKeyConnectorRequest, rhs: DeriveKeyConnectorRequest) -> Bool {
         if lhs.userKeyEncrypted != rhs.userKeyEncrypted {
@@ -920,6 +948,9 @@ extension DerivePinKeyResponse: Sendable {}
 #endif
 
 
+
+
+
 extension DerivePinKeyResponse: Equatable, Hashable {
     public static func ==(lhs: DerivePinKeyResponse, rhs: DerivePinKeyResponse) -> Bool {
         if lhs.pinProtectedUserKey != rhs.pinProtectedUserKey {
@@ -1003,6 +1034,9 @@ public struct EnrollPinResponse {
 #if compiler(>=6)
 extension EnrollPinResponse: Sendable {}
 #endif
+
+
+
 
 
 extension EnrollPinResponse: Equatable, Hashable {
@@ -1090,6 +1124,9 @@ extension FingerprintRequest: Sendable {}
 #endif
 
 
+
+
+
 extension FingerprintRequest: Equatable, Hashable {
     public static func ==(lhs: FingerprintRequest, rhs: FingerprintRequest) -> Bool {
         if lhs.fingerprintMaterial != rhs.fingerprintMaterial {
@@ -1165,6 +1202,9 @@ public struct InitOrgCryptoRequest {
 #if compiler(>=6)
 extension InitOrgCryptoRequest: Sendable {}
 #endif
+
+
+
 
 
 extension InitOrgCryptoRequest: Equatable, Hashable {
@@ -1286,6 +1326,9 @@ extension InitUserCryptoRequest: Sendable {}
 #endif
 
 
+
+
+
 extension InitUserCryptoRequest: Equatable, Hashable {
     public static func ==(lhs: InitUserCryptoRequest, rhs: InitUserCryptoRequest) -> Bool {
         if lhs.userId != rhs.userId {
@@ -1388,6 +1431,9 @@ extension KeyConnectorResponse: Sendable {}
 #endif
 
 
+
+
+
 extension KeyConnectorResponse: Equatable, Hashable {
     public static func ==(lhs: KeyConnectorResponse, rhs: KeyConnectorResponse) -> Bool {
         if lhs.masterKey != rhs.masterKey {
@@ -1479,6 +1525,9 @@ extension MakeKeyPairResponse: Sendable {}
 #endif
 
 
+
+
+
 extension MakeKeyPairResponse: Equatable, Hashable {
     public static func ==(lhs: MakeKeyPairResponse, rhs: MakeKeyPairResponse) -> Bool {
         if lhs.userPublicKey != rhs.userPublicKey {
@@ -1552,6 +1601,9 @@ public struct MasterPasswordAuthenticationData {
 #if compiler(>=6)
 extension MasterPasswordAuthenticationData: Sendable {}
 #endif
+
+
+
 
 
 extension MasterPasswordAuthenticationData: Equatable, Hashable {
@@ -1648,6 +1700,9 @@ public struct MasterPasswordPolicyOptions {
 #if compiler(>=6)
 extension MasterPasswordPolicyOptions: Sendable {}
 #endif
+
+
+
 
 
 extension MasterPasswordPolicyOptions: Equatable, Hashable {
@@ -1773,6 +1828,9 @@ extension MasterPasswordUnlockData: Sendable {}
 #endif
 
 
+
+
+
 extension MasterPasswordUnlockData: Equatable, Hashable {
     public static func ==(lhs: MasterPasswordUnlockData, rhs: MasterPasswordUnlockData) -> Bool {
         if lhs.kdf != rhs.kdf {
@@ -1849,6 +1907,9 @@ public struct RegisterKeyResponse {
 #if compiler(>=6)
 extension RegisterKeyResponse: Sendable {}
 #endif
+
+
+
 
 
 extension RegisterKeyResponse: Equatable, Hashable {
@@ -1931,6 +1992,9 @@ extension RegisterTdeKeyResponse: Sendable {}
 #endif
 
 
+
+
+
 extension RegisterTdeKeyResponse: Equatable, Hashable {
     public static func ==(lhs: RegisterTdeKeyResponse, rhs: RegisterTdeKeyResponse) -> Bool {
         if lhs.privateKey != rhs.privateKey {
@@ -2011,6 +2075,9 @@ public struct UniffiConverterDummyRecord {
 #if compiler(>=6)
 extension UniffiConverterDummyRecord: Sendable {}
 #endif
+
+
+
 
 
 extension UniffiConverterDummyRecord: Equatable, Hashable {
@@ -2106,6 +2173,9 @@ extension UpdateKdfResponse: Sendable {}
 #endif
 
 
+
+
+
 extension UpdateKdfResponse: Equatable, Hashable {
     public static func ==(lhs: UpdateKdfResponse, rhs: UpdateKdfResponse) -> Bool {
         if lhs.masterPasswordAuthenticationData != rhs.masterPasswordAuthenticationData {
@@ -2195,6 +2265,9 @@ public struct UpdatePasswordResponse {
 #if compiler(>=6)
 extension UpdatePasswordResponse: Sendable {}
 #endif
+
+
+
 
 
 extension UpdatePasswordResponse: Equatable, Hashable {
@@ -2330,6 +2403,9 @@ extension UserCryptoV2KeysResponse: Sendable {}
 #endif
 
 
+
+
+
 extension UserCryptoV2KeysResponse: Equatable, Hashable {
     public static func ==(lhs: UserCryptoV2KeysResponse, rhs: UserCryptoV2KeysResponse) -> Bool {
         if lhs.userKey != rhs.userKey {
@@ -2459,6 +2535,9 @@ extension VerifyAsymmetricKeysRequest: Sendable {}
 #endif
 
 
+
+
+
 extension VerifyAsymmetricKeysRequest: Equatable, Hashable {
     public static func ==(lhs: VerifyAsymmetricKeysRequest, rhs: VerifyAsymmetricKeysRequest) -> Bool {
         if lhs.userKey != rhs.userKey {
@@ -2550,6 +2629,9 @@ extension VerifyAsymmetricKeysResponse: Sendable {}
 #endif
 
 
+
+
+
 extension VerifyAsymmetricKeysResponse: Equatable, Hashable {
     public static func ==(lhs: VerifyAsymmetricKeysResponse, rhs: VerifyAsymmetricKeysResponse) -> Bool {
         if lhs.privateKeyDecryptable != rhs.privateKeyDecryptable {
@@ -2602,6 +2684,185 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAs
     return FfiConverterTypeVerifyAsymmetricKeysResponse.lower(value)
 }
 
+
+/**
+ * Errors from performing network requests.
+ */
+public enum ApiError: Swift.Error {
+
+    
+    
+    case Reqwest(message: String)
+    
+    case Serde(message: String)
+    
+    case Io(message: String)
+    
+    case ResponseContent(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
+    typealias SwiftType = ApiError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ApiError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Reqwest(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Serde(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .ResponseContent(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ApiError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Reqwest(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Serde(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .ResponseContent(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiError_lift(_ buf: RustBuffer) throws -> ApiError {
+    return try FfiConverterTypeApiError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiError_lower(_ value: ApiError) -> RustBuffer {
+    return FfiConverterTypeApiError.lower(value)
+}
+
+
+extension ApiError: Equatable, Hashable {}
+
+
+
+
+extension ApiError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum ApproveAuthRequestError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeApproveAuthRequestError: FfiConverterRustBuffer {
+    typealias SwiftType = ApproveAuthRequestError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ApproveAuthRequestError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ApproveAuthRequestError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApproveAuthRequestError_lift(_ buf: RustBuffer) throws -> ApproveAuthRequestError {
+    return try FfiConverterTypeApproveAuthRequestError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApproveAuthRequestError_lower(_ value: ApproveAuthRequestError) -> RustBuffer {
+    return FfiConverterTypeApproveAuthRequestError.lower(value)
+}
+
+
+extension ApproveAuthRequestError: Equatable, Hashable {}
+
+
+
+
+extension ApproveAuthRequestError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -2629,9 +2890,8 @@ public enum AuthRequestMethod {
          * User Key protected by the MasterKey, provided by the auth response.
          */authRequestKey: EncString
     )
+
 }
-
-
 #if compiler(>=6)
 extension AuthRequestMethod: Sendable {}
 #endif
@@ -2690,7 +2950,304 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 }
 
 
+
+
 extension AuthRequestMethod: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+/**
+ * Error for authentication related operations
+ */
+public enum AuthValidateError: Swift.Error {
+
+    
+    
+    case NotAuthenticated(message: String)
+    
+    case WrongPassword(message: String)
+    
+    case WrongUserKey(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthValidateError: FfiConverterRustBuffer {
+    typealias SwiftType = AuthValidateError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthValidateError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .WrongPassword(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .WrongUserKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AuthValidateError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .WrongPassword(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .WrongUserKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthValidateError_lift(_ buf: RustBuffer) throws -> AuthValidateError {
+    return try FfiConverterTypeAuthValidateError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthValidateError_lower(_ value: AuthValidateError) -> RustBuffer {
+    return FfiConverterTypeAuthValidateError.lower(value)
+}
+
+
+extension AuthValidateError: Equatable, Hashable {}
+
+
+
+
+extension AuthValidateError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Catch all error for mobile crypto operations.
+ */
+public enum CryptoClientError: Swift.Error {
+
+    
+    
+    case NotAuthenticated(message: String)
+    
+    case Crypto(message: String)
+    
+    case InvalidKdfSettings(message: String)
+    
+    case PasswordProtectedKeyEnvelope(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCryptoClientError: FfiConverterRustBuffer {
+    typealias SwiftType = CryptoClientError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CryptoClientError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .InvalidKdfSettings(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .PasswordProtectedKeyEnvelope(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CryptoClientError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .InvalidKdfSettings(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .PasswordProtectedKeyEnvelope(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCryptoClientError_lift(_ buf: RustBuffer) throws -> CryptoClientError {
+    return try FfiConverterTypeCryptoClientError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCryptoClientError_lower(_ value: CryptoClientError) -> RustBuffer {
+    return FfiConverterTypeCryptoClientError.lower(value)
+}
+
+
+extension CryptoClientError: Equatable, Hashable {}
+
+
+
+
+extension CryptoClientError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum DeriveKeyConnectorError: Swift.Error {
+
+    
+    
+    case WrongPassword(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeriveKeyConnectorError: FfiConverterRustBuffer {
+    typealias SwiftType = DeriveKeyConnectorError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeriveKeyConnectorError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .WrongPassword(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeriveKeyConnectorError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .WrongPassword(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeriveKeyConnectorError_lift(_ buf: RustBuffer) throws -> DeriveKeyConnectorError {
+    return try FfiConverterTypeDeriveKeyConnectorError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeriveKeyConnectorError_lower(_ value: DeriveKeyConnectorError) -> RustBuffer {
+    return FfiConverterTypeDeriveKeyConnectorError.lower(value)
+}
+
+
+extension DeriveKeyConnectorError: Equatable, Hashable {}
+
+
+
+
+extension DeriveKeyConnectorError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -2725,9 +3282,8 @@ public enum DeviceType {
     case windowsCli
     case macOsCli
     case linuxCli
+
 }
-
-
 #if compiler(>=6)
 extension DeviceType: Sendable {}
 #endif
@@ -2925,7 +3481,293 @@ public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer 
 }
 
 
+
+
 extension DeviceType: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum EncryptionSettingsError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case InvalidPrivateKey(message: String)
+    
+    case InvalidSigningKey(message: String)
+    
+    case InvalidSecurityState(message: String)
+    
+    case MissingPrivateKey(message: String)
+    
+    case UserIdAlreadySet(message: String)
+    
+    case WrongPin(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
+    typealias SwiftType = EncryptionSettingsError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncryptionSettingsError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidPrivateKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .InvalidSigningKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .InvalidSecurityState(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingPrivateKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .UserIdAlreadySet(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .WrongPin(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EncryptionSettingsError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidPrivateKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .InvalidSigningKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .InvalidSecurityState(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingPrivateKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .UserIdAlreadySet(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .WrongPin(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptionSettingsError_lift(_ buf: RustBuffer) throws -> EncryptionSettingsError {
+    return try FfiConverterTypeEncryptionSettingsError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptionSettingsError_lower(_ value: EncryptionSettingsError) -> RustBuffer {
+    return FfiConverterTypeEncryptionSettingsError.lower(value)
+}
+
+
+extension EncryptionSettingsError: Equatable, Hashable {}
+
+
+
+
+extension EncryptionSettingsError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum EnrollAdminPasswordResetError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEnrollAdminPasswordResetError: FfiConverterRustBuffer {
+    typealias SwiftType = EnrollAdminPasswordResetError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EnrollAdminPasswordResetError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EnrollAdminPasswordResetError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnrollAdminPasswordResetError_lift(_ buf: RustBuffer) throws -> EnrollAdminPasswordResetError {
+    return try FfiConverterTypeEnrollAdminPasswordResetError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnrollAdminPasswordResetError_lower(_ value: EnrollAdminPasswordResetError) -> RustBuffer {
+    return FfiConverterTypeEnrollAdminPasswordResetError.lower(value)
+}
+
+
+extension EnrollAdminPasswordResetError: Equatable, Hashable {}
+
+
+
+
+extension EnrollAdminPasswordResetError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Errors that can occur when computing a fingerprint.
+ */
+public enum FingerprintError: Swift.Error {
+
+    
+    
+    case Crypto(CryptoError
+    )
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFingerprintError: FfiConverterRustBuffer {
+    typealias SwiftType = FingerprintError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FingerprintError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            try FfiConverterTypeCryptoError.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: FingerprintError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .Crypto(v1):
+            writeInt(&buf, Int32(1))
+            FfiConverterTypeCryptoError.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFingerprintError_lift(_ buf: RustBuffer) throws -> FingerprintError {
+    return try FfiConverterTypeFingerprintError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFingerprintError_lower(_ value: FingerprintError) -> RustBuffer {
+    return FfiConverterTypeFingerprintError.lower(value)
+}
+
+
+extension FingerprintError: Equatable, Hashable {}
+
+
+
+
+extension FingerprintError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -3015,9 +3857,8 @@ public enum InitUserCryptoMethod {
          * The user's encrypted symmetric crypto key
          */userKey: EncString
     )
+
 }
-
-
 #if compiler(>=6)
 extension InitUserCryptoMethod: Sendable {}
 #endif
@@ -3122,7 +3963,406 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 }
 
 
+
+
 extension InitUserCryptoMethod: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+/**
+ * Error for master password related operations.
+ */
+public enum MasterPasswordError: Swift.Error {
+
+    
+    
+    /**
+     * The wrapped encryption key could not be parsed because the encstring is malformed
+     */
+    case EncryptionKeyMalformed(message: String)
+    
+    /**
+     * The KDF data could not be parsed, because it has an invalid value
+     */
+    case KdfMalformed(message: String)
+    
+    /**
+     * The KDF had an invalid configuration
+     */
+    case InvalidKdfConfiguration(message: String)
+    
+    /**
+     * The wrapped encryption key or salt fields are missing or KDF data is incomplete
+     */
+    case MissingField(message: String)
+    
+    /**
+     * Generic crypto error
+     */
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMasterPasswordError: FfiConverterRustBuffer {
+    typealias SwiftType = MasterPasswordError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MasterPasswordError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .EncryptionKeyMalformed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .KdfMalformed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .InvalidKdfConfiguration(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MasterPasswordError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .EncryptionKeyMalformed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .KdfMalformed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .InvalidKdfConfiguration(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordError_lift(_ buf: RustBuffer) throws -> MasterPasswordError {
+    return try FfiConverterTypeMasterPasswordError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMasterPasswordError_lower(_ value: MasterPasswordError) -> RustBuffer {
+    return FfiConverterTypeMasterPasswordError.lower(value)
+}
+
+
+extension MasterPasswordError: Equatable, Hashable {}
+
+
+
+
+extension MasterPasswordError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Signifies that the state is invalid from a cryptographic perspective, such as a required
+ * security value missing, or being invalid
+ */
+public enum StatefulCryptoError: Swift.Error {
+
+    
+    
+    /**
+     * The security state is not present, but required for this user. V2 users must always
+     * have a security state, V1 users cannot have a security state.
+     */
+    case MissingSecurityState(message: String)
+    
+    /**
+     * The function expected a user in a account cryptography version, but got a different one.
+     */
+    case WrongAccountCryptoVersion(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeStatefulCryptoError: FfiConverterRustBuffer {
+    typealias SwiftType = StatefulCryptoError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> StatefulCryptoError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .MissingSecurityState(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .WrongAccountCryptoVersion(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: StatefulCryptoError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .MissingSecurityState(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .WrongAccountCryptoVersion(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStatefulCryptoError_lift(_ buf: RustBuffer) throws -> StatefulCryptoError {
+    return try FfiConverterTypeStatefulCryptoError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStatefulCryptoError_lower(_ value: StatefulCryptoError) -> RustBuffer {
+    return FfiConverterTypeStatefulCryptoError.lower(value)
+}
+
+
+extension StatefulCryptoError: Equatable, Hashable {}
+
+
+
+
+extension StatefulCryptoError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum TrustDeviceError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTrustDeviceError: FfiConverterRustBuffer {
+    typealias SwiftType = TrustDeviceError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TrustDeviceError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TrustDeviceError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTrustDeviceError_lift(_ buf: RustBuffer) throws -> TrustDeviceError {
+    return try FfiConverterTypeTrustDeviceError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTrustDeviceError_lower(_ value: TrustDeviceError) -> RustBuffer {
+    return FfiConverterTypeTrustDeviceError.lower(value)
+}
+
+
+extension TrustDeviceError: Equatable, Hashable {}
+
+
+
+
+extension TrustDeviceError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Errors that can occur when computing a fingerprint.
+ */
+public enum UserFingerprintError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case MissingPrivateKey(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUserFingerprintError: FfiConverterRustBuffer {
+    typealias SwiftType = UserFingerprintError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserFingerprintError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingPrivateKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UserFingerprintError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingPrivateKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserFingerprintError_lift(_ buf: RustBuffer) throws -> UserFingerprintError {
+    return try FfiConverterTypeUserFingerprintError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserFingerprintError_lower(_ value: UserFingerprintError) -> RustBuffer {
+    return FfiConverterTypeUserFingerprintError.lower(value)
+}
+
+
+extension UserFingerprintError: Equatable, Hashable {}
+
+
+
+
+extension UserFingerprintError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -3521,15 +4761,15 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_core_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 

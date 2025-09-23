@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -566,6 +585,9 @@ extension Attachment: Sendable {}
 #endif
 
 
+
+
+
 extension Attachment: Equatable, Hashable {
     public static func ==(lhs: Attachment, rhs: Attachment) -> Bool {
         if lhs.id != rhs.id {
@@ -660,6 +682,9 @@ extension AttachmentEncryptResult: Sendable {}
 #endif
 
 
+
+
+
 extension AttachmentEncryptResult: Equatable, Hashable {
     public static func ==(lhs: AttachmentEncryptResult, rhs: AttachmentEncryptResult) -> Bool {
         if lhs.attachment != rhs.attachment {
@@ -736,6 +761,9 @@ public struct AttachmentView {
 #if compiler(>=6)
 extension AttachmentView: Sendable {}
 #endif
+
+
+
 
 
 extension AttachmentView: Equatable, Hashable {
@@ -840,6 +868,9 @@ extension Card: Sendable {}
 #endif
 
 
+
+
+
 extension Card: Equatable, Hashable {
     public static func ==(lhs: Card, rhs: Card) -> Bool {
         if lhs.cardholderName != rhs.cardholderName {
@@ -941,6 +972,9 @@ extension CardListView: Sendable {}
 #endif
 
 
+
+
+
 extension CardListView: Equatable, Hashable {
     public static func ==(lhs: CardListView, rhs: CardListView) -> Bool {
         if lhs.brand != rhs.brand {
@@ -1011,6 +1045,9 @@ public struct CardView {
 #if compiler(>=6)
 extension CardView: Sendable {}
 #endif
+
+
+
 
 
 extension CardView: Equatable, Hashable {
@@ -1163,6 +1200,9 @@ public struct Cipher {
 #if compiler(>=6)
 extension Cipher: Sendable {}
 #endif
+
+
+
 
 
 extension Cipher: Equatable, Hashable {
@@ -1449,6 +1489,9 @@ extension CipherListView: Sendable {}
 #endif
 
 
+
+
+
 extension CipherListView: Equatable, Hashable {
     public static func ==(lhs: CipherListView, rhs: CipherListView) -> Bool {
         if lhs.id != rhs.id {
@@ -1639,6 +1682,9 @@ extension CipherPermissions: Sendable {}
 #endif
 
 
+
+
+
 extension CipherPermissions: Equatable, Hashable {
     public static func ==(lhs: CipherPermissions, rhs: CipherPermissions) -> Bool {
         if lhs.delete != rhs.delete {
@@ -1763,6 +1809,9 @@ public struct CipherView {
 #if compiler(>=6)
 extension CipherView: Sendable {}
 #endif
+
+
+
 
 
 extension CipherView: Equatable, Hashable {
@@ -2004,6 +2053,9 @@ extension DecryptCipherListResult: Sendable {}
 #endif
 
 
+
+
+
 extension DecryptCipherListResult: Equatable, Hashable {
     public static func ==(lhs: DecryptCipherListResult, rhs: DecryptCipherListResult) -> Bool {
         if lhs.successes != rhs.successes {
@@ -2080,6 +2132,9 @@ public struct EncryptionContext {
 #if compiler(>=6)
 extension EncryptionContext: Sendable {}
 #endif
+
+
+
 
 
 extension EncryptionContext: Equatable, Hashable {
@@ -2172,6 +2227,9 @@ public struct Fido2Credential {
 #if compiler(>=6)
 extension Fido2Credential: Sendable {}
 #endif
+
+
+
 
 
 extension Fido2Credential: Equatable, Hashable {
@@ -2318,6 +2376,9 @@ extension Fido2CredentialListView: Sendable {}
 #endif
 
 
+
+
+
 extension Fido2CredentialListView: Equatable, Hashable {
     public static func ==(lhs: Fido2CredentialListView, rhs: Fido2CredentialListView) -> Bool {
         if lhs.credentialId != rhs.credentialId {
@@ -2428,6 +2489,9 @@ public struct Fido2CredentialNewView {
 #if compiler(>=6)
 extension Fido2CredentialNewView: Sendable {}
 #endif
+
+
+
 
 
 extension Fido2CredentialNewView: Equatable, Hashable {
@@ -2576,6 +2640,9 @@ extension Fido2CredentialView: Sendable {}
 #endif
 
 
+
+
+
 extension Fido2CredentialView: Equatable, Hashable {
     public static func ==(lhs: Fido2CredentialView, rhs: Fido2CredentialView) -> Bool {
         if lhs.credentialId != rhs.credentialId {
@@ -2716,6 +2783,9 @@ extension Field: Sendable {}
 #endif
 
 
+
+
+
 extension Field: Equatable, Hashable {
     public static func ==(lhs: Field, rhs: Field) -> Bool {
         if lhs.name != rhs.name {
@@ -2802,6 +2872,9 @@ extension FieldView: Sendable {}
 #endif
 
 
+
+
+
 extension FieldView: Equatable, Hashable {
     public static func ==(lhs: FieldView, rhs: FieldView) -> Bool {
         if lhs.name != rhs.name {
@@ -2884,6 +2957,9 @@ public struct Folder {
 #if compiler(>=6)
 extension Folder: Sendable {}
 #endif
+
+
+
 
 
 extension Folder: Equatable, Hashable {
@@ -2969,6 +3045,9 @@ extension FolderAddEditRequest: Sendable {}
 #endif
 
 
+
+
+
 extension FolderAddEditRequest: Equatable, Hashable {
     public static func ==(lhs: FolderAddEditRequest, rhs: FolderAddEditRequest) -> Bool {
         if lhs.name != rhs.name {
@@ -3033,6 +3112,9 @@ public struct FolderView {
 #if compiler(>=6)
 extension FolderView: Sendable {}
 #endif
+
+
+
 
 
 extension FolderView: Equatable, Hashable {
@@ -3141,6 +3223,9 @@ public struct Identity {
 #if compiler(>=6)
 extension Identity: Sendable {}
 #endif
+
+
+
 
 
 extension Identity: Equatable, Hashable {
@@ -3341,6 +3426,9 @@ extension IdentityView: Sendable {}
 #endif
 
 
+
+
+
 extension IdentityView: Equatable, Hashable {
     public static func ==(lhs: IdentityView, rhs: IdentityView) -> Bool {
         if lhs.title != rhs.title {
@@ -3507,6 +3595,9 @@ extension LocalData: Sendable {}
 #endif
 
 
+
+
+
 extension LocalData: Equatable, Hashable {
     public static func ==(lhs: LocalData, rhs: LocalData) -> Bool {
         if lhs.lastUsedDate != rhs.lastUsedDate {
@@ -3575,6 +3666,9 @@ public struct LocalDataView {
 #if compiler(>=6)
 extension LocalDataView: Sendable {}
 #endif
+
+
+
 
 
 extension LocalDataView: Equatable, Hashable {
@@ -3655,6 +3749,9 @@ public struct Login {
 #if compiler(>=6)
 extension Login: Sendable {}
 #endif
+
+
+
 
 
 extension Login: Equatable, Hashable {
@@ -3769,6 +3866,9 @@ extension LoginListView: Sendable {}
 #endif
 
 
+
+
+
 extension LoginListView: Equatable, Hashable {
     public static func ==(lhs: LoginListView, rhs: LoginListView) -> Bool {
         if lhs.fido2Credentials != rhs.fido2Credentials {
@@ -3859,6 +3959,9 @@ extension LoginUri: Sendable {}
 #endif
 
 
+
+
+
 extension LoginUri: Equatable, Hashable {
     public static func ==(lhs: LoginUri, rhs: LoginUri) -> Bool {
         if lhs.uri != rhs.uri {
@@ -3935,6 +4038,9 @@ public struct LoginUriView {
 #if compiler(>=6)
 extension LoginUriView: Sendable {}
 #endif
+
+
+
 
 
 extension LoginUriView: Equatable, Hashable {
@@ -4021,6 +4127,9 @@ public struct LoginView {
 #if compiler(>=6)
 extension LoginView: Sendable {}
 #endif
+
+
+
 
 
 extension LoginView: Equatable, Hashable {
@@ -4123,6 +4232,9 @@ extension PasswordHistory: Sendable {}
 #endif
 
 
+
+
+
 extension PasswordHistory: Equatable, Hashable {
     public static func ==(lhs: PasswordHistory, rhs: PasswordHistory) -> Bool {
         if lhs.password != rhs.password {
@@ -4193,6 +4305,9 @@ extension PasswordHistoryView: Sendable {}
 #endif
 
 
+
+
+
 extension PasswordHistoryView: Equatable, Hashable {
     public static func ==(lhs: PasswordHistoryView, rhs: PasswordHistoryView) -> Bool {
         if lhs.password != rhs.password {
@@ -4261,6 +4376,9 @@ extension SecureNote: Sendable {}
 #endif
 
 
+
+
+
 extension SecureNote: Equatable, Hashable {
     public static func ==(lhs: SecureNote, rhs: SecureNote) -> Bool {
         if lhs.type != rhs.type {
@@ -4321,6 +4439,9 @@ public struct SecureNoteView {
 #if compiler(>=6)
 extension SecureNoteView: Sendable {}
 #endif
+
+
+
 
 
 extension SecureNoteView: Equatable, Hashable {
@@ -4405,6 +4526,9 @@ public struct SshKey {
 #if compiler(>=6)
 extension SshKey: Sendable {}
 #endif
+
+
+
 
 
 extension SshKey: Equatable, Hashable {
@@ -4503,6 +4627,9 @@ extension SshKeyView: Sendable {}
 #endif
 
 
+
+
+
 extension SshKeyView: Equatable, Hashable {
     public static func ==(lhs: SshKeyView, rhs: SshKeyView) -> Bool {
         if lhs.privateKey != rhs.privateKey {
@@ -4591,6 +4718,9 @@ extension TotpResponse: Sendable {}
 #endif
 
 
+
+
+
 extension TotpResponse: Equatable, Hashable {
     public static func ==(lhs: TotpResponse, rhs: TotpResponse) -> Bool {
         if lhs.code != rhs.code {
@@ -4643,6 +4773,106 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
     return FfiConverterTypeTotpResponse.lower(value)
 }
 
+
+public enum CipherError: Swift.Error {
+
+    
+    
+    case MissingField(message: String)
+    
+    case Crypto(message: String)
+    
+    case Encrypt(message: String)
+    
+    case AttachmentsWithoutKeys(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Encrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .AttachmentsWithoutKeys(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Encrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .AttachmentsWithoutKeys(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherError_lift(_ buf: RustBuffer) throws -> CipherError {
+    return try FfiConverterTypeCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherError_lower(_ value: CipherError) -> RustBuffer {
+    return FfiConverterTypeCipherError.lower(value)
+}
+
+
+extension CipherError: Equatable, Hashable {}
+
+
+
+
+extension CipherError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -4655,9 +4885,8 @@ public enum CipherListViewType {
     )
     case identity
     case sshKey
+
 }
-
-
 #if compiler(>=6)
 extension CipherListViewType: Sendable {}
 #endif
@@ -4733,7 +4962,14 @@ public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType
 }
 
 
+
+
 extension CipherListViewType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -4744,9 +4980,8 @@ public enum CipherRepromptType : UInt8 {
     
     case none = 0
     case password = 1
+
 }
-
-
 #if compiler(>=6)
 extension CipherRepromptType: Sendable {}
 #endif
@@ -4800,7 +5035,14 @@ public func FfiConverterTypeCipherRepromptType_lower(_ value: CipherRepromptType
 }
 
 
+
+
 extension CipherRepromptType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -4814,9 +5056,8 @@ public enum CipherType : UInt8 {
     case card = 3
     case identity = 4
     case sshKey = 5
+
 }
-
-
 #if compiler(>=6)
 extension CipherType: Sendable {}
 #endif
@@ -4888,7 +5129,14 @@ public func FfiConverterTypeCipherType_lower(_ value: CipherType) -> RustBuffer 
 }
 
 
+
+
 extension CipherType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -4911,9 +5159,8 @@ public enum CopyableCipherFields {
     case identityAddress
     case sshKey
     case secureNotes
+
 }
-
-
 #if compiler(>=6)
 extension CopyableCipherFields: Sendable {}
 #endif
@@ -5021,7 +5268,586 @@ public func FfiConverterTypeCopyableCipherFields_lower(_ value: CopyableCipherFi
 }
 
 
+
+
 extension CopyableCipherFields: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum CreateFolderError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateFolderError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateFolderError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateFolderError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateFolderError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateFolderError_lift(_ buf: RustBuffer) throws -> CreateFolderError {
+    return try FfiConverterTypeCreateFolderError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateFolderError_lower(_ value: CreateFolderError) -> RustBuffer {
+    return FfiConverterTypeCreateFolderError.lower(value)
+}
+
+
+extension CreateFolderError: Equatable, Hashable {}
+
+
+
+
+extension CreateFolderError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for decryption errors
+ */
+public enum DecryptError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptError: FfiConverterRustBuffer {
+    typealias SwiftType = DecryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DecryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptError_lift(_ buf: RustBuffer) throws -> DecryptError {
+    return try FfiConverterTypeDecryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptError_lower(_ value: DecryptError) -> RustBuffer {
+    return FfiConverterTypeDecryptError.lower(value)
+}
+
+
+extension DecryptError: Equatable, Hashable {}
+
+
+
+
+extension DecryptError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for decryption errors
+ */
+public enum DecryptFileError: Swift.Error {
+
+    
+    
+    case Decrypt(message: String)
+    
+    case Io(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptFileError: FfiConverterRustBuffer {
+    typealias SwiftType = DecryptFileError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptFileError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Decrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DecryptFileError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Decrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptFileError_lift(_ buf: RustBuffer) throws -> DecryptFileError {
+    return try FfiConverterTypeDecryptFileError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptFileError_lower(_ value: DecryptFileError) -> RustBuffer {
+    return FfiConverterTypeDecryptFileError.lower(value)
+}
+
+
+extension DecryptFileError: Equatable, Hashable {}
+
+
+
+
+extension DecryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum EditFolderError: Swift.Error {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+    case Uuid(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEditFolderError: FfiConverterRustBuffer {
+    typealias SwiftType = EditFolderError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EditFolderError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .Uuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EditFolderError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .Uuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditFolderError_lift(_ buf: RustBuffer) throws -> EditFolderError {
+    return try FfiConverterTypeEditFolderError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditFolderError_lower(_ value: EditFolderError) -> RustBuffer {
+    return FfiConverterTypeEditFolderError.lower(value)
+}
+
+
+extension EditFolderError: Equatable, Hashable {}
+
+
+
+
+extension EditFolderError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for vault encryption errors.
+ */
+public enum EncryptError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case MissingUserId(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEncryptError: FfiConverterRustBuffer {
+    typealias SwiftType = EncryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingUserId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EncryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingUserId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptError_lift(_ buf: RustBuffer) throws -> EncryptError {
+    return try FfiConverterTypeEncryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptError_lower(_ value: EncryptError) -> RustBuffer {
+    return FfiConverterTypeEncryptError.lower(value)
+}
+
+
+extension EncryptError: Equatable, Hashable {}
+
+
+
+
+extension EncryptError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for vault encryption errors.
+ */
+public enum EncryptFileError: Swift.Error {
+
+    
+    
+    case Encrypt(message: String)
+    
+    case Io(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEncryptFileError: FfiConverterRustBuffer {
+    typealias SwiftType = EncryptFileError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncryptFileError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Encrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EncryptFileError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Encrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptFileError_lift(_ buf: RustBuffer) throws -> EncryptFileError {
+    return try FfiConverterTypeEncryptFileError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEncryptFileError_lower(_ value: EncryptFileError) -> RustBuffer {
+    return FfiConverterTypeEncryptFileError.lower(value)
+}
+
+
+extension EncryptFileError: Equatable, Hashable {}
+
+
+
+
+extension EncryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -5049,9 +5875,8 @@ public enum FieldType : UInt8 {
      * Linked field
      */
     case linked = 3
+
 }
-
-
 #if compiler(>=6)
 extension FieldType: Sendable {}
 #endif
@@ -5117,7 +5942,106 @@ public func FfiConverterTypeFieldType_lower(_ value: FieldType) -> RustBuffer {
 }
 
 
+
+
 extension FieldType: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum GetFolderError: Swift.Error {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case Repository(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetFolderError: FfiConverterRustBuffer {
+    typealias SwiftType = GetFolderError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetFolderError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetFolderError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFolderError_lift(_ buf: RustBuffer) throws -> GetFolderError {
+    return try FfiConverterTypeGetFolderError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFolderError_lower(_ value: GetFolderError) -> RustBuffer {
+    return FfiConverterTypeGetFolderError.lower(value)
+}
+
+
+extension GetFolderError: Equatable, Hashable {}
+
+
+
+
+extension GetFolderError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -5127,9 +6051,8 @@ extension FieldType: Equatable, Hashable {}
 public enum SecureNoteType : UInt8 {
     
     case generic = 0
+
 }
-
-
 #if compiler(>=6)
 extension SecureNoteType: Sendable {}
 #endif
@@ -5177,7 +6100,106 @@ public func FfiConverterTypeSecureNoteType_lower(_ value: SecureNoteType) -> Rus
 }
 
 
+
+
 extension SecureNoteType: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+
+public enum TotpError: Swift.Error {
+
+    
+    
+    case InvalidOtpauth(message: String)
+    
+    case MissingSecret(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTotpError: FfiConverterRustBuffer {
+    typealias SwiftType = TotpError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TotpError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidOtpauth(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingSecret(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TotpError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .InvalidOtpauth(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingSecret(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTotpError_lift(_ buf: RustBuffer) throws -> TotpError {
+    return try FfiConverterTypeTotpError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTotpError_lower(_ value: TotpError) -> RustBuffer {
+    return FfiConverterTypeTotpError.lower(value)
+}
+
+
+extension TotpError: Equatable, Hashable {}
+
+
+
+
+extension TotpError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
 
 
 
@@ -5192,9 +6214,8 @@ public enum UriMatchType : UInt8 {
     case exact = 3
     case regularExpression = 4
     case never = 5
+
 }
-
-
 #if compiler(>=6)
 extension UriMatchType: Sendable {}
 #endif
@@ -5272,7 +6293,14 @@ public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuf
 }
 
 
+
+
 extension UriMatchType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -6535,16 +7563,16 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_vault_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 

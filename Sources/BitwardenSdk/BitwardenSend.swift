@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -562,6 +581,9 @@ extension Send: Sendable {}
 #endif
 
 
+
+
+
 extension Send: Equatable, Hashable {
     public static func ==(lhs: Send, rhs: Send) -> Bool {
         if lhs.id != rhs.id {
@@ -726,6 +748,9 @@ extension SendFile: Sendable {}
 #endif
 
 
+
+
+
 extension SendFile: Equatable, Hashable {
     public static func ==(lhs: SendFile, rhs: SendFile) -> Bool {
         if lhs.id != rhs.id {
@@ -816,6 +841,9 @@ public struct SendFileView {
 #if compiler(>=6)
 extension SendFileView: Sendable {}
 #endif
+
+
+
 
 
 extension SendFileView: Equatable, Hashable {
@@ -910,6 +938,9 @@ public struct SendListView {
 #if compiler(>=6)
 extension SendListView: Sendable {}
 #endif
+
+
+
 
 
 extension SendListView: Equatable, Hashable {
@@ -1018,6 +1049,9 @@ extension SendText: Sendable {}
 #endif
 
 
+
+
+
 extension SendText: Equatable, Hashable {
     public static func ==(lhs: SendText, rhs: SendText) -> Bool {
         if lhs.text != rhs.text {
@@ -1086,6 +1120,9 @@ public struct SendTextView {
 #if compiler(>=6)
 extension SendTextView: Sendable {}
 #endif
+
+
+
 
 
 extension SendTextView: Equatable, Hashable {
@@ -1210,6 +1247,9 @@ public struct SendView {
 #if compiler(>=6)
 extension SendView: Sendable {}
 #endif
+
+
+
 
 
 extension SendView: Equatable, Hashable {
@@ -1354,6 +1394,338 @@ public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
     return FfiConverterTypeSendView.lower(value)
 }
 
+
+/**
+ * Generic error type for send decryption errors
+ */
+public enum SendDecryptError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendDecryptError: FfiConverterRustBuffer {
+    typealias SwiftType = SendDecryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendDecryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendDecryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendDecryptError_lift(_ buf: RustBuffer) throws -> SendDecryptError {
+    return try FfiConverterTypeSendDecryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendDecryptError_lower(_ value: SendDecryptError) -> RustBuffer {
+    return FfiConverterTypeSendDecryptError.lower(value)
+}
+
+
+extension SendDecryptError: Equatable, Hashable {}
+
+
+
+
+extension SendDecryptError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for send decryption errors
+ */
+public enum SendDecryptFileError: Swift.Error {
+
+    
+    
+    case Decrypt(message: String)
+    
+    case Io(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendDecryptFileError: FfiConverterRustBuffer {
+    typealias SwiftType = SendDecryptFileError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendDecryptFileError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Decrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendDecryptFileError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Decrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendDecryptFileError_lift(_ buf: RustBuffer) throws -> SendDecryptFileError {
+    return try FfiConverterTypeSendDecryptFileError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendDecryptFileError_lower(_ value: SendDecryptFileError) -> RustBuffer {
+    return FfiConverterTypeSendDecryptFileError.lower(value)
+}
+
+
+extension SendDecryptFileError: Equatable, Hashable {}
+
+
+
+
+extension SendDecryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for send encryption errors.
+ */
+public enum SendEncryptError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendEncryptError: FfiConverterRustBuffer {
+    typealias SwiftType = SendEncryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendEncryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendEncryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendEncryptError_lift(_ buf: RustBuffer) throws -> SendEncryptError {
+    return try FfiConverterTypeSendEncryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendEncryptError_lower(_ value: SendEncryptError) -> RustBuffer {
+    return FfiConverterTypeSendEncryptError.lower(value)
+}
+
+
+extension SendEncryptError: Equatable, Hashable {}
+
+
+
+
+extension SendEncryptError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
+ * Generic error type for send encryption errors.
+ */
+public enum SendEncryptFileError: Swift.Error {
+
+    
+    
+    case Encrypt(message: String)
+    
+    case Io(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendEncryptFileError: FfiConverterRustBuffer {
+    typealias SwiftType = SendEncryptFileError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendEncryptFileError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Encrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendEncryptFileError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Encrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendEncryptFileError_lift(_ buf: RustBuffer) throws -> SendEncryptFileError {
+    return try FfiConverterTypeSendEncryptFileError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendEncryptFileError_lower(_ value: SendEncryptFileError) -> RustBuffer {
+    return FfiConverterTypeSendEncryptFileError.lower(value)
+}
+
+
+extension SendEncryptFileError: Equatable, Hashable {}
+
+
+
+
+extension SendEncryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -1361,9 +1733,8 @@ public enum SendType : UInt8 {
     
     case text = 0
     case file = 1
+
 }
-
-
 #if compiler(>=6)
 extension SendType: Sendable {}
 #endif
@@ -1417,7 +1788,14 @@ public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
 }
 
 
+
+
 extension SendType: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -1646,15 +2024,15 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_send_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 

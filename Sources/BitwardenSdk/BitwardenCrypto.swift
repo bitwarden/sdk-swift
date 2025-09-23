@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles. 
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -489,6 +508,9 @@ extension RsaKeyPair: Sendable {}
 #endif
 
 
+
+
+
 extension RsaKeyPair: Equatable, Hashable {
     public static func ==(lhs: RsaKeyPair, rhs: RsaKeyPair) -> Bool {
         if lhs.`public` != rhs.`public` {
@@ -587,6 +609,9 @@ extension TrustDeviceResponse: Sendable {}
 #endif
 
 
+
+
+
 extension TrustDeviceResponse: Equatable, Hashable {
     public static func ==(lhs: TrustDeviceResponse, rhs: TrustDeviceResponse) -> Bool {
         if lhs.deviceKey != rhs.deviceKey {
@@ -651,6 +676,258 @@ public func FfiConverterTypeTrustDeviceResponse_lower(_ value: TrustDeviceRespon
     return FfiConverterTypeTrustDeviceResponse.lower(value)
 }
 
+
+public enum CryptoError: Swift.Error {
+
+    
+    
+    case InvalidKey(message: String)
+    
+    case InvalidMac(message: String)
+    
+    case MacNotProvided(message: String)
+    
+    case KeyDecrypt(message: String)
+    
+    case InvalidKeyLen(message: String)
+    
+    case InvalidUtf8String(message: String)
+    
+    case MissingKey(message: String)
+    
+    case MissingField(message: String)
+    
+    case MissingKeyId(message: String)
+    
+    case ReadOnlyKeyStore(message: String)
+    
+    case InsufficientKdfParameters(message: String)
+    
+    case EncString(message: String)
+    
+    case Rsa(message: String)
+    
+    case Fingerprint(message: String)
+    
+    case Argon(message: String)
+    
+    case ZeroNumber(message: String)
+    
+    case OperationNotSupported(message: String)
+    
+    case WrongKeyType(message: String)
+    
+    case WrongCoseKeyId(message: String)
+    
+    case InvalidNonceLength(message: String)
+    
+    case InvalidPadding(message: String)
+    
+    case Signature(message: String)
+    
+    case Encoding(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
+    typealias SwiftType = CryptoError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CryptoError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidMac(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MacNotProvided(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .KeyDecrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .InvalidKeyLen(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .InvalidUtf8String(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .MissingKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .MissingKeyId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .ReadOnlyKeyStore(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .InsufficientKdfParameters(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 12: return .EncString(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 13: return .Rsa(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 14: return .Fingerprint(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 15: return .Argon(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 16: return .ZeroNumber(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 17: return .OperationNotSupported(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 18: return .WrongKeyType(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 19: return .WrongCoseKeyId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 20: return .InvalidNonceLength(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 21: return .InvalidPadding(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 22: return .Signature(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 23: return .Encoding(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CryptoError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .InvalidKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidMac(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MacNotProvided(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .KeyDecrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .InvalidKeyLen(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .InvalidUtf8String(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .MissingKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .MissingKeyId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .ReadOnlyKeyStore(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
+        case .InsufficientKdfParameters(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
+        case .EncString(_ /* message is ignored*/):
+            writeInt(&buf, Int32(12))
+        case .Rsa(_ /* message is ignored*/):
+            writeInt(&buf, Int32(13))
+        case .Fingerprint(_ /* message is ignored*/):
+            writeInt(&buf, Int32(14))
+        case .Argon(_ /* message is ignored*/):
+            writeInt(&buf, Int32(15))
+        case .ZeroNumber(_ /* message is ignored*/):
+            writeInt(&buf, Int32(16))
+        case .OperationNotSupported(_ /* message is ignored*/):
+            writeInt(&buf, Int32(17))
+        case .WrongKeyType(_ /* message is ignored*/):
+            writeInt(&buf, Int32(18))
+        case .WrongCoseKeyId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(19))
+        case .InvalidNonceLength(_ /* message is ignored*/):
+            writeInt(&buf, Int32(20))
+        case .InvalidPadding(_ /* message is ignored*/):
+            writeInt(&buf, Int32(21))
+        case .Signature(_ /* message is ignored*/):
+            writeInt(&buf, Int32(22))
+        case .Encoding(_ /* message is ignored*/):
+            writeInt(&buf, Int32(23))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCryptoError_lift(_ buf: RustBuffer) throws -> CryptoError {
+    return try FfiConverterTypeCryptoError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCryptoError_lower(_ value: CryptoError) -> RustBuffer {
+    return FfiConverterTypeCryptoError.lower(value)
+}
+
+
+extension CryptoError: Equatable, Hashable {}
+
+
+
+
+extension CryptoError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -658,9 +935,8 @@ public enum HashPurpose {
     
     case serverAuthorization
     case localAuthorization
+
 }
-
-
 #if compiler(>=6)
 extension HashPurpose: Sendable {}
 #endif
@@ -714,7 +990,14 @@ public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffe
 }
 
 
+
+
 extension HashPurpose: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -733,9 +1016,8 @@ public enum Kdf {
     )
     case argon2id(iterations: NonZeroU32, memory: NonZeroU32, parallelism: NonZeroU32
     )
+
 }
-
-
 #if compiler(>=6)
 extension Kdf: Sendable {}
 #endif
@@ -795,7 +1077,14 @@ public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
 }
 
 
+
+
 extension Kdf: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -811,9 +1100,8 @@ public enum SignatureAlgorithm {
      * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves.
      */
     case ed25519
+
 }
-
-
 #if compiler(>=6)
 extension SignatureAlgorithm: Sendable {}
 #endif
@@ -861,7 +1149,14 @@ public func FfiConverterTypeSignatureAlgorithm_lower(_ value: SignatureAlgorithm
 }
 
 
+
+
 extension SignatureAlgorithm: Equatable, Hashable {}
+
+
+
+
+
 
 
 
@@ -1050,7 +1345,7 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
     let scaffolding_contract_version = ffi_bitwarden_crypto_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
