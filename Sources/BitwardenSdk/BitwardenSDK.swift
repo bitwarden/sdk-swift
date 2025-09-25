@@ -1841,10 +1841,11 @@ open class Client: ClientProtocol, @unchecked Sendable {
     /**
      * Initialize a new instance of the SDK client
      */
-public convenience init(settings: ClientSettings?) {
+public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSettings?) {
     let handle =
         try! rustCall() {
     uniffi_bitwarden_uniffi_fn_constructor_client_new(
+        FfiConverterTypeClientManagedTokens_lower(tokenProvider),
         FfiConverterOptionTypeClientSettings.lower(settings),$0
     )
 }
@@ -7571,24 +7572,24 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_password_history() != 2661) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 59311) {
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 35277) {
         return InitializationResult.apiChecksumMismatch
     }
 
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     return InitializationResult.ok
 }()
 
