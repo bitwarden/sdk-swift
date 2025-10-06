@@ -554,6 +554,71 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
+public struct AncestorMap {
+    public let ancestors: [CollectionId: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ancestors: [CollectionId: String]) {
+        self.ancestors = ancestors
+    }
+}
+
+#if compiler(>=6)
+extension AncestorMap: Sendable {}
+#endif
+
+
+
+
+
+extension AncestorMap: Equatable, Hashable {
+    public static func ==(lhs: AncestorMap, rhs: AncestorMap) -> Bool {
+        if lhs.ancestors != rhs.ancestors {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ancestors)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAncestorMap: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AncestorMap {
+        return
+            try AncestorMap(
+                ancestors: FfiConverterDictionaryTypeCollectionIdString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AncestorMap, into buf: inout [UInt8]) {
+        FfiConverterDictionaryTypeCollectionIdString.write(value.ancestors, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAncestorMap_lift(_ buf: RustBuffer) throws -> AncestorMap {
+    return try FfiConverterTypeAncestorMap.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAncestorMap_lower(_ value: AncestorMap) -> RustBuffer {
+    return FfiConverterTypeAncestorMap.lower(value)
+}
+
+
 public struct Attachment {
     public let id: String?
     public let url: String?
@@ -7422,6 +7487,32 @@ fileprivate struct FfiConverterSequenceTypeCollectionId: FfiConverterRustBuffer 
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryTypeCollectionIdString: FfiConverterRustBuffer {
+    public static func write(_ value: [CollectionId: String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterTypeCollectionId.write(key, into: &buf)
+            FfiConverterString.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionId: String] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [CollectionId: String]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterTypeCollectionId.read(from: &buf)
+            let value = try FfiConverterString.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
 
 /**
  * Typealias from the type name used in the UDL file to the builtin type.  This
@@ -7570,9 +7661,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 

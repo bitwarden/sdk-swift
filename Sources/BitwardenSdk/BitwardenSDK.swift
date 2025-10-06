@@ -2484,7 +2484,7 @@ public func FfiConverterTypeClientFido2Client_lower(_ value: ClientFido2Client) 
 
 public protocol CollectionViewNodeItemProtocol: AnyObject, Sendable {
     
-    func getAncestors()  -> [Uuid: String]
+    func getAncestors()  -> AncestorMap
     
     func getChildren()  -> [CollectionView]
     
@@ -2541,8 +2541,8 @@ open class CollectionViewNodeItem: CollectionViewNodeItemProtocol, @unchecked Se
     
 
     
-open func getAncestors() -> [Uuid: String]  {
-    return try!  FfiConverterDictionaryTypeUuidString.lift(try! rustCall() {
+open func getAncestors() -> AncestorMap  {
+    return try!  FfiConverterTypeAncestorMap_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_collectionviewnodeitem_get_ancestors(
             self.uniffiCloneHandle(),$0
     )
@@ -2626,7 +2626,9 @@ public func FfiConverterTypeCollectionViewNodeItem_lower(_ value: CollectionView
 
 public protocol CollectionViewTreeProtocol: AnyObject, Sendable {
     
-    func getItemById(collectionId: Uuid)  -> CollectionViewNodeItem?
+    func getFlatItems()  -> [CollectionViewNodeItem]
+    
+    func getItemForView(collectionView: CollectionView)  -> CollectionViewNodeItem?
     
     func getRootItems()  -> [CollectionViewNodeItem]
     
@@ -2679,11 +2681,19 @@ open class CollectionViewTree: CollectionViewTreeProtocol, @unchecked Sendable {
     
 
     
-open func getItemById(collectionId: Uuid) -> CollectionViewNodeItem?  {
+open func getFlatItems() -> [CollectionViewNodeItem]  {
+    return try!  FfiConverterSequenceTypeCollectionViewNodeItem.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_collectionviewtree_get_flat_items(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+open func getItemForView(collectionView: CollectionView) -> CollectionViewNodeItem?  {
     return try!  FfiConverterOptionTypeCollectionViewNodeItem.lift(try! rustCall() {
-    uniffi_bitwarden_uniffi_fn_method_collectionviewtree_get_item_by_id(
+    uniffi_bitwarden_uniffi_fn_method_collectionviewtree_get_item_for_view(
             self.uniffiCloneHandle(),
-        FfiConverterTypeUuid_lower(collectionId),$0
+        FfiConverterTypeCollectionView_lower(collectionView),$0
     )
 })
 }
@@ -7084,32 +7094,6 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
         return dict
     }
 }
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterDictionaryTypeUuidString: FfiConverterRustBuffer {
-    public static func write(_ value: [Uuid: String], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for (key, value) in value {
-            FfiConverterTypeUuid.write(key, into: &buf)
-            FfiConverterString.write(value, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Uuid: String] {
-        let len: Int32 = try readInt(&buf)
-        var dict = [Uuid: String]()
-        dict.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            let key = try FfiConverterTypeUuid.read(from: &buf)
-            let value = try FfiConverterString.read(from: &buf)
-            dict[key] = value
-        }
-        return dict
-    }
-}
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
@@ -7383,7 +7367,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_register() != 29872) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 23374) {
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 5868) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_children() != 43392) {
@@ -7395,7 +7379,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_parent() != 30834) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_item_by_id() != 40084) {
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_flat_items() != 13872) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_item_for_view() != 33356) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_root_items() != 18012) {
@@ -7579,17 +7566,17 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     return InitializationResult.ok
 }()
 
