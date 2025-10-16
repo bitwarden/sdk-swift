@@ -909,6 +909,7 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * api_url: "https://api.bitwarden.com".to_string(),
  * user_agent: "Bitwarden Rust-SDK".to_string(),
  * device_type: DeviceType::SDK,
+ * bitwarden_client_version: None,
  * };
  * let default = ClientSettings::default();
  * ```
@@ -930,6 +931,10 @@ public struct ClientSettings {
      * Device type to send to Bitwarden. Defaults to SDK
      */
     public let deviceType: DeviceType
+    /**
+     * Bitwarden Client Version to send to Bitwarden.
+     */
+    public let bitwardenClientVersion: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -945,11 +950,15 @@ public struct ClientSettings {
          */userAgent: String, 
         /**
          * Device type to send to Bitwarden. Defaults to SDK
-         */deviceType: DeviceType) {
+         */deviceType: DeviceType, 
+        /**
+         * Bitwarden Client Version to send to Bitwarden.
+         */bitwardenClientVersion: String?) {
         self.identityUrl = identityUrl
         self.apiUrl = apiUrl
         self.userAgent = userAgent
         self.deviceType = deviceType
+        self.bitwardenClientVersion = bitwardenClientVersion
     }
 }
 
@@ -975,6 +984,9 @@ extension ClientSettings: Equatable, Hashable {
         if lhs.deviceType != rhs.deviceType {
             return false
         }
+        if lhs.bitwardenClientVersion != rhs.bitwardenClientVersion {
+            return false
+        }
         return true
     }
 
@@ -983,6 +995,7 @@ extension ClientSettings: Equatable, Hashable {
         hasher.combine(apiUrl)
         hasher.combine(userAgent)
         hasher.combine(deviceType)
+        hasher.combine(bitwardenClientVersion)
     }
 }
 
@@ -998,7 +1011,8 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
                 identityUrl: FfiConverterString.read(from: &buf), 
                 apiUrl: FfiConverterString.read(from: &buf), 
                 userAgent: FfiConverterString.read(from: &buf), 
-                deviceType: FfiConverterTypeDeviceType.read(from: &buf)
+                deviceType: FfiConverterTypeDeviceType.read(from: &buf), 
+                bitwardenClientVersion: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -1007,6 +1021,7 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
         FfiConverterString.write(value.apiUrl, into: &buf)
         FfiConverterString.write(value.userAgent, into: &buf)
         FfiConverterTypeDeviceType.write(value.deviceType, into: &buf)
+        FfiConverterOptionString.write(value.bitwardenClientVersion, into: &buf)
     }
 }
 
@@ -3508,6 +3523,7 @@ public enum DeviceType {
     case windowsCli
     case macOsCli
     case linuxCli
+    case duckDuckGoBrowser
 
 }
 #if compiler(>=6)
@@ -3575,6 +3591,8 @@ public struct FfiConverterTypeDeviceType: FfiConverterRustBuffer {
         case 25: return .macOsCli
         
         case 26: return .linuxCli
+        
+        case 27: return .duckDuckGoBrowser
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3686,6 +3704,10 @@ public struct FfiConverterTypeDeviceType: FfiConverterRustBuffer {
         
         case .linuxCli:
             writeInt(&buf, Int32(26))
+        
+        
+        case .duckDuckGoBrowser:
+            writeInt(&buf, Int32(27))
         
         }
     }
@@ -5161,8 +5183,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
