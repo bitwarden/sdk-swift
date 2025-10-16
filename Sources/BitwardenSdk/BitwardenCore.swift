@@ -4017,6 +4017,17 @@ public enum InitUserCryptoMethod {
          */userKey: EncString
     )
     /**
+     * Master Password Unlock
+     */
+    case masterPasswordUnlock(
+        /**
+         * The user's master password
+         */password: String, 
+        /**
+         * Contains the data needed to unlock with the master password
+         */masterPasswordUnlock: MasterPasswordUnlockData
+    )
+    /**
      * Never lock and/or biometric unlock
      */
     case decryptedKey(
@@ -4102,22 +4113,25 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 1: return .password(password: try FfiConverterString.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 2: return .decryptedKey(decryptedUserKey: try FfiConverterString.read(from: &buf)
+        case 2: return .masterPasswordUnlock(password: try FfiConverterString.read(from: &buf), masterPasswordUnlock: try FfiConverterTypeMasterPasswordUnlockData.read(from: &buf)
         )
         
-        case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 3: return .decryptedKey(decryptedUserKey: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .pinEnvelope(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKeyEnvelope: try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
+        case 4: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 5: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        case 5: return .pinEnvelope(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKeyEnvelope: try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
         )
         
-        case 6: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        case 6: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
-        case 7: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 7: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        )
+        
+        case 8: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -4134,38 +4148,44 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             FfiConverterTypeEncString.write(userKey, into: &buf)
             
         
-        case let .decryptedKey(decryptedUserKey):
+        case let .masterPasswordUnlock(password,masterPasswordUnlock):
             writeInt(&buf, Int32(2))
+            FfiConverterString.write(password, into: &buf)
+            FfiConverterTypeMasterPasswordUnlockData.write(masterPasswordUnlock, into: &buf)
+            
+        
+        case let .decryptedKey(decryptedUserKey):
+            writeInt(&buf, Int32(3))
             FfiConverterString.write(decryptedUserKey, into: &buf)
             
         
         case let .pin(pin,pinProtectedUserKey):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(4))
             FfiConverterString.write(pin, into: &buf)
             FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
             
         
         case let .pinEnvelope(pin,pinProtectedUserKeyEnvelope):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(5))
             FfiConverterString.write(pin, into: &buf)
             FfiConverterTypePasswordProtectedKeyEnvelope.write(pinProtectedUserKeyEnvelope, into: &buf)
             
         
         case let .authRequest(requestPrivateKey,method):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(6))
             FfiConverterTypeB64.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
             
         
         case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(7))
             FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
             FfiConverterTypeUnsignedSharedKey.write(deviceProtectedUserKey, into: &buf)
             
         
         case let .keyConnector(masterKey,userKey):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(8))
             FfiConverterTypeB64.write(masterKey, into: &buf)
             FfiConverterTypeEncString.write(userKey, into: &buf)
             
@@ -5141,8 +5161,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 
