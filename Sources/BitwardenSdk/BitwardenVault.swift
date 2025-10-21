@@ -1473,6 +1473,294 @@ public func FfiConverterTypeCipher_lower(_ value: Cipher) -> RustBuffer {
 }
 
 
+/**
+ * Request to add a cipher.
+ */
+public struct CipherCreateRequest {
+    public let organizationId: OrganizationId?
+    public let folderId: FolderId?
+    public let name: String
+    public let notes: String?
+    public let favorite: Bool
+    public let reprompt: CipherRepromptType
+    public let type: CipherViewType
+    public let fields: [FieldView]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(organizationId: OrganizationId?, folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView]) {
+        self.organizationId = organizationId
+        self.folderId = folderId
+        self.name = name
+        self.notes = notes
+        self.favorite = favorite
+        self.reprompt = reprompt
+        self.type = type
+        self.fields = fields
+    }
+}
+
+#if compiler(>=6)
+extension CipherCreateRequest: Sendable {}
+#endif
+
+
+
+
+
+extension CipherCreateRequest: Equatable, Hashable {
+    public static func ==(lhs: CipherCreateRequest, rhs: CipherCreateRequest) -> Bool {
+        if lhs.organizationId != rhs.organizationId {
+            return false
+        }
+        if lhs.folderId != rhs.folderId {
+            return false
+        }
+        if lhs.name != rhs.name {
+            return false
+        }
+        if lhs.notes != rhs.notes {
+            return false
+        }
+        if lhs.favorite != rhs.favorite {
+            return false
+        }
+        if lhs.reprompt != rhs.reprompt {
+            return false
+        }
+        if lhs.type != rhs.type {
+            return false
+        }
+        if lhs.fields != rhs.fields {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(organizationId)
+        hasher.combine(folderId)
+        hasher.combine(name)
+        hasher.combine(notes)
+        hasher.combine(favorite)
+        hasher.combine(reprompt)
+        hasher.combine(type)
+        hasher.combine(fields)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherCreateRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherCreateRequest {
+        return
+            try CipherCreateRequest(
+                organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
+                favorite: FfiConverterBool.read(from: &buf), 
+                reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
+                type: FfiConverterTypeCipherViewType.read(from: &buf), 
+                fields: FfiConverterSequenceTypeFieldView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherCreateRequest, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.notes, into: &buf)
+        FfiConverterBool.write(value.favorite, into: &buf)
+        FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
+        FfiConverterTypeCipherViewType.write(value.type, into: &buf)
+        FfiConverterSequenceTypeFieldView.write(value.fields, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherCreateRequest_lift(_ buf: RustBuffer) throws -> CipherCreateRequest {
+    return try FfiConverterTypeCipherCreateRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherCreateRequest_lower(_ value: CipherCreateRequest) -> RustBuffer {
+    return FfiConverterTypeCipherCreateRequest.lower(value)
+}
+
+
+/**
+ * Request to edit a cipher.
+ */
+public struct CipherEditRequest {
+    public let id: CipherId
+    public let organizationId: OrganizationId?
+    public let folderId: FolderId?
+    public let favorite: Bool
+    public let reprompt: CipherRepromptType
+    public let name: String
+    public let notes: String?
+    public let fields: [FieldView]
+    public let type: CipherViewType
+    public let revisionDate: DateTime
+    public let archivedDate: DateTime?
+    public let attachments: [AttachmentView]
+    public let key: EncString?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: CipherId, organizationId: OrganizationId?, folderId: FolderId?, favorite: Bool, reprompt: CipherRepromptType, name: String, notes: String?, fields: [FieldView], type: CipherViewType, revisionDate: DateTime, archivedDate: DateTime?, attachments: [AttachmentView], key: EncString?) {
+        self.id = id
+        self.organizationId = organizationId
+        self.folderId = folderId
+        self.favorite = favorite
+        self.reprompt = reprompt
+        self.name = name
+        self.notes = notes
+        self.fields = fields
+        self.type = type
+        self.revisionDate = revisionDate
+        self.archivedDate = archivedDate
+        self.attachments = attachments
+        self.key = key
+    }
+}
+
+#if compiler(>=6)
+extension CipherEditRequest: Sendable {}
+#endif
+
+
+
+
+
+extension CipherEditRequest: Equatable, Hashable {
+    public static func ==(lhs: CipherEditRequest, rhs: CipherEditRequest) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.organizationId != rhs.organizationId {
+            return false
+        }
+        if lhs.folderId != rhs.folderId {
+            return false
+        }
+        if lhs.favorite != rhs.favorite {
+            return false
+        }
+        if lhs.reprompt != rhs.reprompt {
+            return false
+        }
+        if lhs.name != rhs.name {
+            return false
+        }
+        if lhs.notes != rhs.notes {
+            return false
+        }
+        if lhs.fields != rhs.fields {
+            return false
+        }
+        if lhs.type != rhs.type {
+            return false
+        }
+        if lhs.revisionDate != rhs.revisionDate {
+            return false
+        }
+        if lhs.archivedDate != rhs.archivedDate {
+            return false
+        }
+        if lhs.attachments != rhs.attachments {
+            return false
+        }
+        if lhs.key != rhs.key {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(organizationId)
+        hasher.combine(folderId)
+        hasher.combine(favorite)
+        hasher.combine(reprompt)
+        hasher.combine(name)
+        hasher.combine(notes)
+        hasher.combine(fields)
+        hasher.combine(type)
+        hasher.combine(revisionDate)
+        hasher.combine(archivedDate)
+        hasher.combine(attachments)
+        hasher.combine(key)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherEditRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherEditRequest {
+        return
+            try CipherEditRequest(
+                id: FfiConverterTypeCipherId.read(from: &buf), 
+                organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                favorite: FfiConverterBool.read(from: &buf), 
+                reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
+                fields: FfiConverterSequenceTypeFieldView.read(from: &buf), 
+                type: FfiConverterTypeCipherViewType.read(from: &buf), 
+                revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                attachments: FfiConverterSequenceTypeAttachmentView.read(from: &buf), 
+                key: FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherEditRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.id, into: &buf)
+        FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterBool.write(value.favorite, into: &buf)
+        FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.notes, into: &buf)
+        FfiConverterSequenceTypeFieldView.write(value.fields, into: &buf)
+        FfiConverterTypeCipherViewType.write(value.type, into: &buf)
+        FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
+        FfiConverterSequenceTypeAttachmentView.write(value.attachments, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherEditRequest_lift(_ buf: RustBuffer) throws -> CipherEditRequest {
+    return try FfiConverterTypeCipherEditRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherEditRequest_lower(_ value: CipherEditRequest) -> RustBuffer {
+    return FfiConverterTypeCipherEditRequest.lower(value)
+}
+
+
 public struct CipherListView {
     public let id: CipherId?
     public let organizationId: OrganizationId?
@@ -5208,6 +5496,118 @@ extension CipherType: Equatable, Hashable {}
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
+ * Represents the inner data of a cipher view.
+ */
+
+public enum CipherViewType {
+    
+    case login(LoginView
+    )
+    case card(CardView
+    )
+    case identity(IdentityView
+    )
+    case secureNote(SecureNoteView
+    )
+    case sshKey(SshKeyView
+    )
+
+}
+#if compiler(>=6)
+extension CipherViewType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherViewType: FfiConverterRustBuffer {
+    typealias SwiftType = CipherViewType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherViewType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .login(try FfiConverterTypeLoginView.read(from: &buf)
+        )
+        
+        case 2: return .card(try FfiConverterTypeCardView.read(from: &buf)
+        )
+        
+        case 3: return .identity(try FfiConverterTypeIdentityView.read(from: &buf)
+        )
+        
+        case 4: return .secureNote(try FfiConverterTypeSecureNoteView.read(from: &buf)
+        )
+        
+        case 5: return .sshKey(try FfiConverterTypeSshKeyView.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherViewType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .login(v1):
+            writeInt(&buf, Int32(1))
+            FfiConverterTypeLoginView.write(v1, into: &buf)
+            
+        
+        case let .card(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeCardView.write(v1, into: &buf)
+            
+        
+        case let .identity(v1):
+            writeInt(&buf, Int32(3))
+            FfiConverterTypeIdentityView.write(v1, into: &buf)
+            
+        
+        case let .secureNote(v1):
+            writeInt(&buf, Int32(4))
+            FfiConverterTypeSecureNoteView.write(v1, into: &buf)
+            
+        
+        case let .sshKey(v1):
+            writeInt(&buf, Int32(5))
+            FfiConverterTypeSshKeyView.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherViewType_lift(_ buf: RustBuffer) throws -> CipherViewType {
+    return try FfiConverterTypeCipherViewType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherViewType_lower(_ value: CipherViewType) -> RustBuffer {
+    return FfiConverterTypeCipherViewType.lower(value)
+}
+
+
+
+
+extension CipherViewType: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
  * Available fields on a cipher and can be copied from a the list view in the UI.
  */
 
@@ -5340,6 +5740,122 @@ extension CopyableCipherFields: Equatable, Hashable {}
 
 
 
+
+
+
+
+
+public enum CreateCipherError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotAuthenticated(message: String)
+    
+    case Repository(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateCipherError_lift(_ buf: RustBuffer) throws -> CreateCipherError {
+    return try FfiConverterTypeCreateCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateCipherError_lower(_ value: CreateCipherError) -> RustBuffer {
+    return FfiConverterTypeCreateCipherError.lower(value)
+}
+
+
+extension CreateCipherError: Equatable, Hashable {}
+
+
+
+
+extension CreateCipherError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
 
 
 
@@ -5610,6 +6126,138 @@ extension DecryptFileError: Equatable, Hashable {}
 
 
 extension DecryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum EditCipherError: Swift.Error {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotAuthenticated(message: String)
+    
+    case Repository(message: String)
+    
+    case Uuid(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEditCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = EditCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EditCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .Uuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EditCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .Uuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditCipherError_lift(_ buf: RustBuffer) throws -> EditCipherError {
+    return try FfiConverterTypeEditCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditCipherError_lower(_ value: EditCipherError) -> RustBuffer {
+    return FfiConverterTypeEditCipherError.lower(value)
+}
+
+
+extension EditCipherError: Equatable, Hashable {}
+
+
+
+
+extension EditCipherError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
@@ -6014,6 +6662,98 @@ extension FieldType: Equatable, Hashable {}
 
 
 
+
+
+
+
+
+public enum GetCipherError: Swift.Error {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case RepositoryError(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = GetCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .RepositoryError(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .RepositoryError(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetCipherError_lift(_ buf: RustBuffer) throws -> GetCipherError {
+    return try FfiConverterTypeGetCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetCipherError_lower(_ value: GetCipherError) -> RustBuffer {
+    return FfiConverterTypeGetCipherError.lower(value)
+}
+
+
+extension GetCipherError: Equatable, Hashable {}
+
+
+
+
+extension GetCipherError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
 
 
 
@@ -7662,8 +8402,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
