@@ -8402,8 +8402,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
