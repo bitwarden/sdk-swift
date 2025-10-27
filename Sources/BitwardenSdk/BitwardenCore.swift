@@ -4873,50 +4873,6 @@ public func FfiConverterTypeOrganizationId_lower(_ value: OrganizationId) -> Rus
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias PasswordProtectedKeyEnvelope = String
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypePasswordProtectedKeyEnvelope: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordProtectedKeyEnvelope {
-        return try FfiConverterString.read(from: &buf)
-    }
-
-    public static func write(_ value: PasswordProtectedKeyEnvelope, into buf: inout [UInt8]) {
-        return FfiConverterString.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: RustBuffer) throws -> PasswordProtectedKeyEnvelope {
-        return try FfiConverterString.lift(value)
-    }
-
-    public static func lower(_ value: PasswordProtectedKeyEnvelope) -> RustBuffer {
-        return FfiConverterString.lower(value)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypePasswordProtectedKeyEnvelope_lift(_ value: RustBuffer) throws -> PasswordProtectedKeyEnvelope {
-    return try FfiConverterTypePasswordProtectedKeyEnvelope.lift(value)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypePasswordProtectedKeyEnvelope_lower(_ value: PasswordProtectedKeyEnvelope) -> RustBuffer {
-    return FfiConverterTypePasswordProtectedKeyEnvelope.lower(value)
-}
-
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias SignedSecurityState = String
 
 #if swift(>=5.8)
