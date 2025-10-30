@@ -699,6 +699,8 @@ public enum CryptoError: Swift.Error {
     
     case MissingKeyId(message: String)
     
+    case KeyOperationNotSupported(message: String)
+    
     case ReadOnlyKeyStore(message: String)
     
     case InsufficientKdfParameters(message: String)
@@ -779,59 +781,63 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .ReadOnlyKeyStore(
+        case 10: return .KeyOperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .InsufficientKdfParameters(
+        case 11: return .ReadOnlyKeyStore(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .EncString(
+        case 12: return .InsufficientKdfParameters(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .Rsa(
+        case 13: return .EncString(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .Fingerprint(
+        case 14: return .Rsa(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .Argon(
+        case 15: return .Fingerprint(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .ZeroNumber(
+        case 16: return .Argon(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .OperationNotSupported(
+        case 17: return .ZeroNumber(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .WrongKeyType(
+        case 18: return .OperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .WrongCoseKeyId(
+        case 19: return .WrongKeyType(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 20: return .InvalidNonceLength(
+        case 20: return .WrongCoseKeyId(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .InvalidPadding(
+        case 21: return .InvalidNonceLength(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .Signature(
+        case 22: return .InvalidPadding(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .Encoding(
+        case 23: return .Signature(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 24: return .Encoding(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -864,34 +870,36 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(8))
         case .MissingKeyId(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
-        case .ReadOnlyKeyStore(_ /* message is ignored*/):
+        case .KeyOperationNotSupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
-        case .InsufficientKdfParameters(_ /* message is ignored*/):
+        case .ReadOnlyKeyStore(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .EncString(_ /* message is ignored*/):
+        case .InsufficientKdfParameters(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .Rsa(_ /* message is ignored*/):
+        case .EncString(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .Fingerprint(_ /* message is ignored*/):
+        case .Rsa(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .Argon(_ /* message is ignored*/):
+        case .Fingerprint(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .ZeroNumber(_ /* message is ignored*/):
+        case .Argon(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
-        case .OperationNotSupported(_ /* message is ignored*/):
+        case .ZeroNumber(_ /* message is ignored*/):
             writeInt(&buf, Int32(17))
-        case .WrongKeyType(_ /* message is ignored*/):
+        case .OperationNotSupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(18))
-        case .WrongCoseKeyId(_ /* message is ignored*/):
+        case .WrongKeyType(_ /* message is ignored*/):
             writeInt(&buf, Int32(19))
-        case .InvalidNonceLength(_ /* message is ignored*/):
+        case .WrongCoseKeyId(_ /* message is ignored*/):
             writeInt(&buf, Int32(20))
-        case .InvalidPadding(_ /* message is ignored*/):
+        case .InvalidNonceLength(_ /* message is ignored*/):
             writeInt(&buf, Int32(21))
-        case .Signature(_ /* message is ignored*/):
+        case .InvalidPadding(_ /* message is ignored*/):
             writeInt(&buf, Int32(22))
-        case .Encoding(_ /* message is ignored*/):
+        case .Signature(_ /* message is ignored*/):
             writeInt(&buf, Int32(23))
+        case .Encoding(_ /* message is ignored*/):
+            writeInt(&buf, Int32(24))
 
         
         }
@@ -1158,6 +1166,50 @@ extension SignatureAlgorithm: Equatable, Hashable {}
 
 
 
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias DataEnvelope = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDataEnvelope: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DataEnvelope {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: DataEnvelope, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> DataEnvelope {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: DataEnvelope) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDataEnvelope_lift(_ value: RustBuffer) throws -> DataEnvelope {
+    return try FfiConverterTypeDataEnvelope.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDataEnvelope_lower(_ value: DataEnvelope) -> RustBuffer {
+    return FfiConverterTypeDataEnvelope.lower(value)
+}
 
 
 
