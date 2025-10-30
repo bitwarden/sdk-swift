@@ -419,6 +419,22 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
+    typealias FfiType = UInt8
+    typealias SwiftType = UInt8
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
     typealias FfiType = UInt32
     typealias SwiftType = UInt32
@@ -2018,6 +2034,108 @@ public func FfiConverterTypeCipherListView_lower(_ value: CipherListView) -> Rus
 }
 
 
+/**
+ * Login cipher data needed for risk evaluation.
+ */
+public struct CipherLoginDetails {
+    /**
+     * Cipher ID to identify which cipher in results.
+     */
+    public let id: CipherId
+    /**
+     * The decrypted password to evaluate.
+     */
+    public let password: String
+    /**
+     * Username or email (login ciphers only have one field).
+     */
+    public let username: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Cipher ID to identify which cipher in results.
+         */id: CipherId, 
+        /**
+         * The decrypted password to evaluate.
+         */password: String, 
+        /**
+         * Username or email (login ciphers only have one field).
+         */username: String?) {
+        self.id = id
+        self.password = password
+        self.username = username
+    }
+}
+
+#if compiler(>=6)
+extension CipherLoginDetails: Sendable {}
+#endif
+
+
+
+
+
+extension CipherLoginDetails: Equatable, Hashable {
+    public static func ==(lhs: CipherLoginDetails, rhs: CipherLoginDetails) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.password != rhs.password {
+            return false
+        }
+        if lhs.username != rhs.username {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(password)
+        hasher.combine(username)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherLoginDetails: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherLoginDetails {
+        return
+            try CipherLoginDetails(
+                id: FfiConverterTypeCipherId.read(from: &buf), 
+                password: FfiConverterString.read(from: &buf), 
+                username: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherLoginDetails, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.id, into: &buf)
+        FfiConverterString.write(value.password, into: &buf)
+        FfiConverterOptionString.write(value.username, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherLoginDetails_lift(_ buf: RustBuffer) throws -> CipherLoginDetails {
+    return try FfiConverterTypeCipherLoginDetails.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherLoginDetails_lower(_ value: CipherLoginDetails) -> RustBuffer {
+    return FfiConverterTypeCipherLoginDetails.lower(value)
+}
+
+
 public struct CipherPermissions {
     public let delete: Bool
     public let restore: Bool
@@ -2088,6 +2206,240 @@ public func FfiConverterTypeCipherPermissions_lift(_ buf: RustBuffer) throws -> 
 #endif
 public func FfiConverterTypeCipherPermissions_lower(_ value: CipherPermissions) -> RustBuffer {
     return FfiConverterTypeCipherPermissions.lower(value)
+}
+
+
+/**
+ * Options for configuring risk computation.
+ */
+public struct CipherRiskOptions {
+    /**
+     * Pre-computed password reuse map (password → count).
+     * If provided, enables reuse detection across ciphers.
+     */
+    public let passwordMap: PasswordReuseMap?
+    /**
+     * Whether to check passwords against Have I Been Pwned API.
+     * When true, makes network requests to check for exposed passwords.
+     */
+    public let checkExposed: Bool
+    /**
+     * Optional HIBP API base URL override. When None, uses the production HIBP URL.
+     * Can be used for testing or alternative password breach checking services.
+     */
+    public let hibpBaseUrl: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Pre-computed password reuse map (password → count).
+         * If provided, enables reuse detection across ciphers.
+         */passwordMap: PasswordReuseMap?, 
+        /**
+         * Whether to check passwords against Have I Been Pwned API.
+         * When true, makes network requests to check for exposed passwords.
+         */checkExposed: Bool, 
+        /**
+         * Optional HIBP API base URL override. When None, uses the production HIBP URL.
+         * Can be used for testing or alternative password breach checking services.
+         */hibpBaseUrl: String?) {
+        self.passwordMap = passwordMap
+        self.checkExposed = checkExposed
+        self.hibpBaseUrl = hibpBaseUrl
+    }
+}
+
+#if compiler(>=6)
+extension CipherRiskOptions: Sendable {}
+#endif
+
+
+
+
+
+extension CipherRiskOptions: Equatable, Hashable {
+    public static func ==(lhs: CipherRiskOptions, rhs: CipherRiskOptions) -> Bool {
+        if lhs.passwordMap != rhs.passwordMap {
+            return false
+        }
+        if lhs.checkExposed != rhs.checkExposed {
+            return false
+        }
+        if lhs.hibpBaseUrl != rhs.hibpBaseUrl {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(passwordMap)
+        hasher.combine(checkExposed)
+        hasher.combine(hibpBaseUrl)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherRiskOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherRiskOptions {
+        return
+            try CipherRiskOptions(
+                passwordMap: FfiConverterOptionTypePasswordReuseMap.read(from: &buf), 
+                checkExposed: FfiConverterBool.read(from: &buf), 
+                hibpBaseUrl: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherRiskOptions, into buf: inout [UInt8]) {
+        FfiConverterOptionTypePasswordReuseMap.write(value.passwordMap, into: &buf)
+        FfiConverterBool.write(value.checkExposed, into: &buf)
+        FfiConverterOptionString.write(value.hibpBaseUrl, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskOptions_lift(_ buf: RustBuffer) throws -> CipherRiskOptions {
+    return try FfiConverterTypeCipherRiskOptions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskOptions_lower(_ value: CipherRiskOptions) -> RustBuffer {
+    return FfiConverterTypeCipherRiskOptions.lower(value)
+}
+
+
+/**
+ * Risk evaluation result for a single cipher.
+ */
+public struct CipherRiskResult {
+    /**
+     * Cipher ID matching the input CipherLoginDetails.
+     */
+    public let id: CipherId
+    /**
+     * Password strength score from 0 (weakest) to 4 (strongest).
+     * Calculated using zxcvbn with cipher-specific context.
+     */
+    public let passwordStrength: UInt8
+    /**
+     * Result of checking password exposure via HIBP API.
+     * - `NotChecked`: check_exposed was false, or password was empty
+     * - `Found(n)`: Successfully checked, found in n breaches
+     * - `Error(msg)`: HIBP API request failed for this cipher with the given error message
+     */
+    public let exposedResult: ExposedPasswordResult
+    /**
+     * Number of times this password appears in the provided password_map.
+     * None if not found or if no password_map was provided.
+     */
+    public let reuseCount: UInt32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Cipher ID matching the input CipherLoginDetails.
+         */id: CipherId, 
+        /**
+         * Password strength score from 0 (weakest) to 4 (strongest).
+         * Calculated using zxcvbn with cipher-specific context.
+         */passwordStrength: UInt8, 
+        /**
+         * Result of checking password exposure via HIBP API.
+         * - `NotChecked`: check_exposed was false, or password was empty
+         * - `Found(n)`: Successfully checked, found in n breaches
+         * - `Error(msg)`: HIBP API request failed for this cipher with the given error message
+         */exposedResult: ExposedPasswordResult, 
+        /**
+         * Number of times this password appears in the provided password_map.
+         * None if not found or if no password_map was provided.
+         */reuseCount: UInt32?) {
+        self.id = id
+        self.passwordStrength = passwordStrength
+        self.exposedResult = exposedResult
+        self.reuseCount = reuseCount
+    }
+}
+
+#if compiler(>=6)
+extension CipherRiskResult: Sendable {}
+#endif
+
+
+
+
+
+extension CipherRiskResult: Equatable, Hashable {
+    public static func ==(lhs: CipherRiskResult, rhs: CipherRiskResult) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.passwordStrength != rhs.passwordStrength {
+            return false
+        }
+        if lhs.exposedResult != rhs.exposedResult {
+            return false
+        }
+        if lhs.reuseCount != rhs.reuseCount {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(passwordStrength)
+        hasher.combine(exposedResult)
+        hasher.combine(reuseCount)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherRiskResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherRiskResult {
+        return
+            try CipherRiskResult(
+                id: FfiConverterTypeCipherId.read(from: &buf), 
+                passwordStrength: FfiConverterUInt8.read(from: &buf), 
+                exposedResult: FfiConverterTypeExposedPasswordResult.read(from: &buf), 
+                reuseCount: FfiConverterOptionUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherRiskResult, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.id, into: &buf)
+        FfiConverterUInt8.write(value.passwordStrength, into: &buf)
+        FfiConverterTypeExposedPasswordResult.write(value.exposedResult, into: &buf)
+        FfiConverterOptionUInt32.write(value.reuseCount, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskResult_lift(_ buf: RustBuffer) throws -> CipherRiskResult {
+    return try FfiConverterTypeCipherRiskResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskResult_lower(_ value: CipherRiskResult) -> RustBuffer {
+    return FfiConverterTypeCipherRiskResult.lower(value)
 }
 
 
@@ -4714,6 +5066,80 @@ public func FfiConverterTypePasswordHistoryView_lower(_ value: PasswordHistoryVi
 }
 
 
+/**
+ * Password reuse map wrapper for WASM compatibility.
+ */
+public struct PasswordReuseMap {
+    /**
+     * Map of passwords to their occurrence count.
+     */
+    public let map: [String: UInt32]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Map of passwords to their occurrence count.
+         */map: [String: UInt32]) {
+        self.map = map
+    }
+}
+
+#if compiler(>=6)
+extension PasswordReuseMap: Sendable {}
+#endif
+
+
+
+
+
+extension PasswordReuseMap: Equatable, Hashable {
+    public static func ==(lhs: PasswordReuseMap, rhs: PasswordReuseMap) -> Bool {
+        if lhs.map != rhs.map {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(map)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePasswordReuseMap: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordReuseMap {
+        return
+            try PasswordReuseMap(
+                map: FfiConverterDictionaryStringUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PasswordReuseMap, into buf: inout [UInt8]) {
+        FfiConverterDictionaryStringUInt32.write(value.map, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordReuseMap_lift(_ buf: RustBuffer) throws -> PasswordReuseMap {
+    return try FfiConverterTypePasswordReuseMap.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordReuseMap_lower(_ value: PasswordReuseMap) -> RustBuffer {
+    return FfiConverterTypePasswordReuseMap.lower(value)
+}
+
+
 public struct SecureNote {
     public let type: SecureNoteType
 
@@ -5395,6 +5821,85 @@ extension CipherRepromptType: Equatable, Hashable {}
 
 
 
+
+
+
+
+
+/**
+ * Error type for cipher risk evaluation operations
+ */
+public enum CipherRiskError: Swift.Error {
+
+    
+    
+    case Reqwest(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherRiskError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherRiskError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherRiskError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Reqwest(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherRiskError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Reqwest(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskError_lift(_ buf: RustBuffer) throws -> CipherRiskError {
+    return try FfiConverterTypeCipherRiskError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRiskError_lower(_ value: CipherRiskError) -> RustBuffer {
+    return FfiConverterTypeCipherRiskError.lower(value)
+}
+
+
+extension CipherRiskError: Equatable, Hashable {}
+
+
+
+
+extension CipherRiskError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
 
 
 
@@ -6567,6 +7072,104 @@ extension EncryptFileError: Foundation.LocalizedError {
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
+ * Result of checking password exposure via HIBP API.
+ */
+
+public enum ExposedPasswordResult {
+    
+    /**
+     * Password exposure check was not performed (check_exposed was false or password was empty)
+     */
+    case notChecked
+    /**
+     * Successfully checked, found in this many breaches
+     */
+    case found(UInt32
+    )
+    /**
+     * HIBP API request failed with error message
+     */
+    case error(String
+    )
+
+}
+#if compiler(>=6)
+extension ExposedPasswordResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExposedPasswordResult: FfiConverterRustBuffer {
+    typealias SwiftType = ExposedPasswordResult
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExposedPasswordResult {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .notChecked
+        
+        case 2: return .found(try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        case 3: return .error(try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ExposedPasswordResult, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .notChecked:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .found(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterUInt32.write(v1, into: &buf)
+            
+        
+        case let .error(v1):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExposedPasswordResult_lift(_ buf: RustBuffer) throws -> ExposedPasswordResult {
+    return try FfiConverterTypeExposedPasswordResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExposedPasswordResult_lower(_ value: ExposedPasswordResult) -> RustBuffer {
+    return FfiConverterTypeExposedPasswordResult.lower(value)
+}
+
+
+
+
+extension ExposedPasswordResult: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
  * Represents the type of a [FieldView].
  */
 
@@ -7112,6 +7715,30 @@ extension UriMatchType: Equatable, Hashable {}
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = UInt32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionBool: FfiConverterRustBuffer {
     typealias SwiftType = Bool?
 
@@ -7368,6 +7995,30 @@ fileprivate struct FfiConverterOptionTypeLoginView: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeLoginView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePasswordReuseMap: FfiConverterRustBuffer {
+    typealias SwiftType = PasswordReuseMap?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePasswordReuseMap.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePasswordReuseMap.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -8230,6 +8881,32 @@ fileprivate struct FfiConverterSequenceTypeCollectionId: FfiConverterRustBuffer 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterDictionaryStringUInt32: FfiConverterRustBuffer {
+    public static func write(_ value: [String: UInt32], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterUInt32.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: UInt32] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: UInt32]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterUInt32.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterDictionaryTypeCollectionIdString: FfiConverterRustBuffer {
     public static func write(_ value: [CollectionId: String], into buf: inout [UInt8]) {
         let len = Int32(value.count)
@@ -8401,8 +9078,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
