@@ -1240,6 +1240,7 @@ public struct Cipher {
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
     public let archivedDate: DateTime?
+    public let data: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1247,7 +1248,7 @@ public struct Cipher {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
+         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1275,6 +1276,7 @@ public struct Cipher {
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
         self.archivedDate = archivedDate
+        self.data = data
     }
 }
 
@@ -1369,6 +1371,9 @@ extension Cipher: Equatable, Hashable {
         if lhs.archivedDate != rhs.archivedDate {
             return false
         }
+        if lhs.data != rhs.data {
+            return false
+        }
         return true
     }
 
@@ -1400,6 +1405,7 @@ extension Cipher: Equatable, Hashable {
         hasher.combine(deletedDate)
         hasher.combine(revisionDate)
         hasher.combine(archivedDate)
+        hasher.combine(data)
     }
 }
 
@@ -1438,7 +1444,8 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
-                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf)
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                data: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -1470,6 +1477,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
+        FfiConverterOptionString.write(value.data, into: &buf)
     }
 }
 
@@ -5565,6 +5573,10 @@ public enum CipherError: Swift.Error {
     
     case AttachmentsWithoutKeys(message: String)
     
+    case Chrono(message: String)
+    
+    case SerdeJson(message: String)
+    
 }
 
 
@@ -5597,6 +5609,14 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 5: return .Chrono(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .SerdeJson(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -5616,6 +5636,10 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
         case .AttachmentsWithoutKeys(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
+        case .Chrono(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .SerdeJson(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
 
         
         }
@@ -9078,9 +9102,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 
