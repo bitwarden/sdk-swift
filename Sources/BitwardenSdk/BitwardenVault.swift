@@ -5569,9 +5569,19 @@ public enum CipherError: Swift.Error {
     
     case Crypto(message: String)
     
+    case Decrypt(message: String)
+    
     case Encrypt(message: String)
     
     case AttachmentsWithoutKeys(message: String)
+    
+    case OrganizationAlreadySet(message: String)
+    
+    case PutShare(message: String)
+    
+    case PutShareMany(message: String)
+    
+    case Repository(message: String)
     
     case Chrono(message: String)
     
@@ -5601,19 +5611,39 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .Encrypt(
+        case 3: return .Decrypt(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .AttachmentsWithoutKeys(
+        case 4: return .Encrypt(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .Chrono(
+        case 5: return .AttachmentsWithoutKeys(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .SerdeJson(
+        case 6: return .OrganizationAlreadySet(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .PutShare(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .PutShareMany(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .Chrono(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .SerdeJson(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -5632,14 +5662,24 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .Encrypt(_ /* message is ignored*/):
+        case .Decrypt(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
-        case .AttachmentsWithoutKeys(_ /* message is ignored*/):
+        case .Encrypt(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .Chrono(_ /* message is ignored*/):
+        case .AttachmentsWithoutKeys(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .SerdeJson(_ /* message is ignored*/):
+        case .OrganizationAlreadySet(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
+        case .PutShare(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .PutShareMany(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .Chrono(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
+        case .SerdeJson(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
 
         
         }
@@ -9103,8 +9143,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
