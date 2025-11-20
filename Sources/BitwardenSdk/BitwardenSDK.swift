@@ -2982,15 +2982,6 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
      */
     func makeUpdatePassword(newPassword: String) throws  -> UpdatePasswordResponse
     
-    /**
-     * Create the data necessary to update the user's password. The user's encryption key is
-     * re-encrypted with the new password. This returns the new encrypted user key and the new
-     * password hash but does not update sdk state.
-     *
-     * Note: This is deprecated and `make_update_password` should be used instead
-     */
-    func updatePassword(newPassword: String) throws  -> UpdatePasswordResponse
-    
 }
 open class CryptoClient: CryptoClientProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -3202,22 +3193,6 @@ open func makeUpdateKdf(password: String, kdf: Kdf)throws  -> UpdateKdfResponse 
 open func makeUpdatePassword(newPassword: String)throws  -> UpdatePasswordResponse  {
     return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_make_update_password(
-            self.uniffiCloneHandle(),
-        FfiConverterString.lower(newPassword),$0
-    )
-})
-}
-    
-    /**
-     * Create the data necessary to update the user's password. The user's encryption key is
-     * re-encrypted with the new password. This returns the new encrypted user key and the new
-     * password hash but does not update sdk state.
-     *
-     * Note: This is deprecated and `make_update_password` should be used instead
-     */
-open func updatePassword(newPassword: String)throws  -> UpdatePasswordResponse  {
-    return try  FfiConverterTypeUpdatePasswordResponse_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
-    uniffi_bitwarden_uniffi_fn_method_cryptoclient_update_password(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(newPassword),$0
     )
@@ -8021,9 +7996,6 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_password() != 31827) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_update_password() != 47825) {
-        return InitializationResult.apiChecksumMismatch
-    }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 54193) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -8176,17 +8148,17 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
     return InitializationResult.ok
 }()
 

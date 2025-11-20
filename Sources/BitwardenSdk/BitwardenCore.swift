@@ -2477,7 +2477,7 @@ public func FfiConverterTypeUpdateKdfResponse_lower(_ value: UpdateKdfResponse) 
 
 
 /**
- * Response from the `update_password` function
+ * Response from the `make_update_password` function
  */
 public struct UpdatePasswordResponse {
     /**
