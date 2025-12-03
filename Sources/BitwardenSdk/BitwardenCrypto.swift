@@ -703,6 +703,8 @@ public enum CryptoError: Swift.Error {
     
     case ReadOnlyKeyStore(message: String)
     
+    case InvalidKeyStoreOperation(message: String)
+    
     case InsufficientKdfParameters(message: String)
     
     case EncString(message: String)
@@ -789,55 +791,59 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .InsufficientKdfParameters(
+        case 12: return .InvalidKeyStoreOperation(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .EncString(
+        case 13: return .InsufficientKdfParameters(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .Rsa(
+        case 14: return .EncString(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .Fingerprint(
+        case 15: return .Rsa(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .Argon(
+        case 16: return .Fingerprint(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .ZeroNumber(
+        case 17: return .Argon(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .OperationNotSupported(
+        case 18: return .ZeroNumber(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .WrongKeyType(
+        case 19: return .OperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 20: return .WrongCoseKeyId(
+        case 20: return .WrongKeyType(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .InvalidNonceLength(
+        case 21: return .WrongCoseKeyId(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .InvalidPadding(
+        case 22: return .InvalidNonceLength(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .Signature(
+        case 23: return .InvalidPadding(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 24: return .Encoding(
+        case 24: return .Signature(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 25: return .Encoding(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -874,32 +880,34 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(10))
         case .ReadOnlyKeyStore(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .InsufficientKdfParameters(_ /* message is ignored*/):
+        case .InvalidKeyStoreOperation(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .EncString(_ /* message is ignored*/):
+        case .InsufficientKdfParameters(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .Rsa(_ /* message is ignored*/):
+        case .EncString(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .Fingerprint(_ /* message is ignored*/):
+        case .Rsa(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .Argon(_ /* message is ignored*/):
+        case .Fingerprint(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
-        case .ZeroNumber(_ /* message is ignored*/):
+        case .Argon(_ /* message is ignored*/):
             writeInt(&buf, Int32(17))
-        case .OperationNotSupported(_ /* message is ignored*/):
+        case .ZeroNumber(_ /* message is ignored*/):
             writeInt(&buf, Int32(18))
-        case .WrongKeyType(_ /* message is ignored*/):
+        case .OperationNotSupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(19))
-        case .WrongCoseKeyId(_ /* message is ignored*/):
+        case .WrongKeyType(_ /* message is ignored*/):
             writeInt(&buf, Int32(20))
-        case .InvalidNonceLength(_ /* message is ignored*/):
+        case .WrongCoseKeyId(_ /* message is ignored*/):
             writeInt(&buf, Int32(21))
-        case .InvalidPadding(_ /* message is ignored*/):
+        case .InvalidNonceLength(_ /* message is ignored*/):
             writeInt(&buf, Int32(22))
-        case .Signature(_ /* message is ignored*/):
+        case .InvalidPadding(_ /* message is ignored*/):
             writeInt(&buf, Int32(23))
-        case .Encoding(_ /* message is ignored*/):
+        case .Signature(_ /* message is ignored*/):
             writeInt(&buf, Int32(24))
+        case .Encoding(_ /* message is ignored*/):
+            writeInt(&buf, Int32(25))
 
         
         }

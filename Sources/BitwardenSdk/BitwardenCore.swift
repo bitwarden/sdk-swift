@@ -1512,19 +1512,12 @@ public struct InitUserCryptoRequest {
      */
     public let email: String
     /**
-     * The user's encrypted private key
+     * The user's account cryptographic state, containing their signature and
+     * public-key-encryption keys, along with the signed security state, protected by the user key
      */
-    public let privateKey: EncString
+    public let accountCryptographicState: WrappedAccountCryptographicState
     /**
-     * The user's signing key
-     */
-    public let signingKey: EncString?
-    /**
-     * The user's security state
-     */
-    public let securityState: SignedSecurityState?
-    /**
-     * The initialization method to use
+     * The method to decrypt the user's account symmetric key (user key)
      */
     public let method: InitUserCryptoMethod
 
@@ -1541,23 +1534,16 @@ public struct InitUserCryptoRequest {
          * The user's email address
          */email: String, 
         /**
-         * The user's encrypted private key
-         */privateKey: EncString, 
+         * The user's account cryptographic state, containing their signature and
+         * public-key-encryption keys, along with the signed security state, protected by the user key
+         */accountCryptographicState: WrappedAccountCryptographicState, 
         /**
-         * The user's signing key
-         */signingKey: EncString?, 
-        /**
-         * The user's security state
-         */securityState: SignedSecurityState?, 
-        /**
-         * The initialization method to use
+         * The method to decrypt the user's account symmetric key (user key)
          */method: InitUserCryptoMethod) {
         self.userId = userId
         self.kdfParams = kdfParams
         self.email = email
-        self.privateKey = privateKey
-        self.signingKey = signingKey
-        self.securityState = securityState
+        self.accountCryptographicState = accountCryptographicState
         self.method = method
     }
 }
@@ -1581,13 +1567,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         if lhs.email != rhs.email {
             return false
         }
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.signingKey != rhs.signingKey {
-            return false
-        }
-        if lhs.securityState != rhs.securityState {
+        if lhs.accountCryptographicState != rhs.accountCryptographicState {
             return false
         }
         if lhs.method != rhs.method {
@@ -1600,9 +1580,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         hasher.combine(userId)
         hasher.combine(kdfParams)
         hasher.combine(email)
-        hasher.combine(privateKey)
-        hasher.combine(signingKey)
-        hasher.combine(securityState)
+        hasher.combine(accountCryptographicState)
         hasher.combine(method)
     }
 }
@@ -1619,9 +1597,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
                 userId: FfiConverterOptionTypeUserId.read(from: &buf), 
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
-                privateKey: FfiConverterTypeEncString.read(from: &buf), 
-                signingKey: FfiConverterOptionTypeEncString.read(from: &buf), 
-                securityState: FfiConverterOptionTypeSignedSecurityState.read(from: &buf), 
+                accountCryptographicState: FfiConverterTypeWrappedAccountCryptographicState.read(from: &buf), 
                 method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf)
         )
     }
@@ -1630,9 +1606,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
         FfiConverterOptionTypeUserId.write(value.userId, into: &buf)
         FfiConverterTypeKdf.write(value.kdfParams, into: &buf)
         FfiConverterString.write(value.email, into: &buf)
-        FfiConverterTypeEncString.write(value.privateKey, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.signingKey, into: &buf)
-        FfiConverterOptionTypeSignedSecurityState.write(value.securityState, into: &buf)
+        FfiConverterTypeWrappedAccountCryptographicState.write(value.accountCryptographicState, into: &buf)
         FfiConverterTypeInitUserCryptoMethod.write(value.method, into: &buf)
     }
 }
@@ -2927,6 +2901,146 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAs
 
 
 /**
+ * Errors that can occur during initialization of the account cryptographic state.
+ */
+public enum AccountCryptographyInitializationError: Swift.Error {
+
+    
+    
+    /**
+     * The encryption algorithm from the user key does not match one of the encrypted items.
+     * This would mean that the user's account is corrupt.
+     */
+    case WrongUserKeyType(message: String)
+    
+    /**
+     * The provide user-key is incorrect or out-of-date. This may happen when a use-key changed
+     * and a local unlock-method is not yet updated.
+     */
+    case WrongUserKey(message: String)
+    
+    /**
+     * The decrypted data is corrupt.
+     */
+    case CorruptData(message: String)
+    
+    /**
+     * The decrypted data is corrupt.
+     */
+    case TamperedData(message: String)
+    
+    /**
+     * The key store is already initialized with account keys. Currently, updating keys is not a
+     * supported operation
+     */
+    case KeyStoreAlreadyInitialized(message: String)
+    
+    /**
+     * A generic cryptographic error occurred.
+     */
+    case GenericCrypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccountCryptographyInitializationError: FfiConverterRustBuffer {
+    typealias SwiftType = AccountCryptographyInitializationError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountCryptographyInitializationError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .WrongUserKeyType(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .WrongUserKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .CorruptData(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .TamperedData(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .KeyStoreAlreadyInitialized(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .GenericCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AccountCryptographyInitializationError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .WrongUserKeyType(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .WrongUserKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .CorruptData(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .TamperedData(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .KeyStoreAlreadyInitialized(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .GenericCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountCryptographyInitializationError_lift(_ buf: RustBuffer) throws -> AccountCryptographyInitializationError {
+    return try FfiConverterTypeAccountCryptographyInitializationError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountCryptographyInitializationError_lower(_ value: AccountCryptographyInitializationError) -> RustBuffer {
+    return FfiConverterTypeAccountCryptographyInitializationError.lower(value)
+}
+
+
+extension AccountCryptographyInitializationError: Equatable, Hashable {}
+
+
+
+
+extension AccountCryptographyInitializationError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
  * Errors from performing network requests.
  */
 public enum ApiError: Swift.Error {
@@ -3747,11 +3861,7 @@ public enum EncryptionSettingsError: Swift.Error {
     
     case Crypto(message: String)
     
-    case InvalidPrivateKey(message: String)
-    
-    case InvalidSigningKey(message: String)
-    
-    case InvalidSecurityState(message: String)
+    case CryptoInitialization(message: String)
     
     case MissingPrivateKey(message: String)
     
@@ -3779,27 +3889,19 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .InvalidPrivateKey(
+        case 2: return .CryptoInitialization(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .InvalidSigningKey(
+        case 3: return .MissingPrivateKey(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .InvalidSecurityState(
+        case 4: return .UserIdAlreadySet(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .MissingPrivateKey(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 6: return .UserIdAlreadySet(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 7: return .WrongPin(
+        case 5: return .WrongPin(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -3816,18 +3918,14 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
         
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .InvalidPrivateKey(_ /* message is ignored*/):
+        case .CryptoInitialization(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .InvalidSigningKey(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
-        case .InvalidSecurityState(_ /* message is ignored*/):
-            writeInt(&buf, Int32(4))
         case .MissingPrivateKey(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(3))
         case .UserIdAlreadySet(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(4))
         case .WrongPin(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(5))
 
         
         }
@@ -4634,6 +4732,118 @@ extension UserFingerprintError: Foundation.LocalizedError {
 
 
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Any keys / cryptographic protection "downstream" from the account symmetric key (user key).
+ * Private keys are protected by the user key.
+ */
+
+public enum WrappedAccountCryptographicState {
+    
+    /**
+     * A V1 user has only a private key.
+     */
+    case v1(
+        /**
+         * The user's encryption private key, wrapped by the user key.
+         */privateKey: EncString
+    )
+    /**
+     * A V2 user has a private key, a signing key, a signed public key and a signed security state.
+     * The SignedPublicKey ensures that others can verify the public key is claimed by an identity
+     * they want to share data to. The signed security state protects against cryptographic
+     * downgrades.
+     */
+    case v2(
+        /**
+         * The user's encryption private key, wrapped by the user key.
+         */privateKey: EncString, 
+        /**
+         * The user's public-key for the private key, signed by the user's signing key.
+         * Note: This is optional for backwards compatibility. After a few releases, this will be
+         * made non-optional once all clients store the response on sync.
+         */signedPublicKey: SignedPublicKey?, 
+        /**
+         * The user's signing key, wrapped by the user key.
+         */signingKey: EncString, 
+        /**
+         * The user's signed security state.
+         */securityState: SignedSecurityState
+    )
+
+}
+#if compiler(>=6)
+extension WrappedAccountCryptographicState: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWrappedAccountCryptographicState: FfiConverterRustBuffer {
+    typealias SwiftType = WrappedAccountCryptographicState
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WrappedAccountCryptographicState {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .v1(privateKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        case 2: return .v2(privateKey: try FfiConverterTypeEncString.read(from: &buf), signedPublicKey: try FfiConverterOptionTypeSignedPublicKey.read(from: &buf), signingKey: try FfiConverterTypeEncString.read(from: &buf), securityState: try FfiConverterTypeSignedSecurityState.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: WrappedAccountCryptographicState, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .v1(privateKey):
+            writeInt(&buf, Int32(1))
+            FfiConverterTypeEncString.write(privateKey, into: &buf)
+            
+        
+        case let .v2(privateKey,signedPublicKey,signingKey,securityState):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeEncString.write(privateKey, into: &buf)
+            FfiConverterOptionTypeSignedPublicKey.write(signedPublicKey, into: &buf)
+            FfiConverterTypeEncString.write(signingKey, into: &buf)
+            FfiConverterTypeSignedSecurityState.write(securityState, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWrappedAccountCryptographicState_lift(_ buf: RustBuffer) throws -> WrappedAccountCryptographicState {
+    return try FfiConverterTypeWrappedAccountCryptographicState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWrappedAccountCryptographicState_lower(_ value: WrappedAccountCryptographicState) -> RustBuffer {
+    return FfiConverterTypeWrappedAccountCryptographicState.lower(value)
+}
+
+
+
+
+extension WrappedAccountCryptographicState: Equatable, Hashable {}
+
+
+
+
+
+
+
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4685,30 +4895,6 @@ fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeSignedSecurityState: FfiConverterRustBuffer {
-    typealias SwiftType = SignedSecurityState?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeSignedSecurityState.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeSignedSecurityState.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
     typealias SwiftType = UserId?
 
@@ -4733,8 +4919,8 @@ fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
-    typealias SwiftType = EncString?
+fileprivate struct FfiConverterOptionTypeSignedPublicKey: FfiConverterRustBuffer {
+    typealias SwiftType = SignedPublicKey?
 
     public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         guard let value = value else {
@@ -4742,13 +4928,13 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
             return
         }
         writeInt(&buf, Int8(1))
-        FfiConverterTypeEncString.write(value, into: &buf)
+        FfiConverterTypeSignedPublicKey.write(value, into: &buf)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
-        case 1: return try FfiConverterTypeEncString.read(from: &buf)
+        case 1: return try FfiConverterTypeSignedPublicKey.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
