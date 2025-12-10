@@ -475,6 +475,117 @@ fileprivate struct FfiConverterString: FfiConverter {
 
 
 /**
+ * A set of keys where a given `DownstreamKey` is protected by an encrypted public/private
+ * key-pair. The `DownstreamKey` is used to encrypt/decrypt data, while the public/private key-pair
+ * is used to rotate the `DownstreamKey`.
+ *
+ * The `PrivateKey` is protected by an `UpstreamKey`, such as a `DeviceKey`, or `PrfKey`,
+ * and the `PublicKey` is protected by the `DownstreamKey`. This setup allows:
+ *
+ * - Access to `DownstreamKey` by knowing the `UpstreamKey`
+ * - Rotation to a `NewDownstreamKey` by knowing the current `DownstreamKey`, without needing
+ * access to the `UpstreamKey`
+ */
+public struct RotateableKeySet {
+    /**
+     * `DownstreamKey` protected by encapsulation key
+     */
+    public let encapsulatedDownstreamKey: UnsignedSharedKey
+    /**
+     * Encapsulation key protected by `DownstreamKey`
+     */
+    public let encryptedEncapsulationKey: EncString
+    /**
+     * Decapsulation key protected by `UpstreamKey`
+     */
+    public let encryptedDecapsulationKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `DownstreamKey` protected by encapsulation key
+         */encapsulatedDownstreamKey: UnsignedSharedKey, 
+        /**
+         * Encapsulation key protected by `DownstreamKey`
+         */encryptedEncapsulationKey: EncString, 
+        /**
+         * Decapsulation key protected by `UpstreamKey`
+         */encryptedDecapsulationKey: EncString) {
+        self.encapsulatedDownstreamKey = encapsulatedDownstreamKey
+        self.encryptedEncapsulationKey = encryptedEncapsulationKey
+        self.encryptedDecapsulationKey = encryptedDecapsulationKey
+    }
+}
+
+#if compiler(>=6)
+extension RotateableKeySet: Sendable {}
+#endif
+
+
+
+
+
+extension RotateableKeySet: Equatable, Hashable {
+    public static func ==(lhs: RotateableKeySet, rhs: RotateableKeySet) -> Bool {
+        if lhs.encapsulatedDownstreamKey != rhs.encapsulatedDownstreamKey {
+            return false
+        }
+        if lhs.encryptedEncapsulationKey != rhs.encryptedEncapsulationKey {
+            return false
+        }
+        if lhs.encryptedDecapsulationKey != rhs.encryptedDecapsulationKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(encapsulatedDownstreamKey)
+        hasher.combine(encryptedEncapsulationKey)
+        hasher.combine(encryptedDecapsulationKey)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRotateableKeySet: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RotateableKeySet {
+        return
+            try RotateableKeySet(
+                encapsulatedDownstreamKey: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
+                encryptedEncapsulationKey: FfiConverterTypeEncString.read(from: &buf), 
+                encryptedDecapsulationKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RotateableKeySet, into buf: inout [UInt8]) {
+        FfiConverterTypeUnsignedSharedKey.write(value.encapsulatedDownstreamKey, into: &buf)
+        FfiConverterTypeEncString.write(value.encryptedEncapsulationKey, into: &buf)
+        FfiConverterTypeEncString.write(value.encryptedDecapsulationKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateableKeySet_lift(_ buf: RustBuffer) throws -> RotateableKeySet {
+    return try FfiConverterTypeRotateableKeySet.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateableKeySet_lower(_ value: RotateableKeySet) -> RustBuffer {
+    return FfiConverterTypeRotateableKeySet.lower(value)
+}
+
+
+/**
  * RSA Key Pair
  *
  * Consists of a public key and an encrypted private key.

@@ -2969,6 +2969,12 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     func initializeUserCrypto(req: InitUserCryptoRequest) async throws 
     
     /**
+     * Creates the a new rotateable key set for the current user key protected
+     * by a key derived from the given PRF.
+     */
+    func makePrfUserKeySet(prf: B64) throws  -> RotateableKeySet
+    
+    /**
      * Create the data necessary to update the user's kdf settings. The user's encryption key is
      * re-encrypted for the password under the new kdf settings. This returns the new encrypted
      * user key and the new password hash but does not update sdk state.
@@ -3168,6 +3174,19 @@ open func initializeUserCrypto(req: InitUserCryptoRequest)async throws   {
             liftFunc: { $0 },
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
+}
+    
+    /**
+     * Creates the a new rotateable key set for the current user key protected
+     * by a key derived from the given PRF.
+     */
+open func makePrfUserKeySet(prf: B64)throws  -> RotateableKeySet  {
+    return try  FfiConverterTypeRotateableKeySet_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_make_prf_user_key_set(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeB64_lower(prf),$0
+    )
+})
 }
     
     /**
@@ -7990,6 +8009,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_user_crypto() != 14921) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_prf_user_key_set() != 20813) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 38445) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -8148,17 +8170,17 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 

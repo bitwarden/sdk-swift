@@ -7342,7 +7342,7 @@ public enum GetCipherError: Swift.Error {
     
     case Crypto(message: String)
     
-    case RepositoryError(message: String)
+    case Repository(message: String)
     
 }
 
@@ -7368,7 +7368,7 @@ public struct FfiConverterTypeGetCipherError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .RepositoryError(
+        case 3: return .Repository(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -7387,7 +7387,7 @@ public struct FfiConverterTypeGetCipherError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .RepositoryError(_ /* message is ignored*/):
+        case .Repository(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
 
         
@@ -9142,9 +9142,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
