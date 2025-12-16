@@ -1578,6 +1578,11 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
      */
     func moveToOrganization(cipher: CipherView, organizationId: OrganizationId) throws  -> CipherView
     
+    /**
+     * Prepare ciphers for bulk share to an organization
+     */
+    func prepareCiphersForBulkShare(ciphers: [CipherView], organizationId: OrganizationId, collectionIds: [CollectionId]) async throws  -> [EncryptionContext]
+    
 }
 open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -1696,6 +1701,26 @@ open func moveToOrganization(cipher: CipherView, organizationId: OrganizationId)
         FfiConverterTypeOrganizationId_lower(organizationId),$0
     )
 })
+}
+    
+    /**
+     * Prepare ciphers for bulk share to an organization
+     */
+open func prepareCiphersForBulkShare(ciphers: [CipherView], organizationId: OrganizationId, collectionIds: [CollectionId])async throws  -> [EncryptionContext]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_prepare_ciphers_for_bulk_share(
+                    self.uniffiCloneHandle(),
+                    FfiConverterSequenceTypeCipherView.lower(ciphers),FfiConverterTypeOrganizationId_lower(organizationId),FfiConverterSequenceTypeCollectionId.lower(collectionIds)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeEncryptionContext.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
 }
     
 }
@@ -7530,6 +7555,31 @@ fileprivate struct FfiConverterSequenceTypeCipherView: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeEncryptionContext: FfiConverterRustBuffer {
+    typealias SwiftType = [EncryptionContext]
+
+    public static func write(_ value: [EncryptionContext], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeEncryptionContext.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [EncryptionContext] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [EncryptionContext]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeEncryptionContext.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
     typealias SwiftType = [Fido2CredentialView]
 
@@ -7647,6 +7697,31 @@ fileprivate struct FfiConverterSequenceTypePasswordHistoryView: FfiConverterRust
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypePasswordHistoryView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCollectionId: FfiConverterRustBuffer {
+    typealias SwiftType = [CollectionId]
+
+    public static func write(_ value: [CollectionId], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCollectionId.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionId] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CollectionId]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCollectionId.read(from: &buf))
         }
         return seq
     }
@@ -7891,6 +7966,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 57722) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_prepare_ciphers_for_bulk_share() != 63676) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 4128) {
@@ -8168,17 +8246,17 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenStateInitialized()
     uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     return InitializationResult.ok
 }()
 
