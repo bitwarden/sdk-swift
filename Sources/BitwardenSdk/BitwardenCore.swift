@@ -910,6 +910,8 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * user_agent: "Bitwarden Rust-SDK".to_string(),
  * device_type: DeviceType::SDK,
  * bitwarden_client_version: None,
+ * bitwarden_package_type: None,
+ * device_identifier: None,
  * };
  * let default = ClientSettings::default();
  * ```
@@ -932,9 +934,18 @@ public struct ClientSettings {
      */
     public let deviceType: DeviceType
     /**
-     * Bitwarden Client Version to send to Bitwarden.
+     * Device identifier to send to Bitwarden. Optional for now in transition period.
+     */
+    public let deviceIdentifier: String?
+    /**
+     * Bitwarden Client Version to send to Bitwarden. Optional for now in transition period.
      */
     public let bitwardenClientVersion: String?
+    /**
+     * Bitwarden Package Type to send to Bitwarden. We should evaluate this field to see if it
+     * should be optional later.
+     */
+    public let bitwardenPackageType: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -952,13 +963,22 @@ public struct ClientSettings {
          * Device type to send to Bitwarden. Defaults to SDK
          */deviceType: DeviceType, 
         /**
-         * Bitwarden Client Version to send to Bitwarden.
-         */bitwardenClientVersion: String?) {
+         * Device identifier to send to Bitwarden. Optional for now in transition period.
+         */deviceIdentifier: String?, 
+        /**
+         * Bitwarden Client Version to send to Bitwarden. Optional for now in transition period.
+         */bitwardenClientVersion: String?, 
+        /**
+         * Bitwarden Package Type to send to Bitwarden. We should evaluate this field to see if it
+         * should be optional later.
+         */bitwardenPackageType: String?) {
         self.identityUrl = identityUrl
         self.apiUrl = apiUrl
         self.userAgent = userAgent
         self.deviceType = deviceType
+        self.deviceIdentifier = deviceIdentifier
         self.bitwardenClientVersion = bitwardenClientVersion
+        self.bitwardenPackageType = bitwardenPackageType
     }
 }
 
@@ -984,7 +1004,13 @@ extension ClientSettings: Equatable, Hashable {
         if lhs.deviceType != rhs.deviceType {
             return false
         }
+        if lhs.deviceIdentifier != rhs.deviceIdentifier {
+            return false
+        }
         if lhs.bitwardenClientVersion != rhs.bitwardenClientVersion {
+            return false
+        }
+        if lhs.bitwardenPackageType != rhs.bitwardenPackageType {
             return false
         }
         return true
@@ -995,7 +1021,9 @@ extension ClientSettings: Equatable, Hashable {
         hasher.combine(apiUrl)
         hasher.combine(userAgent)
         hasher.combine(deviceType)
+        hasher.combine(deviceIdentifier)
         hasher.combine(bitwardenClientVersion)
+        hasher.combine(bitwardenPackageType)
     }
 }
 
@@ -1012,7 +1040,9 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
                 apiUrl: FfiConverterString.read(from: &buf), 
                 userAgent: FfiConverterString.read(from: &buf), 
                 deviceType: FfiConverterTypeDeviceType.read(from: &buf), 
-                bitwardenClientVersion: FfiConverterOptionString.read(from: &buf)
+                deviceIdentifier: FfiConverterOptionString.read(from: &buf), 
+                bitwardenClientVersion: FfiConverterOptionString.read(from: &buf), 
+                bitwardenPackageType: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -1021,7 +1051,9 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
         FfiConverterString.write(value.apiUrl, into: &buf)
         FfiConverterString.write(value.userAgent, into: &buf)
         FfiConverterTypeDeviceType.write(value.deviceType, into: &buf)
+        FfiConverterOptionString.write(value.deviceIdentifier, into: &buf)
         FfiConverterOptionString.write(value.bitwardenClientVersion, into: &buf)
+        FfiConverterOptionString.write(value.bitwardenPackageType, into: &buf)
     }
 }
 
@@ -5429,8 +5461,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
