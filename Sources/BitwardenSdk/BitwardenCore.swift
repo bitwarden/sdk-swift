@@ -4342,6 +4342,110 @@ extension InitUserCryptoMethod: Equatable, Hashable {}
 
 
 /**
+ * Errors that can occur when making keys for TDE registration.
+ */
+public enum MakeKeysError: Swift.Error {
+
+    
+    
+    /**
+     * Failed to initialize account cryptography
+     */
+    case AccountCryptographyInitialization(message: String)
+    
+    /**
+     * Failed to create request model
+     */
+    case RequestModelCreation(message: String)
+    
+    /**
+     * Generic crypto error
+     */
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeKeysError: FfiConverterRustBuffer {
+    typealias SwiftType = MakeKeysError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeKeysError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .AccountCryptographyInitialization(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .RequestModelCreation(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MakeKeysError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .AccountCryptographyInitialization(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .RequestModelCreation(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeKeysError_lift(_ buf: RustBuffer) throws -> MakeKeysError {
+    return try FfiConverterTypeMakeKeysError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeKeysError_lower(_ value: MakeKeysError) -> RustBuffer {
+    return FfiConverterTypeMakeKeysError.lower(value)
+}
+
+
+extension MakeKeysError: Equatable, Hashable {}
+
+
+
+
+extension MakeKeysError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
  * Error for master password related operations.
  */
 public enum MasterPasswordError: Swift.Error {
@@ -5325,8 +5429,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 
