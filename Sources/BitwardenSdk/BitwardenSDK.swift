@@ -818,6 +818,18 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
      */
     func validatePin(pin: String, pinProtectedUserKey: EncString) throws  -> Bool
     
+    /**
+     * Validates a PIN against a PIN-protected user key envelope.
+     *
+     * The `pin_protected_user_key_envelope` key is obtained when enabling PIN unlock on the
+     * account with the [bitwarden_core::key_management::CryptoClient::enroll_pin] method.
+     *
+     * Returns `false` if validation fails for any reason:
+     * - The PIN is incorrect
+     * - The envelope is corrupted or malformed
+     */
+    func validatePinProtectedUserKeyEnvelope(pin: String, pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope)  -> Bool
+    
 }
 open class AuthClient: AuthClientProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -1039,6 +1051,26 @@ open func validatePin(pin: String, pinProtectedUserKey: EncString)throws  -> Boo
             self.uniffiCloneHandle(),
         FfiConverterString.lower(pin),
         FfiConverterTypeEncString_lower(pinProtectedUserKey),$0
+    )
+})
+}
+    
+    /**
+     * Validates a PIN against a PIN-protected user key envelope.
+     *
+     * The `pin_protected_user_key_envelope` key is obtained when enabling PIN unlock on the
+     * account with the [bitwarden_core::key_management::CryptoClient::enroll_pin] method.
+     *
+     * Returns `false` if validation fails for any reason:
+     * - The PIN is incorrect
+     * - The envelope is corrupted or malformed
+     */
+open func validatePinProtectedUserKeyEnvelope(pin: String, pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_authclient_validate_pin_protected_user_key_envelope(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(pin),
+        FfiConverterTypePasswordProtectedKeyEnvelope_lower(pinProtectedUserKeyEnvelope),$0
     )
 })
 }
@@ -7935,6 +7967,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin() != 64836) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin_protected_user_key_envelope() != 5097) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_get() != 51068) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -8246,17 +8281,17 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     return InitializationResult.ok
 }()
 
