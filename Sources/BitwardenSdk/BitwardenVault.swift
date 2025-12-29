@@ -1502,6 +1502,7 @@ public func FfiConverterTypeCipher_lower(_ value: Cipher) -> RustBuffer {
  */
 public struct CipherCreateRequest {
     public let organizationId: OrganizationId?
+    public let collectionIds: [CollectionId]
     public let folderId: FolderId?
     public let name: String
     public let notes: String?
@@ -1512,8 +1513,9 @@ public struct CipherCreateRequest {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(organizationId: OrganizationId?, folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView]) {
+    public init(organizationId: OrganizationId?, collectionIds: [CollectionId], folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView]) {
         self.organizationId = organizationId
+        self.collectionIds = collectionIds
         self.folderId = folderId
         self.name = name
         self.notes = notes
@@ -1535,6 +1537,9 @@ extension CipherCreateRequest: Sendable {}
 extension CipherCreateRequest: Equatable, Hashable {
     public static func ==(lhs: CipherCreateRequest, rhs: CipherCreateRequest) -> Bool {
         if lhs.organizationId != rhs.organizationId {
+            return false
+        }
+        if lhs.collectionIds != rhs.collectionIds {
             return false
         }
         if lhs.folderId != rhs.folderId {
@@ -1563,6 +1568,7 @@ extension CipherCreateRequest: Equatable, Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(organizationId)
+        hasher.combine(collectionIds)
         hasher.combine(folderId)
         hasher.combine(name)
         hasher.combine(notes)
@@ -1583,6 +1589,7 @@ public struct FfiConverterTypeCipherCreateRequest: FfiConverterRustBuffer {
         return
             try CipherCreateRequest(
                 organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
                 folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
@@ -1595,6 +1602,7 @@ public struct FfiConverterTypeCipherCreateRequest: FfiConverterRustBuffer {
 
     public static func write(_ value: CipherCreateRequest, into buf: inout [UInt8]) {
         FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
@@ -5577,15 +5585,13 @@ public enum CipherError: Swift.Error {
     
     case OrganizationAlreadySet(message: String)
     
-    case PutShare(message: String)
-    
-    case PutShareMany(message: String)
-    
     case Repository(message: String)
     
     case Chrono(message: String)
     
     case SerdeJson(message: String)
+    
+    case Api(message: String)
     
 }
 
@@ -5627,23 +5633,19 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .PutShare(
+        case 7: return .Repository(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .PutShareMany(
+        case 8: return .Chrono(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .Repository(
+        case 9: return .SerdeJson(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .Chrono(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 11: return .SerdeJson(
+        case 10: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -5670,16 +5672,14 @@ public struct FfiConverterTypeCipherError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
         case .OrganizationAlreadySet(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .PutShare(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
-        case .PutShareMany(_ /* message is ignored*/):
-            writeInt(&buf, Int32(8))
         case .Repository(_ /* message is ignored*/):
-            writeInt(&buf, Int32(9))
+            writeInt(&buf, Int32(7))
         case .Chrono(_ /* message is ignored*/):
-            writeInt(&buf, Int32(10))
+            writeInt(&buf, Int32(8))
         case .SerdeJson(_ /* message is ignored*/):
-            writeInt(&buf, Int32(11))
+            writeInt(&buf, Int32(9))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
 
         
         }
@@ -6314,6 +6314,114 @@ extension CopyableCipherFields: Equatable, Hashable {}
 
 
 
+public enum CreateCipherAdminError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotAuthenticated(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateCipherAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateCipherAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateCipherAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateCipherAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateCipherAdminError_lift(_ buf: RustBuffer) throws -> CreateCipherAdminError {
+    return try FfiConverterTypeCreateCipherAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateCipherAdminError_lower(_ value: CreateCipherAdminError) -> RustBuffer {
+    return FfiConverterTypeCreateCipherAdminError.lower(value)
+}
+
+
+extension CreateCipherAdminError: Equatable, Hashable {}
+
+
+
+
+extension CreateCipherAdminError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
 public enum CreateCipherError: Swift.Error {
 
     
@@ -6695,6 +6803,230 @@ extension DecryptFileError: Equatable, Hashable {}
 
 
 extension DecryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum DeleteCipherError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeleteCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = DeleteCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeleteCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeleteCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteCipherError_lift(_ buf: RustBuffer) throws -> DeleteCipherError {
+    return try FfiConverterTypeDeleteCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteCipherError_lower(_ value: DeleteCipherError) -> RustBuffer {
+    return FfiConverterTypeDeleteCipherError.lower(value)
+}
+
+
+extension DeleteCipherError: Equatable, Hashable {}
+
+
+
+
+extension DeleteCipherError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum EditCipherAdminError: Swift.Error {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotAuthenticated(message: String)
+    
+    case Repository(message: String)
+    
+    case Uuid(message: String)
+    
+    case Decrypt(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEditCipherAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = EditCipherAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EditCipherAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .Uuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .Decrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EditCipherAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .Uuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .Decrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditCipherAdminError_lift(_ buf: RustBuffer) throws -> EditCipherAdminError {
+    return try FfiConverterTypeEditCipherAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditCipherAdminError_lower(_ value: EditCipherAdminError) -> RustBuffer {
+    return FfiConverterTypeEditCipherAdminError.lower(value)
+}
+
+
+extension EditCipherAdminError: Equatable, Hashable {}
+
+
+
+
+extension EditCipherAdminError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
@@ -7509,6 +7841,290 @@ extension GetFolderError: Equatable, Hashable {}
 
 
 extension GetFolderError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum GetOrganizationCiphersAdminError: Swift.Error {
+
+    
+    
+    case Crypto(message: String)
+    
+    case VaultParse(message: String)
+    
+    case Api(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetOrganizationCiphersAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = GetOrganizationCiphersAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetOrganizationCiphersAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetOrganizationCiphersAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetOrganizationCiphersAdminError_lift(_ buf: RustBuffer) throws -> GetOrganizationCiphersAdminError {
+    return try FfiConverterTypeGetOrganizationCiphersAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetOrganizationCiphersAdminError_lower(_ value: GetOrganizationCiphersAdminError) -> RustBuffer {
+    return FfiConverterTypeGetOrganizationCiphersAdminError.lower(value)
+}
+
+
+extension GetOrganizationCiphersAdminError: Equatable, Hashable {}
+
+
+
+
+extension GetOrganizationCiphersAdminError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum RestoreCipherAdminError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRestoreCipherAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = RestoreCipherAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RestoreCipherAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: RestoreCipherAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRestoreCipherAdminError_lift(_ buf: RustBuffer) throws -> RestoreCipherAdminError {
+    return try FfiConverterTypeRestoreCipherAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRestoreCipherAdminError_lower(_ value: RestoreCipherAdminError) -> RustBuffer {
+    return FfiConverterTypeRestoreCipherAdminError.lower(value)
+}
+
+
+extension RestoreCipherAdminError: Equatable, Hashable {}
+
+
+
+
+extension RestoreCipherAdminError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum RestoreCipherError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+    case Repository(message: String)
+    
+    case Crypto(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRestoreCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = RestoreCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RestoreCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: RestoreCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRestoreCipherError_lift(_ buf: RustBuffer) throws -> RestoreCipherError {
+    return try FfiConverterTypeRestoreCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRestoreCipherError_lower(_ value: RestoreCipherError) -> RustBuffer {
+    return FfiConverterTypeRestoreCipherError.lower(value)
+}
+
+
+extension RestoreCipherError: Equatable, Hashable {}
+
+
+
+
+extension RestoreCipherError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
