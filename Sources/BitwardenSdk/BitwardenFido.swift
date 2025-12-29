@@ -850,11 +850,13 @@ public func FfiConverterTypeClientExtensionResults_lower(_ value: ClientExtensio
 
 public struct CredPropsResult {
     public let rk: Bool?
+    public let authenticatorDisplayName: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(rk: Bool?) {
+    public init(rk: Bool?, authenticatorDisplayName: String?) {
         self.rk = rk
+        self.authenticatorDisplayName = authenticatorDisplayName
     }
 }
 
@@ -871,11 +873,15 @@ extension CredPropsResult: Equatable, Hashable {
         if lhs.rk != rhs.rk {
             return false
         }
+        if lhs.authenticatorDisplayName != rhs.authenticatorDisplayName {
+            return false
+        }
         return true
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(rk)
+        hasher.combine(authenticatorDisplayName)
     }
 }
 
@@ -888,12 +894,14 @@ public struct FfiConverterTypeCredPropsResult: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CredPropsResult {
         return
             try CredPropsResult(
-                rk: FfiConverterOptionBool.read(from: &buf)
+                rk: FfiConverterOptionBool.read(from: &buf), 
+                authenticatorDisplayName: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: CredPropsResult, into buf: inout [UInt8]) {
         FfiConverterOptionBool.write(value.rk, into: &buf)
+        FfiConverterOptionString.write(value.authenticatorDisplayName, into: &buf)
     }
 }
 
@@ -3376,8 +3384,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 

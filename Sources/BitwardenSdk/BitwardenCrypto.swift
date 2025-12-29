@@ -475,117 +475,6 @@ fileprivate struct FfiConverterString: FfiConverter {
 
 
 /**
- * A set of keys where a given `DownstreamKey` is protected by an encrypted public/private
- * key-pair. The `DownstreamKey` is used to encrypt/decrypt data, while the public/private key-pair
- * is used to rotate the `DownstreamKey`.
- *
- * The `PrivateKey` is protected by an `UpstreamKey`, such as a `DeviceKey`, or `PrfKey`,
- * and the `PublicKey` is protected by the `DownstreamKey`. This setup allows:
- *
- * - Access to `DownstreamKey` by knowing the `UpstreamKey`
- * - Rotation to a `NewDownstreamKey` by knowing the current `DownstreamKey`, without needing
- * access to the `UpstreamKey`
- */
-public struct RotateableKeySet {
-    /**
-     * `DownstreamKey` protected by encapsulation key
-     */
-    public let encapsulatedDownstreamKey: UnsignedSharedKey
-    /**
-     * Encapsulation key protected by `DownstreamKey`
-     */
-    public let encryptedEncapsulationKey: EncString
-    /**
-     * Decapsulation key protected by `UpstreamKey`
-     */
-    public let encryptedDecapsulationKey: EncString
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * `DownstreamKey` protected by encapsulation key
-         */encapsulatedDownstreamKey: UnsignedSharedKey, 
-        /**
-         * Encapsulation key protected by `DownstreamKey`
-         */encryptedEncapsulationKey: EncString, 
-        /**
-         * Decapsulation key protected by `UpstreamKey`
-         */encryptedDecapsulationKey: EncString) {
-        self.encapsulatedDownstreamKey = encapsulatedDownstreamKey
-        self.encryptedEncapsulationKey = encryptedEncapsulationKey
-        self.encryptedDecapsulationKey = encryptedDecapsulationKey
-    }
-}
-
-#if compiler(>=6)
-extension RotateableKeySet: Sendable {}
-#endif
-
-
-
-
-
-extension RotateableKeySet: Equatable, Hashable {
-    public static func ==(lhs: RotateableKeySet, rhs: RotateableKeySet) -> Bool {
-        if lhs.encapsulatedDownstreamKey != rhs.encapsulatedDownstreamKey {
-            return false
-        }
-        if lhs.encryptedEncapsulationKey != rhs.encryptedEncapsulationKey {
-            return false
-        }
-        if lhs.encryptedDecapsulationKey != rhs.encryptedDecapsulationKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(encapsulatedDownstreamKey)
-        hasher.combine(encryptedEncapsulationKey)
-        hasher.combine(encryptedDecapsulationKey)
-    }
-}
-
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeRotateableKeySet: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RotateableKeySet {
-        return
-            try RotateableKeySet(
-                encapsulatedDownstreamKey: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
-                encryptedEncapsulationKey: FfiConverterTypeEncString.read(from: &buf), 
-                encryptedDecapsulationKey: FfiConverterTypeEncString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: RotateableKeySet, into buf: inout [UInt8]) {
-        FfiConverterTypeUnsignedSharedKey.write(value.encapsulatedDownstreamKey, into: &buf)
-        FfiConverterTypeEncString.write(value.encryptedEncapsulationKey, into: &buf)
-        FfiConverterTypeEncString.write(value.encryptedDecapsulationKey, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeRotateableKeySet_lift(_ buf: RustBuffer) throws -> RotateableKeySet {
-    return try FfiConverterTypeRotateableKeySet.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeRotateableKeySet_lower(_ value: RotateableKeySet) -> RustBuffer {
-    return FfiConverterTypeRotateableKeySet.lower(value)
-}
-
-
-/**
  * RSA Key Pair
  *
  * Consists of a public key and an encrypted private key.
@@ -814,8 +703,6 @@ public enum CryptoError: Swift.Error {
     
     case ReadOnlyKeyStore(message: String)
     
-    case InvalidKeyStoreOperation(message: String)
-    
     case InsufficientKdfParameters(message: String)
     
     case EncString(message: String)
@@ -902,59 +789,55 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .InvalidKeyStoreOperation(
+        case 12: return .InsufficientKdfParameters(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .InsufficientKdfParameters(
+        case 13: return .EncString(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .EncString(
+        case 14: return .Rsa(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .Rsa(
+        case 15: return .Fingerprint(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .Fingerprint(
+        case 16: return .Argon(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .Argon(
+        case 17: return .ZeroNumber(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .ZeroNumber(
+        case 18: return .OperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .OperationNotSupported(
+        case 19: return .WrongKeyType(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 20: return .WrongKeyType(
+        case 20: return .WrongCoseKeyId(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .WrongCoseKeyId(
+        case 21: return .InvalidNonceLength(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .InvalidNonceLength(
+        case 22: return .InvalidPadding(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .InvalidPadding(
+        case 23: return .Signature(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 24: return .Signature(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 25: return .Encoding(
+        case 24: return .Encoding(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -991,34 +874,32 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(10))
         case .ReadOnlyKeyStore(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .InvalidKeyStoreOperation(_ /* message is ignored*/):
-            writeInt(&buf, Int32(12))
         case .InsufficientKdfParameters(_ /* message is ignored*/):
-            writeInt(&buf, Int32(13))
+            writeInt(&buf, Int32(12))
         case .EncString(_ /* message is ignored*/):
-            writeInt(&buf, Int32(14))
+            writeInt(&buf, Int32(13))
         case .Rsa(_ /* message is ignored*/):
-            writeInt(&buf, Int32(15))
+            writeInt(&buf, Int32(14))
         case .Fingerprint(_ /* message is ignored*/):
-            writeInt(&buf, Int32(16))
+            writeInt(&buf, Int32(15))
         case .Argon(_ /* message is ignored*/):
-            writeInt(&buf, Int32(17))
+            writeInt(&buf, Int32(16))
         case .ZeroNumber(_ /* message is ignored*/):
-            writeInt(&buf, Int32(18))
+            writeInt(&buf, Int32(17))
         case .OperationNotSupported(_ /* message is ignored*/):
-            writeInt(&buf, Int32(19))
+            writeInt(&buf, Int32(18))
         case .WrongKeyType(_ /* message is ignored*/):
-            writeInt(&buf, Int32(20))
+            writeInt(&buf, Int32(19))
         case .WrongCoseKeyId(_ /* message is ignored*/):
-            writeInt(&buf, Int32(21))
+            writeInt(&buf, Int32(20))
         case .InvalidNonceLength(_ /* message is ignored*/):
-            writeInt(&buf, Int32(22))
+            writeInt(&buf, Int32(21))
         case .InvalidPadding(_ /* message is ignored*/):
-            writeInt(&buf, Int32(23))
+            writeInt(&buf, Int32(22))
         case .Signature(_ /* message is ignored*/):
-            writeInt(&buf, Int32(24))
+            writeInt(&buf, Int32(23))
         case .Encoding(_ /* message is ignored*/):
-            writeInt(&buf, Int32(25))
+            writeInt(&buf, Int32(24))
 
         
         }
