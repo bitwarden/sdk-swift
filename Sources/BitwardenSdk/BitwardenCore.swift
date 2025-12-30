@@ -4354,7 +4354,7 @@ extension InitUserCryptoMethod: Equatable, Hashable {}
 
 
 /**
- * Errors that can occur when making keys for TDE registration.
+ * Errors that can occur when making keys for TDE or Key Connector registration.
  */
 public enum MakeKeysError: Swift.Error {
 
