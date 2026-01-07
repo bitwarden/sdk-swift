@@ -5441,8 +5441,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 

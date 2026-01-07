@@ -6812,6 +6812,85 @@ extension DecryptFileError: Foundation.LocalizedError {
 
 
 
+/**
+ * Errors that can occur when deleting ciphers as an admin.
+ */
+public enum DeleteCipherAdminError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeleteCipherAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = DeleteCipherAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeleteCipherAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeleteCipherAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteCipherAdminError_lift(_ buf: RustBuffer) throws -> DeleteCipherAdminError {
+    return try FfiConverterTypeDeleteCipherAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteCipherAdminError_lower(_ value: DeleteCipherAdminError) -> RustBuffer {
+    return FfiConverterTypeDeleteCipherAdminError.lower(value)
+}
+
+
+extension DeleteCipherAdminError: Equatable, Hashable {}
+
+
+
+
+extension DeleteCipherAdminError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
 public enum DeleteCipherError: Swift.Error {
 
     
