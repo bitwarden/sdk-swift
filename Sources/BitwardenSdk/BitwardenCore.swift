@@ -4354,7 +4354,7 @@ extension InitUserCryptoMethod: Equatable, Hashable {}
 
 
 /**
- * Errors that can occur when making keys for TDE or Key Connector registration.
+ * Errors that can occur when making keys for account cryptography registration.
  */
 public enum MakeKeysError: Swift.Error {
 
@@ -4364,6 +4364,11 @@ public enum MakeKeysError: Swift.Error {
      * Failed to initialize account cryptography
      */
     case AccountCryptographyInitialization(message: String)
+    
+    /**
+     * Failed to derive master password
+     */
+    case MasterPasswordDerivation(message: String)
     
     /**
      * Failed to create request model
@@ -4395,11 +4400,15 @@ public struct FfiConverterTypeMakeKeysError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .RequestModelCreation(
+        case 2: return .MasterPasswordDerivation(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .Crypto(
+        case 3: return .RequestModelCreation(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Crypto(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -4416,10 +4425,12 @@ public struct FfiConverterTypeMakeKeysError: FfiConverterRustBuffer {
         
         case .AccountCryptographyInitialization(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .RequestModelCreation(_ /* message is ignored*/):
+        case .MasterPasswordDerivation(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .Crypto(_ /* message is ignored*/):
+        case .RequestModelCreation(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
 
         
         }
@@ -5441,8 +5452,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
