@@ -792,9 +792,9 @@ public enum CryptoError: Swift.Error {
 
     
     
-    case InvalidKey(message: String)
+    case Decrypt(message: String)
     
-    case InvalidMac(message: String)
+    case InvalidKey(message: String)
     
     case KeyDecrypt(message: String)
     
@@ -856,11 +856,11 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
         
 
         
-        case 1: return .InvalidKey(
+        case 1: return .Decrypt(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .InvalidMac(
+        case 2: return .InvalidKey(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -963,9 +963,9 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
         
 
         
-        case .InvalidKey(_ /* message is ignored*/):
+        case .Decrypt(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .InvalidMac(_ /* message is ignored*/):
+        case .InvalidKey(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
         case .KeyDecrypt(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
