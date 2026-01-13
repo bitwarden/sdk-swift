@@ -796,8 +796,6 @@ public enum CryptoError: Swift.Error {
     
     case InvalidMac(message: String)
     
-    case MacNotProvided(message: String)
-    
     case KeyDecrypt(message: String)
     
     case InvalidKeyLen(message: String)
@@ -866,95 +864,91 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .MacNotProvided(
+        case 3: return .KeyDecrypt(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .KeyDecrypt(
+        case 4: return .InvalidKeyLen(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .InvalidKeyLen(
+        case 5: return .InvalidUtf8String(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .InvalidUtf8String(
+        case 6: return .MissingKey(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .MissingKey(
+        case 7: return .MissingField(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .MissingField(
+        case 8: return .MissingKeyId(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .MissingKeyId(
+        case 9: return .KeyOperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .KeyOperationNotSupported(
+        case 10: return .ReadOnlyKeyStore(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .ReadOnlyKeyStore(
+        case 11: return .InvalidKeyStoreOperation(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .InvalidKeyStoreOperation(
+        case 12: return .InsufficientKdfParameters(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .InsufficientKdfParameters(
+        case 13: return .EncString(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .EncString(
+        case 14: return .Rsa(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .Rsa(
+        case 15: return .Fingerprint(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .Fingerprint(
+        case 16: return .Argon(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .Argon(
+        case 17: return .ZeroNumber(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .ZeroNumber(
+        case 18: return .OperationNotSupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .OperationNotSupported(
+        case 19: return .WrongKeyType(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 20: return .WrongKeyType(
+        case 20: return .WrongCoseKeyId(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .WrongCoseKeyId(
+        case 21: return .InvalidNonceLength(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .InvalidNonceLength(
+        case 22: return .InvalidPadding(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .InvalidPadding(
+        case 23: return .Signature(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 24: return .Signature(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 25: return .Encoding(
+        case 24: return .Encoding(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -973,52 +967,50 @@ public struct FfiConverterTypeCryptoError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .InvalidMac(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .MacNotProvided(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
         case .KeyDecrypt(_ /* message is ignored*/):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
         case .InvalidKeyLen(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(4))
         case .InvalidUtf8String(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(5))
         case .MissingKey(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(6))
         case .MissingField(_ /* message is ignored*/):
-            writeInt(&buf, Int32(8))
+            writeInt(&buf, Int32(7))
         case .MissingKeyId(_ /* message is ignored*/):
-            writeInt(&buf, Int32(9))
+            writeInt(&buf, Int32(8))
         case .KeyOperationNotSupported(_ /* message is ignored*/):
-            writeInt(&buf, Int32(10))
+            writeInt(&buf, Int32(9))
         case .ReadOnlyKeyStore(_ /* message is ignored*/):
-            writeInt(&buf, Int32(11))
+            writeInt(&buf, Int32(10))
         case .InvalidKeyStoreOperation(_ /* message is ignored*/):
-            writeInt(&buf, Int32(12))
+            writeInt(&buf, Int32(11))
         case .InsufficientKdfParameters(_ /* message is ignored*/):
-            writeInt(&buf, Int32(13))
+            writeInt(&buf, Int32(12))
         case .EncString(_ /* message is ignored*/):
-            writeInt(&buf, Int32(14))
+            writeInt(&buf, Int32(13))
         case .Rsa(_ /* message is ignored*/):
-            writeInt(&buf, Int32(15))
+            writeInt(&buf, Int32(14))
         case .Fingerprint(_ /* message is ignored*/):
-            writeInt(&buf, Int32(16))
+            writeInt(&buf, Int32(15))
         case .Argon(_ /* message is ignored*/):
-            writeInt(&buf, Int32(17))
+            writeInt(&buf, Int32(16))
         case .ZeroNumber(_ /* message is ignored*/):
-            writeInt(&buf, Int32(18))
+            writeInt(&buf, Int32(17))
         case .OperationNotSupported(_ /* message is ignored*/):
-            writeInt(&buf, Int32(19))
+            writeInt(&buf, Int32(18))
         case .WrongKeyType(_ /* message is ignored*/):
-            writeInt(&buf, Int32(20))
+            writeInt(&buf, Int32(19))
         case .WrongCoseKeyId(_ /* message is ignored*/):
-            writeInt(&buf, Int32(21))
+            writeInt(&buf, Int32(20))
         case .InvalidNonceLength(_ /* message is ignored*/):
-            writeInt(&buf, Int32(22))
+            writeInt(&buf, Int32(21))
         case .InvalidPadding(_ /* message is ignored*/):
-            writeInt(&buf, Int32(23))
+            writeInt(&buf, Int32(22))
         case .Signature(_ /* message is ignored*/):
-            writeInt(&buf, Int32(24))
+            writeInt(&buf, Int32(23))
         case .Encoding(_ /* message is ignored*/):
-            writeInt(&buf, Int32(25))
+            writeInt(&buf, Int32(24))
 
         
         }
