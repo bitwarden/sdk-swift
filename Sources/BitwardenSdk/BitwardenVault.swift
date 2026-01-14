@@ -9837,8 +9837,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
