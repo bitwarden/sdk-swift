@@ -4500,6 +4500,11 @@ public enum MasterPasswordError: Swift.Error {
      */
     case Crypto(message: String)
     
+    /**
+     * The provided password is incorrect
+     */
+    case WrongPassword(message: String)
+    
 }
 
 
@@ -4536,6 +4541,10 @@ public struct FfiConverterTypeMasterPasswordError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 6: return .WrongPassword(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4557,6 +4566,8 @@ public struct FfiConverterTypeMasterPasswordError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
+        case .WrongPassword(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
 
         
         }
