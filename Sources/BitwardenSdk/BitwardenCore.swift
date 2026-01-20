@@ -4606,6 +4606,99 @@ extension MasterPasswordError: Foundation.LocalizedError {
 
 
 /**
+ * Errors that can occur during rotation of the account cryptographic state.
+ */
+public enum RotateCryptographyStateError: Swift.Error {
+
+    
+    
+    /**
+     * The key is missing from the key store
+     */
+    case KeyMissing(message: String)
+    
+    /**
+     * The provided data was invalid
+     */
+    case InvalidData(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRotateCryptographyStateError: FfiConverterRustBuffer {
+    typealias SwiftType = RotateCryptographyStateError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RotateCryptographyStateError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .KeyMissing(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidData(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: RotateCryptographyStateError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .KeyMissing(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidData(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateCryptographyStateError_lift(_ buf: RustBuffer) throws -> RotateCryptographyStateError {
+    return try FfiConverterTypeRotateCryptographyStateError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRotateCryptographyStateError_lower(_ value: RotateCryptographyStateError) -> RustBuffer {
+    return FfiConverterTypeRotateCryptographyStateError.lower(value)
+}
+
+
+extension RotateCryptographyStateError: Equatable, Hashable {}
+
+
+
+
+extension RotateCryptographyStateError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+/**
  * Signifies that the state is invalid from a cryptographic perspective, such as a required
  * security value missing, or being invalid
  */
