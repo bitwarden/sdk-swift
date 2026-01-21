@@ -3081,6 +3081,8 @@ public enum ApiError: Swift.Error {
     
     case Reqwest(message: String)
     
+    case ReqwestMiddleware(message: String)
+    
     case Serde(message: String)
     
     case Io(message: String)
@@ -3107,15 +3109,19 @@ public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .Serde(
+        case 2: return .ReqwestMiddleware(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .Io(
+        case 3: return .Serde(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .ResponseContent(
+        case 4: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .ResponseContent(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -3132,12 +3138,14 @@ public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
         
         case .Reqwest(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .Serde(_ /* message is ignored*/):
+        case .ReqwestMiddleware(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .Io(_ /* message is ignored*/):
+        case .Serde(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
-        case .ResponseContent(_ /* message is ignored*/):
+        case .Io(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
+        case .ResponseContent(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
 
         
         }
