@@ -2484,6 +2484,10 @@ public struct CipherView {
     public let viewPassword: Bool
     public let localData: LocalDataView?
     public let attachments: [AttachmentView]?
+    /**
+     * Attachments that failed to decrypt. Only present when there are decryption failures.
+     */
+    public let attachmentDecryptionFailures: [AttachmentView]?
     public let fields: [FieldView]?
     public let passwordHistory: [PasswordHistoryView]?
     public let creationDate: DateTime
@@ -2496,7 +2500,10 @@ public struct CipherView {
     public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
+        /**
+         * Attachments that failed to decrypt. Only present when there are decryption failures.
+         */attachmentDecryptionFailures: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -2518,6 +2525,7 @@ public struct CipherView {
         self.viewPassword = viewPassword
         self.localData = localData
         self.attachments = attachments
+        self.attachmentDecryptionFailures = attachmentDecryptionFailures
         self.fields = fields
         self.passwordHistory = passwordHistory
         self.creationDate = creationDate
@@ -2600,6 +2608,9 @@ extension CipherView: Equatable, Hashable {
         if lhs.attachments != rhs.attachments {
             return false
         }
+        if lhs.attachmentDecryptionFailures != rhs.attachmentDecryptionFailures {
+            return false
+        }
         if lhs.fields != rhs.fields {
             return false
         }
@@ -2643,6 +2654,7 @@ extension CipherView: Equatable, Hashable {
         hasher.combine(viewPassword)
         hasher.combine(localData)
         hasher.combine(attachments)
+        hasher.combine(attachmentDecryptionFailures)
         hasher.combine(fields)
         hasher.combine(passwordHistory)
         hasher.combine(creationDate)
@@ -2682,6 +2694,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 viewPassword: FfiConverterBool.read(from: &buf), 
                 localData: FfiConverterOptionTypeLocalDataView.read(from: &buf), 
                 attachments: FfiConverterOptionSequenceTypeAttachmentView.read(from: &buf), 
+                attachmentDecryptionFailures: FfiConverterOptionSequenceTypeAttachmentView.read(from: &buf), 
                 fields: FfiConverterOptionSequenceTypeFieldView.read(from: &buf), 
                 passwordHistory: FfiConverterOptionSequenceTypePasswordHistoryView.read(from: &buf), 
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
@@ -2713,6 +2726,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterBool.write(value.viewPassword, into: &buf)
         FfiConverterOptionTypeLocalDataView.write(value.localData, into: &buf)
         FfiConverterOptionSequenceTypeAttachmentView.write(value.attachments, into: &buf)
+        FfiConverterOptionSequenceTypeAttachmentView.write(value.attachmentDecryptionFailures, into: &buf)
         FfiConverterOptionSequenceTypeFieldView.write(value.fields, into: &buf)
         FfiConverterOptionSequenceTypePasswordHistoryView.write(value.passwordHistory, into: &buf)
         FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
