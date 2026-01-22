@@ -3475,6 +3475,8 @@ public enum CryptoClientError: Swift.Error {
     
     case PasswordProtectedKeyEnvelope(message: String)
     
+    case InvalidPrfInput(message: String)
+    
 }
 
 
@@ -3507,6 +3509,10 @@ public struct FfiConverterTypeCryptoClientError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 5: return .InvalidPrfInput(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3526,6 +3532,8 @@ public struct FfiConverterTypeCryptoClientError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
         case .PasswordProtectedKeyEnvelope(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
+        case .InvalidPrfInput(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
 
         
         }
@@ -5564,8 +5572,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
