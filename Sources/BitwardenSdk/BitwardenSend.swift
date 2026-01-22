@@ -553,10 +553,22 @@ public struct Send {
     public let revisionDate: DateTime
     public let deletionDate: DateTime
     public let expirationDate: DateTime?
+    /**
+     * Email addresses for OTP authentication.
+     * **Note**: Mutually exclusive with `new_password`. If both are set,
+     * only password authentication will be used.
+     */
+    public let emails: String?
+    public let authType: AuthType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: String?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
+    public init(id: Uuid?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: String?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, 
+        /**
+         * Email addresses for OTP authentication.
+         * **Note**: Mutually exclusive with `new_password`. If both are set,
+         * only password authentication will be used.
+         */emails: String?, authType: AuthType) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -573,6 +585,8 @@ public struct Send {
         self.revisionDate = revisionDate
         self.deletionDate = deletionDate
         self.expirationDate = expirationDate
+        self.emails = emails
+        self.authType = authType
     }
 }
 
@@ -634,6 +648,12 @@ extension Send: Equatable, Hashable {
         if lhs.expirationDate != rhs.expirationDate {
             return false
         }
+        if lhs.emails != rhs.emails {
+            return false
+        }
+        if lhs.authType != rhs.authType {
+            return false
+        }
         return true
     }
 
@@ -654,6 +674,8 @@ extension Send: Equatable, Hashable {
         hasher.combine(revisionDate)
         hasher.combine(deletionDate)
         hasher.combine(expirationDate)
+        hasher.combine(emails)
+        hasher.combine(authType)
     }
 }
 
@@ -681,7 +703,9 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
                 hideEmail: FfiConverterBool.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletionDate: FfiConverterTypeDateTime.read(from: &buf), 
-                expirationDate: FfiConverterOptionTypeDateTime.read(from: &buf)
+                expirationDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                emails: FfiConverterOptionString.read(from: &buf), 
+                authType: FfiConverterTypeAuthType.read(from: &buf)
         )
     }
 
@@ -702,6 +726,8 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterTypeDateTime.write(value.deletionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.expirationDate, into: &buf)
+        FfiConverterOptionString.write(value.emails, into: &buf)
+        FfiConverterTypeAuthType.write(value.authType, into: &buf)
     }
 }
 
@@ -1208,6 +1234,13 @@ public struct SendView {
     public let revisionDate: DateTime
     public let deletionDate: DateTime
     public let expirationDate: DateTime?
+    /**
+     * Email addresses for OTP authentication.
+     * **Note**: Mutually exclusive with `new_password`. If both are set,
+     * only password authentication will be used.
+     */
+    public let emails: [String]
+    public let authType: AuthType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1223,7 +1256,12 @@ public struct SendView {
         /**
          * Denote if an existing send has a password. The SDK will ignore this value when creating or
          * updating sends.
-         */hasPassword: Bool, type: SendType, file: SendFileView?, text: SendTextView?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?) {
+         */hasPassword: Bool, type: SendType, file: SendFileView?, text: SendTextView?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, 
+        /**
+         * Email addresses for OTP authentication.
+         * **Note**: Mutually exclusive with `new_password`. If both are set,
+         * only password authentication will be used.
+         */emails: [String], authType: AuthType) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -1241,6 +1279,8 @@ public struct SendView {
         self.revisionDate = revisionDate
         self.deletionDate = deletionDate
         self.expirationDate = expirationDate
+        self.emails = emails
+        self.authType = authType
     }
 }
 
@@ -1305,6 +1345,12 @@ extension SendView: Equatable, Hashable {
         if lhs.expirationDate != rhs.expirationDate {
             return false
         }
+        if lhs.emails != rhs.emails {
+            return false
+        }
+        if lhs.authType != rhs.authType {
+            return false
+        }
         return true
     }
 
@@ -1326,6 +1372,8 @@ extension SendView: Equatable, Hashable {
         hasher.combine(revisionDate)
         hasher.combine(deletionDate)
         hasher.combine(expirationDate)
+        hasher.combine(emails)
+        hasher.combine(authType)
     }
 }
 
@@ -1354,7 +1402,9 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
                 hideEmail: FfiConverterBool.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletionDate: FfiConverterTypeDateTime.read(from: &buf), 
-                expirationDate: FfiConverterOptionTypeDateTime.read(from: &buf)
+                expirationDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                emails: FfiConverterSequenceString.read(from: &buf), 
+                authType: FfiConverterTypeAuthType.read(from: &buf)
         )
     }
 
@@ -1376,6 +1426,8 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterTypeDateTime.write(value.deletionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.expirationDate, into: &buf)
+        FfiConverterSequenceString.write(value.emails, into: &buf)
+        FfiConverterTypeAuthType.write(value.authType, into: &buf)
     }
 }
 
@@ -1393,6 +1445,98 @@ public func FfiConverterTypeSendView_lift(_ buf: RustBuffer) throws -> SendView 
 public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
     return FfiConverterTypeSendView.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Indicates the authentication strategy to use when accessing a Send
+ */
+
+public enum AuthType : UInt8 {
+    
+    /**
+     * Email-based OTP authentication
+     */
+    case email = 0
+    /**
+     * Password-based authentication
+     */
+    case password = 1
+    /**
+     * No authentication required
+     */
+    case none = 2
+
+}
+#if compiler(>=6)
+extension AuthType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthType: FfiConverterRustBuffer {
+    typealias SwiftType = AuthType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .email
+        
+        case 2: return .password
+        
+        case 3: return .none
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AuthType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .email:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .password:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .none:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthType_lift(_ buf: RustBuffer) throws -> AuthType {
+    return try FfiConverterTypeAuthType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthType_lower(_ value: AuthType) -> RustBuffer {
+    return FfiConverterTypeAuthType.lower(value)
+}
+
+
+
+
+extension AuthType: Equatable, Hashable {}
+
+
+
+
+
+
+
 
 
 /**
@@ -2012,6 +2156,31 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterString.read(from: &buf))
+        }
+        return seq
     }
 }
 
