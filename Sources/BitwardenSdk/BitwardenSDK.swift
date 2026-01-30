@@ -4993,6 +4993,227 @@ public func FfiConverterTypeGeneratorClients_lower(_ value: GeneratorClients) ->
 
 
 
+/**
+ * Callback interface for receiving SDK log events
+ * Mobile implementations forward these to Flight Recorder
+ */
+public protocol LogCallback: AnyObject, Sendable {
+    
+    /**
+     * Called when SDK emits a log entry
+     *
+     * # Parameters
+     * - level: Log level ("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+     * - target: Module that emitted log (e.g., "bitwarden_core::auth")
+     * - message: The log message text
+     *
+     * # Returns
+     * Result<(), BitwardenError> - mobile implementations should catch exceptions
+     * and return errors rather than panicking
+     */
+    func onLog(level: String, target: String, message: String) throws 
+    
+}
+/**
+ * Callback interface for receiving SDK log events
+ * Mobile implementations forward these to Flight Recorder
+ */
+open class LogCallbackImpl: LogCallback, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_logcallback(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_logcallback(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Called when SDK emits a log entry
+     *
+     * # Parameters
+     * - level: Log level ("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+     * - target: Module that emitted log (e.g., "bitwarden_core::auth")
+     * - message: The log message text
+     *
+     * # Returns
+     * Result<(), BitwardenError> - mobile implementations should catch exceptions
+     * and return errors rather than panicking
+     */
+open func onLog(level: String, target: String, message: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_logcallback_on_log(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(level),
+        FfiConverterString.lower(target),
+        FfiConverterString.lower(message),$0
+    )
+}
+}
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceLogCallback {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceLogCallback] = [UniffiVTableCallbackInterfaceLogCallback(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeLogCallback.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface LogCallback: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeLogCallback.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface LogCallback: handle missing in uniffiClone")
+            }
+        },
+        onLog: { (
+            uniffiHandle: UInt64,
+            level: RustBuffer,
+            target: RustBuffer,
+            message: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeLogCallback.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.onLog(
+                     level: try FfiConverterString.lift(level),
+                     target: try FfiConverterString.lift(target),
+                     message: try FfiConverterString.lift(message)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeBitwardenError_lower
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitLogCallback() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_logcallback(UniffiCallbackInterfaceLogCallback.vtable)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLogCallback: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<LogCallback>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = LogCallback
+
+    public static func lift(_ handle: UInt64) throws -> LogCallback {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return LogCallbackImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: LogCallback) -> UInt64 {
+         if let rustImpl = value as? LogCallbackImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LogCallback {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: LogCallback, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogCallback_lift(_ handle: UInt64) throws -> LogCallback {
+    return try FfiConverterTypeLogCallback.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogCallback_lower(_ value: LogCallback) -> UInt64 {
+    return FfiConverterTypeLogCallback.lower(value)
+}
+
+
+
+
+
+
 public protocol PasswordHistoryClientProtocol: AnyObject, Sendable {
     
     /**
@@ -6441,6 +6662,7 @@ public enum BitwardenError: Swift.Error {
     )
     case SshImport(SshKeyImportError
     )
+    case CallbackError
     case Conversion(String
     )
 }
@@ -6561,7 +6783,8 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 34: return .SshImport(
             try FfiConverterTypeSshKeyImportError.read(from: &buf)
             )
-        case 35: return .Conversion(
+        case 35: return .CallbackError
+        case 36: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
 
@@ -6746,8 +6969,12 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeSshKeyImportError.write(v1, into: &buf)
             
         
-        case let .Conversion(v1):
+        case .CallbackError:
             writeInt(&buf, Int32(35))
+        
+        
+        case let .Conversion(v1):
+            writeInt(&buf, Int32(36))
             FfiConverterString.write(v1, into: &buf)
             
         }
@@ -7160,6 +7387,30 @@ fileprivate struct FfiConverterOptionTypeFolderRepository: FfiConverterRustBuffe
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeFolderRepository.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeLogCallback: FfiConverterRustBuffer {
+    typealias SwiftType = LogCallback?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLogCallback.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLogCallback.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -7903,6 +8154,35 @@ private func uniffiForeignFutureDroppedCallback(handle: UInt64) {
 public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
     UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.count
 }
+/**
+ * Initialize the SDK logger
+ *
+ * This function should be called once before creating any SDK clients.
+ * It initializes the tracing infrastructure for the SDK and optionally
+ * registers a callback to receive log events.
+ *
+ * # Parameters
+ * - `callback`: Optional callback to receive SDK log events. Pass `None` to use only platform
+ * loggers (oslog on iOS, logcat on Android).
+ *
+ * # Example
+ * ```kotlin
+ * // Initialize with callback before creating clients
+ * initLogger(FlightRecorderCallback())
+ * val client = Client(tokenProvider, settings)
+ * ```
+ *
+ * # Notes
+ * - This function can only be called once - subsequent calls are ignored
+ * - If not called explicitly, logging is auto-initialized when first client is created
+ * - Platform loggers (oslog/logcat) are always enabled regardless of callback
+ */
+public func initLogger(callback: LogCallback?)  {try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_func_init_logger(
+        FfiConverterOptionTypeLogCallback.lower(callback),$0
+    )
+}
+}
 
 private enum InitializationResult {
     case ok
@@ -7918,6 +8198,9 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_bitwarden_uniffi_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 21222) {
+        return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 3394) {
         return InitializationResult.apiChecksumMismatch
@@ -8195,6 +8478,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 5151) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 30067) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_decrypt_list() != 29372) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -8281,17 +8567,18 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenSendInitialized()
+    uniffiCallbackInitLogCallback()
+    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenStateInitialized()
     return InitializationResult.ok
 }()
 
