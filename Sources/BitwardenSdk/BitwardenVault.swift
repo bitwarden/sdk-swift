@@ -3586,6 +3586,109 @@ public func FfiConverterTypeField_lower(_ value: Field) -> RustBuffer {
 }
 
 
+/**
+ * Minimal field view for list/search operations.
+ * Contains only the fields needed for search indexing.
+ */
+public struct FieldListView {
+    /**
+     * Only populated if the field has a name.
+     */
+    public let name: String?
+    /**
+     * Only populated for [FieldType::Text] fields.
+     */
+    public let value: String?
+    /**
+     * The field type.
+     */
+    public let type: FieldType
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Only populated if the field has a name.
+         */name: String?, 
+        /**
+         * Only populated for [FieldType::Text] fields.
+         */value: String?, 
+        /**
+         * The field type.
+         */type: FieldType) {
+        self.name = name
+        self.value = value
+        self.type = type
+    }
+}
+
+#if compiler(>=6)
+extension FieldListView: Sendable {}
+#endif
+
+
+
+
+
+extension FieldListView: Equatable, Hashable {
+    public static func ==(lhs: FieldListView, rhs: FieldListView) -> Bool {
+        if lhs.name != rhs.name {
+            return false
+        }
+        if lhs.value != rhs.value {
+            return false
+        }
+        if lhs.type != rhs.type {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(value)
+        hasher.combine(type)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFieldListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FieldListView {
+        return
+            try FieldListView(
+                name: FfiConverterOptionString.read(from: &buf), 
+                value: FfiConverterOptionString.read(from: &buf), 
+                type: FfiConverterTypeFieldType.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FieldListView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.value, into: &buf)
+        FfiConverterTypeFieldType.write(value.type, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFieldListView_lift(_ buf: RustBuffer) throws -> FieldListView {
+    return try FfiConverterTypeFieldListView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFieldListView_lower(_ value: FieldListView) -> RustBuffer {
+    return FfiConverterTypeFieldListView.lower(value)
+}
+
+
 public struct FieldView {
     public let name: String?
     public let value: String?
@@ -9852,8 +9955,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
