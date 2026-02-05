@@ -30,7 +30,7 @@ let package = Package(
             dependencies: ["BitwardenSdk"]),
         .binaryTarget(
   name: "BitwardenFFI",
-  url: "https://github.com/bitwarden/sdk-swift/releases/download/v2.0.0-4282-abba7fd/BitwardenFFI-2.0.0-abba7fd.xcframework.zip",
-  checksum: "9f70ec3de889f479a79555ad776773ea7b2344f84f8f63b48265befbc46bbf46")
+  url: "https://github.com/bitwarden/sdk-swift/releases/download/v2.0.0-4283-b65c48c/BitwardenFFI-2.0.0-b65c48c.xcframework.zip",
+  checksum: "870e599818a4b928756997f522d9f986a350167e2f1a0da429ecc081f28c2f40")
     ]
 )
