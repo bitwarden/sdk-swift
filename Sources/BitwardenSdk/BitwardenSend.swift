@@ -1161,13 +1161,28 @@ public func FfiConverterTypeSendText_lower(_ value: SendText) -> RustBuffer {
 }
 
 
+/**
+ * View model for decrypted SendText
+ */
 public struct SendTextView {
+    /**
+     * The text content of the send
+     */
     public let text: String?
+    /**
+     * Whether the text is hidden-by-default (masked as ********).
+     */
     public let hidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(text: String?, hidden: Bool) {
+    public init(
+        /**
+         * The text content of the send
+         */text: String?, 
+        /**
+         * Whether the text is hidden-by-default (masked as ********).
+         */hidden: Bool) {
         self.text = text
         self.hidden = hidden
     }
@@ -1902,10 +1917,19 @@ extension SendEncryptFileError: Foundation.LocalizedError {
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The type of Send, either text or file
+ */
 
 public enum SendType : UInt8 {
     
+    /**
+     * Text-based send
+     */
     case text = 0
+    /**
+     * File-based send
+     */
     case file = 1
 
 }
@@ -2230,8 +2254,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
