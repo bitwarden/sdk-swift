@@ -909,15 +909,15 @@ public struct SsoCookieVendorConfig {
     /**
      * Identity provider login URL for browser redirect during bootstrap
      */
-    public let idpLoginUrl: String
+    public let idpLoginUrl: String?
     /**
      * Cookie name (base name, without shard suffix)
      */
-    public let cookieName: String
+    public let cookieName: String?
     /**
      * Cookie domain for validation
      */
-    public let cookieDomain: String
+    public let cookieDomain: String?
     /**
      * Acquired cookies
      *
@@ -932,13 +932,13 @@ public struct SsoCookieVendorConfig {
     public init(
         /**
          * Identity provider login URL for browser redirect during bootstrap
-         */idpLoginUrl: String, 
+         */idpLoginUrl: String?, 
         /**
          * Cookie name (base name, without shard suffix)
-         */cookieName: String, 
+         */cookieName: String?, 
         /**
          * Cookie domain for validation
-         */cookieDomain: String, 
+         */cookieDomain: String?, 
         /**
          * Acquired cookies
          *
@@ -995,17 +995,17 @@ public struct FfiConverterTypeSsoCookieVendorConfig: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoCookieVendorConfig {
         return
             try SsoCookieVendorConfig(
-                idpLoginUrl: FfiConverterString.read(from: &buf), 
-                cookieName: FfiConverterString.read(from: &buf), 
-                cookieDomain: FfiConverterString.read(from: &buf), 
+                idpLoginUrl: FfiConverterOptionString.read(from: &buf), 
+                cookieName: FfiConverterOptionString.read(from: &buf), 
+                cookieDomain: FfiConverterOptionString.read(from: &buf), 
                 cookieValue: FfiConverterOptionSequenceTypeAcquiredCookie.read(from: &buf)
         )
     }
 
     public static func write(_ value: SsoCookieVendorConfig, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.idpLoginUrl, into: &buf)
-        FfiConverterString.write(value.cookieName, into: &buf)
-        FfiConverterString.write(value.cookieDomain, into: &buf)
+        FfiConverterOptionString.write(value.idpLoginUrl, into: &buf)
+        FfiConverterOptionString.write(value.cookieName, into: &buf)
+        FfiConverterOptionString.write(value.cookieDomain, into: &buf)
         FfiConverterOptionSequenceTypeAcquiredCookie.write(value.cookieValue, into: &buf)
     }
 }
@@ -1328,6 +1328,30 @@ extension ServerCommunicationConfigRepositoryError: Foundation.LocalizedError {
 
 
 
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
+    typealias SwiftType = String?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
