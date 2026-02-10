@@ -558,15 +558,7 @@ public struct Send {
      * **Note**: Mutually exclusive with `new_password`. If both are set,
      * only password authentication will be used.
      */
-    public let emails: EncString?
-    /**
-     * Email address hashes, a comma-separated list of SHA256 hex digests
-     * for each email in `emails`:
-     * - plaintext email is lower-cased
-     * - lowercase plaintext email is hashed using SHA256
-     * - resulting digest is represented as upper-case hex
-     */
-    public let emailHashes: String?
+    public let emails: String?
     public let authType: AuthType
 
     // Default memberwise initializers are never public by default, so we
@@ -576,14 +568,7 @@ public struct Send {
          * Email addresses for OTP authentication.
          * **Note**: Mutually exclusive with `new_password`. If both are set,
          * only password authentication will be used.
-         */emails: EncString?, 
-        /**
-         * Email address hashes, a comma-separated list of SHA256 hex digests
-         * for each email in `emails`:
-         * - plaintext email is lower-cased
-         * - lowercase plaintext email is hashed using SHA256
-         * - resulting digest is represented as upper-case hex
-         */emailHashes: String?, authType: AuthType) {
+         */emails: String?, authType: AuthType) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -601,7 +586,6 @@ public struct Send {
         self.deletionDate = deletionDate
         self.expirationDate = expirationDate
         self.emails = emails
-        self.emailHashes = emailHashes
         self.authType = authType
     }
 }
@@ -667,9 +651,6 @@ extension Send: Equatable, Hashable {
         if lhs.emails != rhs.emails {
             return false
         }
-        if lhs.emailHashes != rhs.emailHashes {
-            return false
-        }
         if lhs.authType != rhs.authType {
             return false
         }
@@ -694,7 +675,6 @@ extension Send: Equatable, Hashable {
         hasher.combine(deletionDate)
         hasher.combine(expirationDate)
         hasher.combine(emails)
-        hasher.combine(emailHashes)
         hasher.combine(authType)
     }
 }
@@ -724,8 +704,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 expirationDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
-                emails: FfiConverterOptionTypeEncString.read(from: &buf), 
-                emailHashes: FfiConverterOptionString.read(from: &buf), 
+                emails: FfiConverterOptionString.read(from: &buf), 
                 authType: FfiConverterTypeAuthType.read(from: &buf)
         )
     }
@@ -747,8 +726,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterTypeDateTime.write(value.deletionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.expirationDate, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.emails, into: &buf)
-        FfiConverterOptionString.write(value.emailHashes, into: &buf)
+        FfiConverterOptionString.write(value.emails, into: &buf)
         FfiConverterTypeAuthType.write(value.authType, into: &buf)
     }
 }
