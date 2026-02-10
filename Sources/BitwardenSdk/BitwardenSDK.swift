@@ -5370,7 +5370,7 @@ public protocol PlatformClientProtocol: AnyObject, Sendable {
     /**
      * Server communication configuration operations
      */
-    func serverCommunicationConfig(repository: ServerCommunicationConfigRepositoryTrait, platformApi: ServerCommunicationConfigPlatformApi)  -> UniffiServerCommunicationConfigClient
+    func serverCommunicationConfig(repository: ServerCommunicationConfigRepository, platformApi: ServerCommunicationConfigPlatformApi)  -> ServerCommunicationConfigClient
     
     func state()  -> StateClient
     
@@ -5465,11 +5465,11 @@ open func loadFlags(flags: [String: Bool])throws   {try rustCallWithError(FfiCon
     /**
      * Server communication configuration operations
      */
-open func serverCommunicationConfig(repository: ServerCommunicationConfigRepositoryTrait, platformApi: ServerCommunicationConfigPlatformApi) -> UniffiServerCommunicationConfigClient  {
-    return try!  FfiConverterTypeUniffiServerCommunicationConfigClient_lift(try! rustCall() {
+open func serverCommunicationConfig(repository: ServerCommunicationConfigRepository, platformApi: ServerCommunicationConfigPlatformApi) -> ServerCommunicationConfigClient  {
+    return try!  FfiConverterTypeServerCommunicationConfigClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_platformclient_server_communication_config(
             self.uniffiCloneHandle(),
-        FfiConverterTypeServerCommunicationConfigRepositoryTrait_lower(repository),
+        FfiConverterTypeServerCommunicationConfigRepository_lower(repository),
         FfiConverterTypeServerCommunicationConfigPlatformApi_lower(platformApi),$0
     )
 })
@@ -5772,25 +5772,35 @@ public func FfiConverterTypeSendClient_lower(_ value: SendClient) -> UInt64 {
 
 
 /**
- * UniFFI repository trait for server communication configuration
+ * UniFFI wrapper for ServerCommunicationConfigClient
  */
-public protocol ServerCommunicationConfigRepositoryTrait: AnyObject, Sendable {
+public protocol ServerCommunicationConfigClientProtocol: AnyObject, Sendable {
     
     /**
-     * Get configuration for a hostname
+     * Acquires a cookie from the platform and saves it to the repository
      */
-    func get(hostname: String) async throws  -> ServerCommunicationConfig?
+    func acquireCookie(hostname: String) async throws 
     
     /**
-     * Save configuration for a hostname
+     * Returns all cookies that should be included in requests to this server
      */
-    func save(hostname: String, config: ServerCommunicationConfig) async throws 
+    func cookies(hostname: String) async  -> [AcquiredCookie]
+    
+    /**
+     * Retrieves the server communication configuration for a hostname
+     */
+    func getConfig(hostname: String) async throws  -> ServerCommunicationConfig
+    
+    /**
+     * Determines if cookie bootstrapping is needed for this hostname
+     */
+    func needsBootstrap(hostname: String) async  -> Bool
     
 }
 /**
- * UniFFI repository trait for server communication configuration
+ * UniFFI wrapper for ServerCommunicationConfigClient
  */
-open class ServerCommunicationConfigRepositoryTraitImpl: ServerCommunicationConfigRepositoryTrait, @unchecked Sendable {
+open class ServerCommunicationConfigClient: ServerCommunicationConfigClientProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
 
     /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
@@ -5827,12 +5837,212 @@ open class ServerCommunicationConfigRepositoryTraitImpl: ServerCommunicationConf
     @_documentation(visibility: private)
 #endif
     public func uniffiCloneHandle() -> UInt64 {
-        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_servercommunicationconfigrepositorytrait(self.handle, $0) }
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_servercommunicationconfigclient(self.handle, $0) }
     }
     // No primary constructor declared for this class.
 
     deinit {
-        try! rustCall { uniffi_bitwarden_uniffi_fn_free_servercommunicationconfigrepositorytrait(handle, $0) }
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_servercommunicationconfigclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Acquires a cookie from the platform and saves it to the repository
+     */
+open func acquireCookie(hostname: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_acquire_cookie(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(hostname)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Returns all cookies that should be included in requests to this server
+     */
+open func cookies(hostname: String)async  -> [AcquiredCookie]  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_cookies(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(hostname)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAcquiredCookie.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Retrieves the server communication configuration for a hostname
+     */
+open func getConfig(hostname: String)async throws  -> ServerCommunicationConfig  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_get_config(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(hostname)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerCommunicationConfig_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Determines if cookie bootstrapping is needed for this hostname
+     */
+open func needsBootstrap(hostname: String)async  -> Bool  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_needs_bootstrap(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(hostname)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeServerCommunicationConfigClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ServerCommunicationConfigClient
+
+    public static func lift(_ handle: UInt64) throws -> ServerCommunicationConfigClient {
+        return ServerCommunicationConfigClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ServerCommunicationConfigClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ServerCommunicationConfigClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ServerCommunicationConfigClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeServerCommunicationConfigClient_lift(_ handle: UInt64) throws -> ServerCommunicationConfigClient {
+    return try FfiConverterTypeServerCommunicationConfigClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeServerCommunicationConfigClient_lower(_ value: ServerCommunicationConfigClient) -> UInt64 {
+    return FfiConverterTypeServerCommunicationConfigClient.lower(value)
+}
+
+
+
+
+
+
+/**
+ * UniFFI repository trait for server communication configuration
+ */
+public protocol ServerCommunicationConfigRepository: AnyObject, Sendable {
+    
+    /**
+     * Get configuration for a hostname
+     */
+    func get(hostname: String) async throws  -> ServerCommunicationConfig?
+    
+    /**
+     * Save configuration for a hostname
+     */
+    func save(hostname: String, config: ServerCommunicationConfig) async throws 
+    
+}
+/**
+ * UniFFI repository trait for server communication configuration
+ */
+open class ServerCommunicationConfigRepositoryImpl: ServerCommunicationConfigRepository, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_servercommunicationconfigrepository(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_servercommunicationconfigrepository(handle, $0) }
     }
 
     
@@ -5845,7 +6055,7 @@ open func get(hostname: String)async throws  -> ServerCommunicationConfig?  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepositorytrait_get(
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepository_get(
                     self.uniffiCloneHandle(),
                     FfiConverterString.lower(hostname)
                 )
@@ -5865,7 +6075,7 @@ open func save(hostname: String, config: ServerCommunicationConfig)async throws 
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepositorytrait_save(
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepository_save(
                     self.uniffiCloneHandle(),
                     FfiConverterString.lower(hostname),FfiConverterTypeServerCommunicationConfig_lower(config)
                 )
@@ -5883,26 +6093,26 @@ open func save(hostname: String, config: ServerCommunicationConfig)async throws 
 
 
 // Put the implementation in a struct so we don't pollute the top-level namespace
-fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepositoryTrait {
+fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepository {
 
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
     //
     // This creates 1-element array, since this seems to be the only way to construct a const
     // pointer that we can pass to the Rust code.
-    static let vtable: [UniffiVTableCallbackInterfaceServerCommunicationConfigRepositoryTrait] = [UniffiVTableCallbackInterfaceServerCommunicationConfigRepositoryTrait(
+    static let vtable: [UniffiVTableCallbackInterfaceServerCommunicationConfigRepository] = [UniffiVTableCallbackInterfaceServerCommunicationConfigRepository(
         uniffiFree: { (uniffiHandle: UInt64) -> () in
             do {
-                try FfiConverterTypeServerCommunicationConfigRepositoryTrait.handleMap.remove(handle: uniffiHandle)
+                try FfiConverterTypeServerCommunicationConfigRepository.handleMap.remove(handle: uniffiHandle)
             } catch {
-                print("Uniffi callback interface ServerCommunicationConfigRepositoryTrait: handle missing in uniffiFree")
+                print("Uniffi callback interface ServerCommunicationConfigRepository: handle missing in uniffiFree")
             }
         },
         uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
             do {
-                return try FfiConverterTypeServerCommunicationConfigRepositoryTrait.handleMap.clone(handle: uniffiHandle)
+                return try FfiConverterTypeServerCommunicationConfigRepository.handleMap.clone(handle: uniffiHandle)
             } catch {
-                fatalError("Uniffi callback interface ServerCommunicationConfigRepositoryTrait: handle missing in uniffiClone")
+                fatalError("Uniffi callback interface ServerCommunicationConfigRepository: handle missing in uniffiClone")
             }
         },
         get: { (
@@ -5914,7 +6124,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepositoryTra
         ) in
             let makeCall = {
                 () async throws -> ServerCommunicationConfig? in
-                guard let uniffiObj = try? FfiConverterTypeServerCommunicationConfigRepositoryTrait.handleMap.get(handle: uniffiHandle) else {
+                guard let uniffiObj = try? FfiConverterTypeServerCommunicationConfigRepository.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try await uniffiObj.get(
@@ -5958,7 +6168,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepositoryTra
         ) in
             let makeCall = {
                 () async throws -> () in
-                guard let uniffiObj = try? FfiConverterTypeServerCommunicationConfigRepositoryTrait.handleMap.get(handle: uniffiHandle) else {
+                guard let uniffiObj = try? FfiConverterTypeServerCommunicationConfigRepository.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try await uniffiObj.save(
@@ -5994,32 +6204,32 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepositoryTra
     )]
 }
 
-private func uniffiCallbackInitServerCommunicationConfigRepositoryTrait() {
-    uniffi_bitwarden_uniffi_fn_init_callback_vtable_servercommunicationconfigrepositorytrait(UniffiCallbackInterfaceServerCommunicationConfigRepositoryTrait.vtable)
+private func uniffiCallbackInitServerCommunicationConfigRepository() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_servercommunicationconfigrepository(UniffiCallbackInterfaceServerCommunicationConfigRepository.vtable)
 }
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public struct FfiConverterTypeServerCommunicationConfigRepositoryTrait: FfiConverter {
-    fileprivate static let handleMap = UniffiHandleMap<ServerCommunicationConfigRepositoryTrait>()
+public struct FfiConverterTypeServerCommunicationConfigRepository: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<ServerCommunicationConfigRepository>()
 
     typealias FfiType = UInt64
-    typealias SwiftType = ServerCommunicationConfigRepositoryTrait
+    typealias SwiftType = ServerCommunicationConfigRepository
 
-    public static func lift(_ handle: UInt64) throws -> ServerCommunicationConfigRepositoryTrait {
+    public static func lift(_ handle: UInt64) throws -> ServerCommunicationConfigRepository {
         if ((handle & 1) == 0) {
             // Rust-generated handle, construct a new class that uses the handle to implement the
             // interface
-            return ServerCommunicationConfigRepositoryTraitImpl(unsafeFromHandle: handle)
+            return ServerCommunicationConfigRepositoryImpl(unsafeFromHandle: handle)
         } else {
             // Swift-generated handle, get the object from the handle map
             return try handleMap.remove(handle: handle)
         }
     }
 
-    public static func lower(_ value: ServerCommunicationConfigRepositoryTrait) -> UInt64 {
-         if let rustImpl = value as? ServerCommunicationConfigRepositoryTraitImpl {
+    public static func lower(_ value: ServerCommunicationConfigRepository) -> UInt64 {
+         if let rustImpl = value as? ServerCommunicationConfigRepositoryImpl {
              // Rust-implemented object.  Clone the handle and return it
             return rustImpl.uniffiCloneHandle()
          } else {
@@ -6028,12 +6238,12 @@ public struct FfiConverterTypeServerCommunicationConfigRepositoryTrait: FfiConve
          }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ServerCommunicationConfigRepositoryTrait {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ServerCommunicationConfigRepository {
         let handle: UInt64 = try readInt(&buf)
         return try lift(handle)
     }
 
-    public static func write(_ value: ServerCommunicationConfigRepositoryTrait, into buf: inout [UInt8]) {
+    public static func write(_ value: ServerCommunicationConfigRepository, into buf: inout [UInt8]) {
         writeInt(&buf, lower(value))
     }
 }
@@ -6045,15 +6255,15 @@ public struct FfiConverterTypeServerCommunicationConfigRepositoryTrait: FfiConve
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeServerCommunicationConfigRepositoryTrait_lift(_ handle: UInt64) throws -> ServerCommunicationConfigRepositoryTrait {
-    return try FfiConverterTypeServerCommunicationConfigRepositoryTrait.lift(handle)
+public func FfiConverterTypeServerCommunicationConfigRepository_lift(_ handle: UInt64) throws -> ServerCommunicationConfigRepository {
+    return try FfiConverterTypeServerCommunicationConfigRepository.lift(handle)
 }
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeServerCommunicationConfigRepositoryTrait_lower(_ value: ServerCommunicationConfigRepositoryTrait) -> UInt64 {
-    return FfiConverterTypeServerCommunicationConfigRepositoryTrait.lower(value)
+public func FfiConverterTypeServerCommunicationConfigRepository_lower(_ value: ServerCommunicationConfigRepository) -> UInt64 {
+    return FfiConverterTypeServerCommunicationConfigRepository.lower(value)
 }
 
 
@@ -6326,216 +6536,6 @@ public func FfiConverterTypeStateClient_lift(_ handle: UInt64) throws -> StateCl
 #endif
 public func FfiConverterTypeStateClient_lower(_ value: StateClient) -> UInt64 {
     return FfiConverterTypeStateClient.lower(value)
-}
-
-
-
-
-
-
-/**
- * UniFFI wrapper for ServerCommunicationConfigClient
- */
-public protocol UniffiServerCommunicationConfigClientProtocol: AnyObject, Sendable {
-    
-    /**
-     * Acquires a cookie from the platform and saves it to the repository
-     */
-    func acquireCookie(hostname: String) async throws 
-    
-    /**
-     * Returns all cookies that should be included in requests to this server
-     */
-    func cookies(hostname: String) async  -> [AcquiredCookie]
-    
-    /**
-     * Retrieves the server communication configuration for a hostname
-     */
-    func getConfig(hostname: String) async throws  -> ServerCommunicationConfig
-    
-    /**
-     * Determines if cookie bootstrapping is needed for this hostname
-     */
-    func needsBootstrap(hostname: String) async  -> Bool
-    
-}
-/**
- * UniFFI wrapper for ServerCommunicationConfigClient
- */
-open class UniffiServerCommunicationConfigClient: UniffiServerCommunicationConfigClientProtocol, @unchecked Sendable {
-    fileprivate let handle: UInt64
-
-    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
-#if swift(>=5.8)
-    @_documentation(visibility: private)
-#endif
-    public struct NoHandle {
-        public init() {}
-    }
-
-    // TODO: We'd like this to be `private` but for Swifty reasons,
-    // we can't implement `FfiConverter` without making this `required` and we can't
-    // make it `required` without making it `public`.
-#if swift(>=5.8)
-    @_documentation(visibility: private)
-#endif
-    required public init(unsafeFromHandle handle: UInt64) {
-        self.handle = handle
-    }
-
-    // This constructor can be used to instantiate a fake object.
-    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
-    //
-    // - Warning:
-    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
-#if swift(>=5.8)
-    @_documentation(visibility: private)
-#endif
-    public init(noHandle: NoHandle) {
-        self.handle = 0
-    }
-
-#if swift(>=5.8)
-    @_documentation(visibility: private)
-#endif
-    public func uniffiCloneHandle() -> UInt64 {
-        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_uniffiservercommunicationconfigclient(self.handle, $0) }
-    }
-    // No primary constructor declared for this class.
-
-    deinit {
-        try! rustCall { uniffi_bitwarden_uniffi_fn_free_uniffiservercommunicationconfigclient(handle, $0) }
-    }
-
-    
-
-    
-    /**
-     * Acquires a cookie from the platform and saves it to the repository
-     */
-open func acquireCookie(hostname: String)async throws   {
-    return
-        try  await uniffiRustCallAsync(
-            rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_uniffiservercommunicationconfigclient_acquire_cookie(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
-                )
-            },
-            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
-            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
-            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
-            liftFunc: { $0 },
-            errorHandler: FfiConverterTypeBitwardenError_lift
-        )
-}
-    
-    /**
-     * Returns all cookies that should be included in requests to this server
-     */
-open func cookies(hostname: String)async  -> [AcquiredCookie]  {
-    return
-        try!  await uniffiRustCallAsync(
-            rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_uniffiservercommunicationconfigclient_cookies(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
-                )
-            },
-            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
-            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
-            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterSequenceTypeAcquiredCookie.lift,
-            errorHandler: nil
-            
-        )
-}
-    
-    /**
-     * Retrieves the server communication configuration for a hostname
-     */
-open func getConfig(hostname: String)async throws  -> ServerCommunicationConfig  {
-    return
-        try  await uniffiRustCallAsync(
-            rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_uniffiservercommunicationconfigclient_get_config(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
-                )
-            },
-            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
-            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
-            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeServerCommunicationConfig_lift,
-            errorHandler: FfiConverterTypeBitwardenError_lift
-        )
-}
-    
-    /**
-     * Determines if cookie bootstrapping is needed for this hostname
-     */
-open func needsBootstrap(hostname: String)async  -> Bool  {
-    return
-        try!  await uniffiRustCallAsync(
-            rustFutureFunc: {
-                uniffi_bitwarden_uniffi_fn_method_uniffiservercommunicationconfigclient_needs_bootstrap(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
-                )
-            },
-            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
-            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
-            freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
-            liftFunc: FfiConverterBool.lift,
-            errorHandler: nil
-            
-        )
-}
-    
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeUniffiServerCommunicationConfigClient: FfiConverter {
-    typealias FfiType = UInt64
-    typealias SwiftType = UniffiServerCommunicationConfigClient
-
-    public static func lift(_ handle: UInt64) throws -> UniffiServerCommunicationConfigClient {
-        return UniffiServerCommunicationConfigClient(unsafeFromHandle: handle)
-    }
-
-    public static func lower(_ value: UniffiServerCommunicationConfigClient) -> UInt64 {
-        return value.uniffiCloneHandle()
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UniffiServerCommunicationConfigClient {
-        let handle: UInt64 = try readInt(&buf)
-        return try lift(handle)
-    }
-
-    public static func write(_ value: UniffiServerCommunicationConfigClient, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-
-
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeUniffiServerCommunicationConfigClient_lift(_ handle: UInt64) throws -> UniffiServerCommunicationConfigClient {
-    return try FfiConverterTypeUniffiServerCommunicationConfigClient.lift(handle)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeUniffiServerCommunicationConfigClient_lower(_ value: UniffiServerCommunicationConfigClient) -> UInt64 {
-    return FfiConverterTypeUniffiServerCommunicationConfigClient.lower(value)
 }
 
 
@@ -9073,7 +9073,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_platformclient_load_flags() != 42830) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_server_communication_config() != 16357) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_server_communication_config() != 55854) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_platformclient_state() != 26467) {
@@ -9103,10 +9103,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 15411) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepositorytrait_get() != 17345) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 32468) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepositorytrait_save() != 51520) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_cookies() != 9586) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_config() != 42962) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 7155) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 49157) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 45504) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 17409) {
@@ -9122,18 +9134,6 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_client_managed_repositories() != 13707) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_uniffiservercommunicationconfigclient_acquire_cookie() != 26152) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_uniffiservercommunicationconfigclient_cookies() != 55976) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_uniffiservercommunicationconfigclient_get_config() != 7066) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_uniffiservercommunicationconfigclient_needs_bootstrap() != 16440) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 23471) {
@@ -9166,18 +9166,18 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFido2UserInterface()
     uniffiCallbackInitFolderRepository()
     uniffiCallbackInitLogCallback()
-    uniffiCallbackInitServerCommunicationConfigRepositoryTrait()
-    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenStateInitialized()
+    uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
