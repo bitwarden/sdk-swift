@@ -2743,6 +2743,75 @@ public func FfiConverterTypeUserCryptoV2KeysResponse_lower(_ value: UserCryptoV2
 
 
 /**
+ * Represents the decrypted symmetric user-key of a user. This is held in ephemeral state of the
+ * client.
+ */
+public struct UserKeyState {
+    public let decryptedUserKey: B64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(decryptedUserKey: B64) {
+        self.decryptedUserKey = decryptedUserKey
+    }
+}
+
+#if compiler(>=6)
+extension UserKeyState: Sendable {}
+#endif
+
+
+
+
+
+extension UserKeyState: Equatable, Hashable {
+    public static func ==(lhs: UserKeyState, rhs: UserKeyState) -> Bool {
+        if lhs.decryptedUserKey != rhs.decryptedUserKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(decryptedUserKey)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUserKeyState: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserKeyState {
+        return
+            try UserKeyState(
+                decryptedUserKey: FfiConverterTypeB64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UserKeyState, into buf: inout [UInt8]) {
+        FfiConverterTypeB64.write(value.decryptedUserKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserKeyState_lift(_ buf: RustBuffer) throws -> UserKeyState {
+    return try FfiConverterTypeUserKeyState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserKeyState_lower(_ value: UserKeyState) -> RustBuffer {
+    return FfiConverterTypeUserKeyState.lower(value)
+}
+
+
+/**
  * Request for `verify_asymmetric_keys`.
  */
 public struct VerifyAsymmetricKeysRequest {
@@ -3917,6 +3986,11 @@ public enum EncryptionSettingsError: Swift.Error {
     
     case WrongPin(message: String)
     
+    /**
+     * The user-key could not be set to the state, and the sdk will remain locked
+     */
+    case UserKeyStateUpdateFailed(message: String)
+    
 }
 
 
@@ -3953,6 +4027,10 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 6: return .UserKeyStateUpdateFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3974,6 +4052,8 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .WrongPin(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
+        case .UserKeyStateUpdateFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
 
         
         }
@@ -5572,8 +5652,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
