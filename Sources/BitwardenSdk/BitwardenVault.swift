@@ -5686,6 +5686,106 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 }
 
 
+public enum CipherDeleteAttachmentError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+    case MissingField(message: String)
+    
+    case VaultParse(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherDeleteAttachmentError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherDeleteAttachmentError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherDeleteAttachmentError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherDeleteAttachmentError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherDeleteAttachmentError_lift(_ buf: RustBuffer) throws -> CipherDeleteAttachmentError {
+    return try FfiConverterTypeCipherDeleteAttachmentError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherDeleteAttachmentError_lower(_ value: CipherDeleteAttachmentError) -> RustBuffer {
+    return FfiConverterTypeCipherDeleteAttachmentError.lower(value)
+}
+
+
+extension CipherDeleteAttachmentError: Equatable, Hashable {}
+
+
+
+
+extension CipherDeleteAttachmentError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
 public enum CipherError: Swift.Error {
 
     
@@ -6920,6 +7020,82 @@ extension DecryptFileError: Equatable, Hashable {}
 
 
 extension DecryptFileError: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}
+
+
+
+
+
+public enum DeleteAttachmentAdminError: Swift.Error {
+
+    
+    
+    case Api(message: String)
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeleteAttachmentAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = DeleteAttachmentAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeleteAttachmentAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeleteAttachmentAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteAttachmentAdminError_lift(_ buf: RustBuffer) throws -> DeleteAttachmentAdminError {
+    return try FfiConverterTypeDeleteAttachmentAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteAttachmentAdminError_lower(_ value: DeleteAttachmentAdminError) -> RustBuffer {
+    return FfiConverterTypeDeleteAttachmentAdminError.lower(value)
+}
+
+
+extension DeleteAttachmentAdminError: Equatable, Hashable {}
+
+
+
+
+extension DeleteAttachmentAdminError: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
@@ -9955,8 +10131,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
