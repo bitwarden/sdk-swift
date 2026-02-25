@@ -4416,6 +4416,96 @@ public func FfiConverterTypeIdentityView_lower(_ value: IdentityView) -> RustBuf
 }
 
 
+/**
+ * Represents the result of fetching and decrypting all ciphers for an organization.
+ *
+ * Contains the encrypted ciphers from the API alongside their decrypted list views.
+ */
+public struct ListOrganizationCiphersResult {
+    /**
+     * All encrypted ciphers returned from the API.
+     */
+    public let ciphers: [Cipher]
+    /**
+     * Successfully decrypted `CipherListView` objects.
+     */
+    public let listViews: [CipherListView]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * All encrypted ciphers returned from the API.
+         */ciphers: [Cipher], 
+        /**
+         * Successfully decrypted `CipherListView` objects.
+         */listViews: [CipherListView]) {
+        self.ciphers = ciphers
+        self.listViews = listViews
+    }
+}
+
+#if compiler(>=6)
+extension ListOrganizationCiphersResult: Sendable {}
+#endif
+
+
+
+
+
+extension ListOrganizationCiphersResult: Equatable, Hashable {
+    public static func ==(lhs: ListOrganizationCiphersResult, rhs: ListOrganizationCiphersResult) -> Bool {
+        if lhs.ciphers != rhs.ciphers {
+            return false
+        }
+        if lhs.listViews != rhs.listViews {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ciphers)
+        hasher.combine(listViews)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeListOrganizationCiphersResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ListOrganizationCiphersResult {
+        return
+            try ListOrganizationCiphersResult(
+                ciphers: FfiConverterSequenceTypeCipher.read(from: &buf), 
+                listViews: FfiConverterSequenceTypeCipherListView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ListOrganizationCiphersResult, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeCipher.write(value.ciphers, into: &buf)
+        FfiConverterSequenceTypeCipherListView.write(value.listViews, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeListOrganizationCiphersResult_lift(_ buf: RustBuffer) throws -> ListOrganizationCiphersResult {
+    return try FfiConverterTypeListOrganizationCiphersResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeListOrganizationCiphersResult_lower(_ value: ListOrganizationCiphersResult) -> RustBuffer {
+    return FfiConverterTypeListOrganizationCiphersResult.lower(value)
+}
+
+
 public struct LocalData {
     public let lastUsedDate: DateTime?
     public let lastLaunched: DateTime?
@@ -10130,9 +10220,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 
