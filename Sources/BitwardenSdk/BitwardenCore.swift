@@ -3991,8 +3991,6 @@ public enum EncryptionSettingsError: Swift.Error {
      */
     case UserKeyStateUpdateFailed(message: String)
     
-    case UserKeyStateRetrievalFailed(message: String)
-    
 }
 
 
@@ -4033,10 +4031,6 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .UserKeyStateRetrievalFailed(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4060,8 +4054,6 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
         case .UserKeyStateUpdateFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .UserKeyStateRetrievalFailed(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
 
         
         }
@@ -5660,8 +5652,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
