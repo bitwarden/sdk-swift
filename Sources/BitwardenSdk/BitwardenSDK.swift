@@ -1134,7 +1134,13 @@ public protocol CipherRepository: AnyObject, Sendable {
     
     func set(id: String, value: Cipher) async throws 
     
+    func setBulk(values: [String: Cipher]) async throws 
+    
     func remove(id: String) async throws 
+    
+    func removeBulk(keys: [String]) async throws 
+    
+    func removeAll() async throws 
     
     func has(id: String) async throws  -> Bool
     
@@ -1238,6 +1244,23 @@ open func set(id: String, value: Cipher)async throws   {
         )
 }
     
+open func setBulk(values: [String: Cipher])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_cipherrepository_set_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterDictionaryStringTypeCipher.lower(values)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
 open func remove(id: String)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -1245,6 +1268,40 @@ open func remove(id: String)async throws   {
                 uniffi_bitwarden_uniffi_fn_method_cipherrepository_remove(
                     self.uniffiCloneHandle(),
                     FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeBulk(keys: [String])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_cipherrepository_remove_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterSequenceString.lower(keys)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeAll()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_cipherrepository_remove_all(
+                    self.uniffiCloneHandle()
+                    
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -1426,6 +1483,47 @@ fileprivate struct UniffiCallbackInterfaceCipherRepository {
                 droppedCallback: uniffiOutDroppedCallback
             )
         },
+        setBulk: { (
+            uniffiHandle: UInt64,
+            values: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeCipherRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.setBulk(
+                     values: try FfiConverterDictionaryStringTypeCipher.lift(values)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
         remove: { (
             uniffiHandle: UInt64,
             id: RustBuffer,
@@ -1440,6 +1538,86 @@ fileprivate struct UniffiCallbackInterfaceCipherRepository {
                 }
                 return try await uniffiObj.remove(
                      id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeBulk: { (
+            uniffiHandle: UInt64,
+            keys: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeCipherRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeBulk(
+                     keys: try FfiConverterSequenceString.lift(keys)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeAll: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeCipherRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeAll(
                 )
             }
 
@@ -4233,7 +4411,13 @@ public protocol FolderRepository: AnyObject, Sendable {
     
     func set(id: String, value: Folder) async throws 
     
+    func setBulk(values: [String: Folder]) async throws 
+    
     func remove(id: String) async throws 
+    
+    func removeBulk(keys: [String]) async throws 
+    
+    func removeAll() async throws 
     
     func has(id: String) async throws  -> Bool
     
@@ -4337,6 +4521,23 @@ open func set(id: String, value: Folder)async throws   {
         )
 }
     
+open func setBulk(values: [String: Folder])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_folderrepository_set_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterDictionaryStringTypeFolder.lower(values)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
 open func remove(id: String)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -4344,6 +4545,40 @@ open func remove(id: String)async throws   {
                 uniffi_bitwarden_uniffi_fn_method_folderrepository_remove(
                     self.uniffiCloneHandle(),
                     FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeBulk(keys: [String])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_folderrepository_remove_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterSequenceString.lower(keys)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeAll()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_folderrepository_remove_all(
+                    self.uniffiCloneHandle()
+                    
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -4525,6 +4760,47 @@ fileprivate struct UniffiCallbackInterfaceFolderRepository {
                 droppedCallback: uniffiOutDroppedCallback
             )
         },
+        setBulk: { (
+            uniffiHandle: UInt64,
+            values: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeFolderRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.setBulk(
+                     values: try FfiConverterDictionaryStringTypeFolder.lift(values)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
         remove: { (
             uniffiHandle: UInt64,
             id: RustBuffer,
@@ -4539,6 +4815,86 @@ fileprivate struct UniffiCallbackInterfaceFolderRepository {
                 }
                 return try await uniffiObj.remove(
                      id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeBulk: { (
+            uniffiHandle: UInt64,
+            keys: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeFolderRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeBulk(
+                     keys: try FfiConverterSequenceString.lift(keys)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeAll: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeFolderRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeAll(
                 )
             }
 
@@ -6582,7 +6938,13 @@ public protocol UserKeyStateRepository: AnyObject, Sendable {
     
     func set(id: String, value: UserKeyState) async throws 
     
+    func setBulk(values: [String: UserKeyState]) async throws 
+    
     func remove(id: String) async throws 
+    
+    func removeBulk(keys: [String]) async throws 
+    
+    func removeAll() async throws 
     
     func has(id: String) async throws  -> Bool
     
@@ -6686,6 +7048,23 @@ open func set(id: String, value: UserKeyState)async throws   {
         )
 }
     
+open func setBulk(values: [String: UserKeyState])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_userkeystaterepository_set_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterDictionaryStringTypeUserKeyState.lower(values)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
 open func remove(id: String)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -6693,6 +7072,40 @@ open func remove(id: String)async throws   {
                 uniffi_bitwarden_uniffi_fn_method_userkeystaterepository_remove(
                     self.uniffiCloneHandle(),
                     FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeBulk(keys: [String])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_userkeystaterepository_remove_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterSequenceString.lower(keys)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeAll()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_userkeystaterepository_remove_all(
+                    self.uniffiCloneHandle()
+                    
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -6874,6 +7287,47 @@ fileprivate struct UniffiCallbackInterfaceUserKeyStateRepository {
                 droppedCallback: uniffiOutDroppedCallback
             )
         },
+        setBulk: { (
+            uniffiHandle: UInt64,
+            values: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeUserKeyStateRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.setBulk(
+                     values: try FfiConverterDictionaryStringTypeUserKeyState.lift(values)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
         remove: { (
             uniffiHandle: UInt64,
             id: RustBuffer,
@@ -6888,6 +7342,86 @@ fileprivate struct UniffiCallbackInterfaceUserKeyStateRepository {
                 }
                 return try await uniffiObj.remove(
                      id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeBulk: { (
+            uniffiHandle: UInt64,
+            keys: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeUserKeyStateRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeBulk(
+                     keys: try FfiConverterSequenceString.lift(keys)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeAll: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeUserKeyStateRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeAll(
                 )
             }
 
@@ -9174,6 +9708,84 @@ fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
         return dict
     }
 }
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryStringTypeUserKeyState: FfiConverterRustBuffer {
+    public static func write(_ value: [String: UserKeyState], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterTypeUserKeyState.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: UserKeyState] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: UserKeyState]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterTypeUserKeyState.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryStringTypeCipher: FfiConverterRustBuffer {
+    public static func write(_ value: [String: Cipher], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterTypeCipher.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: Cipher] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: Cipher]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterTypeCipher.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryStringTypeFolder: FfiConverterRustBuffer {
+    public static func write(_ value: [String: Folder], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterTypeFolder.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: Folder] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: Folder]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterTypeFolder.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
@@ -9401,10 +10013,19 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set() != 48582) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove() != 56056) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set_bulk() != 61193) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_has() != 5516) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove() != 23376) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_bulk() != 29988) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_all() != 52618) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_has() != 51348) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt() != 28575) {
@@ -9593,10 +10214,19 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set() != 44760) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove() != 761) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set_bulk() != 61025) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_has() != 5564) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove() != 58409) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_bulk() != 8699) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_all() != 61833) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_has() != 4078) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt() != 16696) {
@@ -9710,10 +10340,19 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set() != 22984) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove() != 60499) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set_bulk() != 34544) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_has() != 39056) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove() != 26230) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_bulk() != 11575) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_all() != 2696) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_has() != 1007) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 23471) {
@@ -9749,16 +10388,16 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
     uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenStateInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     return InitializationResult.ok
 }()
