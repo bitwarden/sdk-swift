@@ -1552,6 +1552,10 @@ public struct InitUserCryptoRequest {
      * The method to decrypt the user's account symmetric key (user key)
      */
     public let method: InitUserCryptoMethod
+    /**
+     * Optional V2 upgrade token for automatic key rotation from V1 to V2
+     */
+    public let upgradeToken: V2UpgradeToken?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1571,12 +1575,16 @@ public struct InitUserCryptoRequest {
          */accountCryptographicState: WrappedAccountCryptographicState, 
         /**
          * The method to decrypt the user's account symmetric key (user key)
-         */method: InitUserCryptoMethod) {
+         */method: InitUserCryptoMethod, 
+        /**
+         * Optional V2 upgrade token for automatic key rotation from V1 to V2
+         */upgradeToken: V2UpgradeToken?) {
         self.userId = userId
         self.kdfParams = kdfParams
         self.email = email
         self.accountCryptographicState = accountCryptographicState
         self.method = method
+        self.upgradeToken = upgradeToken
     }
 }
 
@@ -1605,6 +1613,9 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         if lhs.method != rhs.method {
             return false
         }
+        if lhs.upgradeToken != rhs.upgradeToken {
+            return false
+        }
         return true
     }
 
@@ -1614,6 +1625,7 @@ extension InitUserCryptoRequest: Equatable, Hashable {
         hasher.combine(email)
         hasher.combine(accountCryptographicState)
         hasher.combine(method)
+        hasher.combine(upgradeToken)
     }
 }
 
@@ -1630,7 +1642,8 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
                 kdfParams: FfiConverterTypeKdf.read(from: &buf), 
                 email: FfiConverterString.read(from: &buf), 
                 accountCryptographicState: FfiConverterTypeWrappedAccountCryptographicState.read(from: &buf), 
-                method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf)
+                method: FfiConverterTypeInitUserCryptoMethod.read(from: &buf), 
+                upgradeToken: FfiConverterOptionTypeV2UpgradeToken.read(from: &buf)
         )
     }
 
@@ -1640,6 +1653,7 @@ public struct FfiConverterTypeInitUserCryptoRequest: FfiConverterRustBuffer {
         FfiConverterString.write(value.email, into: &buf)
         FfiConverterTypeWrappedAccountCryptographicState.write(value.accountCryptographicState, into: &buf)
         FfiConverterTypeInitUserCryptoMethod.write(value.method, into: &buf)
+        FfiConverterOptionTypeV2UpgradeToken.write(value.upgradeToken, into: &buf)
     }
 }
 
@@ -2812,6 +2826,94 @@ public func FfiConverterTypeUserKeyState_lower(_ value: UserKeyState) -> RustBuf
 
 
 /**
+ * Holds both V1 and V2 user keys, each wrapped by the other.
+ */
+public struct V2UpgradeToken {
+    /**
+     * V1 user key encrypted with V2 key (Cose_Encrypt0_B64 format)
+     */
+    public let wrappedUserKey1: EncString
+    /**
+     * V2 user key encrypted with V1 key (Aes256Cbc_HmacSha256_B64 format)
+     */
+    public let wrappedUserKey2: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * V1 user key encrypted with V2 key (Cose_Encrypt0_B64 format)
+         */wrappedUserKey1: EncString, 
+        /**
+         * V2 user key encrypted with V1 key (Aes256Cbc_HmacSha256_B64 format)
+         */wrappedUserKey2: EncString) {
+        self.wrappedUserKey1 = wrappedUserKey1
+        self.wrappedUserKey2 = wrappedUserKey2
+    }
+}
+
+#if compiler(>=6)
+extension V2UpgradeToken: Sendable {}
+#endif
+
+
+
+
+
+extension V2UpgradeToken: Equatable, Hashable {
+    public static func ==(lhs: V2UpgradeToken, rhs: V2UpgradeToken) -> Bool {
+        if lhs.wrappedUserKey1 != rhs.wrappedUserKey1 {
+            return false
+        }
+        if lhs.wrappedUserKey2 != rhs.wrappedUserKey2 {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(wrappedUserKey1)
+        hasher.combine(wrappedUserKey2)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeV2UpgradeToken: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> V2UpgradeToken {
+        return
+            try V2UpgradeToken(
+                wrappedUserKey1: FfiConverterTypeEncString.read(from: &buf), 
+                wrappedUserKey2: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: V2UpgradeToken, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.wrappedUserKey1, into: &buf)
+        FfiConverterTypeEncString.write(value.wrappedUserKey2, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeV2UpgradeToken_lift(_ buf: RustBuffer) throws -> V2UpgradeToken {
+    return try FfiConverterTypeV2UpgradeToken.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeV2UpgradeToken_lower(_ value: V2UpgradeToken) -> RustBuffer {
+    return FfiConverterTypeV2UpgradeToken.lower(value)
+}
+
+
+/**
  * Request for `verify_asymmetric_keys`.
  */
 public struct VerifyAsymmetricKeysRequest {
@@ -3546,6 +3648,12 @@ public enum CryptoClientError: Swift.Error {
     
     case InvalidPrfInput(message: String)
     
+    case InvalidUpgradeToken(message: String)
+    
+    case UpgradeTokenRequired(message: String)
+    
+    case InvalidKeyType(message: String)
+    
 }
 
 
@@ -3582,6 +3690,18 @@ public struct FfiConverterTypeCryptoClientError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 6: return .InvalidUpgradeToken(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .UpgradeTokenRequired(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .InvalidKeyType(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -3603,6 +3723,12 @@ public struct FfiConverterTypeCryptoClientError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .InvalidPrfInput(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
+        case .InvalidUpgradeToken(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .UpgradeTokenRequired(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .InvalidKeyType(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
 
         
         }
@@ -3993,6 +4119,8 @@ public enum EncryptionSettingsError: Swift.Error {
     
     case UserKeyStateRetrievalFailed(message: String)
     
+    case InvalidUpgradeToken(message: String)
+    
 }
 
 
@@ -4037,6 +4165,10 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 8: return .InvalidUpgradeToken(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4062,6 +4194,8 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(6))
         case .UserKeyStateRetrievalFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
+        case .InvalidUpgradeToken(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
 
         
         }
@@ -5206,6 +5340,30 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeV2UpgradeToken: FfiConverterRustBuffer {
+    typealias SwiftType = V2UpgradeToken?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeV2UpgradeToken.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeV2UpgradeToken.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBuffer {
     typealias SwiftType = TrustDeviceResponse?
 
@@ -5660,8 +5818,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 

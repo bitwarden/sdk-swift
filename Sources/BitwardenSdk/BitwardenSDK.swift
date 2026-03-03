@@ -3186,6 +3186,13 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     func enrollPinWithEncryptedPin(encryptedPin: EncString) throws  -> EnrollPinResponse
     
     /**
+     * Gets the upgraded V2 user key using an upgrade token.
+     * If the current key is already V2, returns it directly.
+     * If the current key is V1 and a token is provided, extracts the V2 key.
+     */
+    func getUpgradedUserKey(upgradeToken: V2UpgradeToken?) throws  -> B64
+    
+    /**
      * Get the uses's decrypted encryption key. Note: It's very important
      * to keep this key safe, as it can be used to decrypt all of the user's data
      */
@@ -3344,6 +3351,20 @@ open func enrollPinWithEncryptedPin(encryptedPin: EncString)throws  -> EnrollPin
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_pin_with_encrypted_pin(
             self.uniffiCloneHandle(),
         FfiConverterTypeEncString_lower(encryptedPin),$0
+    )
+})
+}
+    
+    /**
+     * Gets the upgraded V2 user key using an upgrade token.
+     * If the current key is already V2, returns it directly.
+     * If the current key is V1 and a token is provided, extracts the V2 key.
+     */
+open func getUpgradedUserKey(upgradeToken: V2UpgradeToken?)throws  -> B64  {
+    return try  FfiConverterTypeB64_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_get_upgraded_user_key(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeV2UpgradeToken.lower(upgradeToken),$0
     )
 })
 }
@@ -9066,6 +9087,30 @@ fileprivate struct FfiConverterOptionTypeUserKeyState: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeV2UpgradeToken: FfiConverterRustBuffer {
+    typealias SwiftType = V2UpgradeToken?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeV2UpgradeToken.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeV2UpgradeToken.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeServerCommunicationConfig: FfiConverterRustBuffer {
     typealias SwiftType = ServerCommunicationConfig?
 
@@ -10154,6 +10199,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin_with_encrypted_pin() != 52668) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_upgraded_user_key() != 33561) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 58176) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -10387,18 +10435,18 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitLogCallback()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenVaultInitialized()
-    uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     return InitializationResult.ok
 }()
 
