@@ -1028,16 +1028,370 @@ public func FfiConverterTypeFido2CredentialAutofillView_lower(_ value: Fido2Cred
 }
 
 
-public struct GetAssertionRequest {
-    public let rpId: String
-    public let clientDataHash: Data
-    public let allowList: [PublicKeyCredentialDescriptor]?
-    public let options: Options
-    public let extensions: String?
+/**
+ * WebAuthn extension input for WebAuthn authentication extensions.
+ */
+public struct GetAssertionExtensionsInput {
+    /**
+     * PRF input for the authentication ceremony.
+     */
+    public let prf: GetAssertionPrfInput?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(rpId: String, clientDataHash: Data, allowList: [PublicKeyCredentialDescriptor]?, options: Options, extensions: String?) {
+    public init(
+        /**
+         * PRF input for the authentication ceremony.
+         */prf: GetAssertionPrfInput?) {
+        self.prf = prf
+    }
+}
+
+#if compiler(>=6)
+extension GetAssertionExtensionsInput: Sendable {}
+#endif
+
+
+
+
+
+extension GetAssertionExtensionsInput: Equatable, Hashable {
+    public static func ==(lhs: GetAssertionExtensionsInput, rhs: GetAssertionExtensionsInput) -> Bool {
+        if lhs.prf != rhs.prf {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(prf)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssertionExtensionsInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssertionExtensionsInput {
+        return
+            try GetAssertionExtensionsInput(
+                prf: FfiConverterOptionTypeGetAssertionPrfInput.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: GetAssertionExtensionsInput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeGetAssertionPrfInput.write(value.prf, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionExtensionsInput_lift(_ buf: RustBuffer) throws -> GetAssertionExtensionsInput {
+    return try FfiConverterTypeGetAssertionExtensionsInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionExtensionsInput_lower(_ value: GetAssertionExtensionsInput) -> RustBuffer {
+    return FfiConverterTypeGetAssertionExtensionsInput.lower(value)
+}
+
+
+/**
+ * WebAuthn extension output of an authentication ceremony.
+ */
+public struct GetAssertionExtensionsOutput {
+    /**
+     * PRF output for an authentication ceremony.
+     */
+    public let prf: GetAssertionPrfOutput?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * PRF output for an authentication ceremony.
+         */prf: GetAssertionPrfOutput?) {
+        self.prf = prf
+    }
+}
+
+#if compiler(>=6)
+extension GetAssertionExtensionsOutput: Sendable {}
+#endif
+
+
+
+
+
+extension GetAssertionExtensionsOutput: Equatable, Hashable {
+    public static func ==(lhs: GetAssertionExtensionsOutput, rhs: GetAssertionExtensionsOutput) -> Bool {
+        if lhs.prf != rhs.prf {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(prf)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssertionExtensionsOutput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssertionExtensionsOutput {
+        return
+            try GetAssertionExtensionsOutput(
+                prf: FfiConverterOptionTypeGetAssertionPrfOutput.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: GetAssertionExtensionsOutput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeGetAssertionPrfOutput.write(value.prf, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionExtensionsOutput_lift(_ buf: RustBuffer) throws -> GetAssertionExtensionsOutput {
+    return try FfiConverterTypeGetAssertionExtensionsOutput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionExtensionsOutput_lower(_ value: GetAssertionExtensionsOutput) -> RustBuffer {
+    return FfiConverterTypeGetAssertionExtensionsOutput.lower(value)
+}
+
+
+/**
+ * Input for WebAuthn PRF extension during authentication ceremonies.
+ */
+public struct GetAssertionPrfInput {
+    /**
+     * A PRF input to use for authentication. If a map of credential IDs to PRF
+     * inputs is specified in [`Self::eval_by_credential`] along with this
+     * value, the extension will fallback to this
+     * value if the returned credential ID is not contained in the map.
+     */
+    public let eval: PrfInputValues?
+    /**
+     * A map of credential IDs to PRF input for a set of credentials specified in the
+     * [`GetAssertionRequest::allow_list`] field of the request. If a key of
+     * this map does not exist in the allow list, the extension will fail.
+     */
+    public let evalByCredential: [Data: PrfInputValues]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * A PRF input to use for authentication. If a map of credential IDs to PRF
+         * inputs is specified in [`Self::eval_by_credential`] along with this
+         * value, the extension will fallback to this
+         * value if the returned credential ID is not contained in the map.
+         */eval: PrfInputValues?, 
+        /**
+         * A map of credential IDs to PRF input for a set of credentials specified in the
+         * [`GetAssertionRequest::allow_list`] field of the request. If a key of
+         * this map does not exist in the allow list, the extension will fail.
+         */evalByCredential: [Data: PrfInputValues]?) {
+        self.eval = eval
+        self.evalByCredential = evalByCredential
+    }
+}
+
+#if compiler(>=6)
+extension GetAssertionPrfInput: Sendable {}
+#endif
+
+
+
+
+
+extension GetAssertionPrfInput: Equatable, Hashable {
+    public static func ==(lhs: GetAssertionPrfInput, rhs: GetAssertionPrfInput) -> Bool {
+        if lhs.eval != rhs.eval {
+            return false
+        }
+        if lhs.evalByCredential != rhs.evalByCredential {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(eval)
+        hasher.combine(evalByCredential)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssertionPrfInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssertionPrfInput {
+        return
+            try GetAssertionPrfInput(
+                eval: FfiConverterOptionTypePrfInputValues.read(from: &buf), 
+                evalByCredential: FfiConverterOptionDictionaryDataTypePrfInputValues.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: GetAssertionPrfInput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypePrfInputValues.write(value.eval, into: &buf)
+        FfiConverterOptionDictionaryDataTypePrfInputValues.write(value.evalByCredential, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionPrfInput_lift(_ buf: RustBuffer) throws -> GetAssertionPrfInput {
+    return try FfiConverterTypeGetAssertionPrfInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionPrfInput_lower(_ value: GetAssertionPrfInput) -> RustBuffer {
+    return FfiConverterTypeGetAssertionPrfInput.lower(value)
+}
+
+
+/**
+ * WebAuthn PRF extension output during an authentication ceremony.
+ */
+public struct GetAssertionPrfOutput {
+    /**
+     * The PRF output for the ceremony.
+     */
+    public let results: PrfOutputValues
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The PRF output for the ceremony.
+         */results: PrfOutputValues) {
+        self.results = results
+    }
+}
+
+#if compiler(>=6)
+extension GetAssertionPrfOutput: Sendable {}
+#endif
+
+
+
+
+
+extension GetAssertionPrfOutput: Equatable, Hashable {
+    public static func ==(lhs: GetAssertionPrfOutput, rhs: GetAssertionPrfOutput) -> Bool {
+        if lhs.results != rhs.results {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(results)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssertionPrfOutput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssertionPrfOutput {
+        return
+            try GetAssertionPrfOutput(
+                results: FfiConverterTypePrfOutputValues.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: GetAssertionPrfOutput, into buf: inout [UInt8]) {
+        FfiConverterTypePrfOutputValues.write(value.results, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionPrfOutput_lift(_ buf: RustBuffer) throws -> GetAssertionPrfOutput {
+    return try FfiConverterTypeGetAssertionPrfOutput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssertionPrfOutput_lower(_ value: GetAssertionPrfOutput) -> RustBuffer {
+    return FfiConverterTypeGetAssertionPrfOutput.lower(value)
+}
+
+
+/**
+ * Type representing data from WebAuthn's
+ * [`PublicKeyCredentialRequestOptions`][pubkey-cred-request-options].
+ *
+ * [pubkey-cred-request-options]: https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrequestoptions
+ */
+public struct GetAssertionRequest {
+    /**
+     * The RP ID for the request used to select credentials.
+     */
+    public let rpId: String
+    /**
+     * Hash of the clientDataJSON for the request.
+     */
+    public let clientDataHash: Data
+    /**
+     * Credential IDs known to the RP. If specified, it is a list of
+     * credentials to filter by, ordered from most to least preferable. If
+     * empty, only discoverable credentials will be returned.
+     */
+    public let allowList: [PublicKeyCredentialDescriptor]?
+    public let options: Options
+    /**
+     * WebAuthn extension input for use during assertion.
+     */
+    public let extensions: GetAssertionExtensionsInput?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The RP ID for the request used to select credentials.
+         */rpId: String, 
+        /**
+         * Hash of the clientDataJSON for the request.
+         */clientDataHash: Data, 
+        /**
+         * Credential IDs known to the RP. If specified, it is a list of
+         * credentials to filter by, ordered from most to least preferable. If
+         * empty, only discoverable credentials will be returned.
+         */allowList: [PublicKeyCredentialDescriptor]?, options: Options, 
+        /**
+         * WebAuthn extension input for use during assertion.
+         */extensions: GetAssertionExtensionsInput?) {
         self.rpId = rpId
         self.clientDataHash = clientDataHash
         self.allowList = allowList
@@ -1096,7 +1450,7 @@ public struct FfiConverterTypeGetAssertionRequest: FfiConverterRustBuffer {
                 clientDataHash: FfiConverterData.read(from: &buf), 
                 allowList: FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.read(from: &buf), 
                 options: FfiConverterTypeOptions.read(from: &buf), 
-                extensions: FfiConverterOptionString.read(from: &buf)
+                extensions: FfiConverterOptionTypeGetAssertionExtensionsInput.read(from: &buf)
         )
     }
 
@@ -1105,7 +1459,7 @@ public struct FfiConverterTypeGetAssertionRequest: FfiConverterRustBuffer {
         FfiConverterData.write(value.clientDataHash, into: &buf)
         FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.write(value.allowList, into: &buf)
         FfiConverterTypeOptions.write(value.options, into: &buf)
-        FfiConverterOptionString.write(value.extensions, into: &buf)
+        FfiConverterOptionTypeGetAssertionExtensionsInput.write(value.extensions, into: &buf)
     }
 }
 
@@ -1125,21 +1479,72 @@ public func FfiConverterTypeGetAssertionRequest_lower(_ value: GetAssertionReque
 }
 
 
+/**
+ * Fields corresponding to a WebAuthn [PublicKeyCredential][pub-key-cred]
+ * with an [AuthenticatorAssertionResponse][authenticator-assertion-response].
+ *
+ * [pub-key-cred]: https://www.w3.org/TR/webauthn-3/#publickeycredential
+ * [authenticator-assertion-response]: https://www.w3.org/TR/webauthn-3/#authenticatorassertionresponse
+ */
 public struct GetAssertionResult {
+    /**
+     * ID for this credential, corresponding to [PublicKeyCredential.rawId][raw-id].
+     *
+     * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+     */
     public let credentialId: Data
+    /**
+     * The authenticator data from the authenticator response.
+     */
     public let authenticatorData: Data
+    /**
+     * Signature over the authenticator data.
+     */
     public let signature: Data
+    /**
+     * The user handle returned from the authenticator.
+     */
     public let userHandle: Data
+    /**
+     * A reference to the Bitwarden cipher for the selected credential.
+     */
     public let selectedCredential: SelectedCredential
+    /**
+     * Mix of CTAP unsigned extension output and WebAuthn client extension output.
+     * Signed extensions can be retrieved from authenticator data.
+     */
+    public let extensions: GetAssertionExtensionsOutput
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: Data, authenticatorData: Data, signature: Data, userHandle: Data, selectedCredential: SelectedCredential) {
+    public init(
+        /**
+         * ID for this credential, corresponding to [PublicKeyCredential.rawId][raw-id].
+         *
+         * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+         */credentialId: Data, 
+        /**
+         * The authenticator data from the authenticator response.
+         */authenticatorData: Data, 
+        /**
+         * Signature over the authenticator data.
+         */signature: Data, 
+        /**
+         * The user handle returned from the authenticator.
+         */userHandle: Data, 
+        /**
+         * A reference to the Bitwarden cipher for the selected credential.
+         */selectedCredential: SelectedCredential, 
+        /**
+         * Mix of CTAP unsigned extension output and WebAuthn client extension output.
+         * Signed extensions can be retrieved from authenticator data.
+         */extensions: GetAssertionExtensionsOutput) {
         self.credentialId = credentialId
         self.authenticatorData = authenticatorData
         self.signature = signature
         self.userHandle = userHandle
         self.selectedCredential = selectedCredential
+        self.extensions = extensions
     }
 }
 
@@ -1168,6 +1573,9 @@ extension GetAssertionResult: Equatable, Hashable {
         if lhs.selectedCredential != rhs.selectedCredential {
             return false
         }
+        if lhs.extensions != rhs.extensions {
+            return false
+        }
         return true
     }
 
@@ -1177,6 +1585,7 @@ extension GetAssertionResult: Equatable, Hashable {
         hasher.combine(signature)
         hasher.combine(userHandle)
         hasher.combine(selectedCredential)
+        hasher.combine(extensions)
     }
 }
 
@@ -1193,7 +1602,8 @@ public struct FfiConverterTypeGetAssertionResult: FfiConverterRustBuffer {
                 authenticatorData: FfiConverterData.read(from: &buf), 
                 signature: FfiConverterData.read(from: &buf), 
                 userHandle: FfiConverterData.read(from: &buf), 
-                selectedCredential: FfiConverterTypeSelectedCredential.read(from: &buf)
+                selectedCredential: FfiConverterTypeSelectedCredential.read(from: &buf), 
+                extensions: FfiConverterTypeGetAssertionExtensionsOutput.read(from: &buf)
         )
     }
 
@@ -1203,6 +1613,7 @@ public struct FfiConverterTypeGetAssertionResult: FfiConverterRustBuffer {
         FfiConverterData.write(value.signature, into: &buf)
         FfiConverterData.write(value.userHandle, into: &buf)
         FfiConverterTypeSelectedCredential.write(value.selectedCredential, into: &buf)
+        FfiConverterTypeGetAssertionExtensionsOutput.write(value.extensions, into: &buf)
     }
 }
 
@@ -1222,6 +1633,316 @@ public func FfiConverterTypeGetAssertionResult_lower(_ value: GetAssertionResult
 }
 
 
+/**
+ * WebAuthn extension input for WebAuthn registration extensions.
+ */
+public struct MakeCredentialExtensionsInput {
+    /**
+     * PRF input for WebAuthn registration request.
+     */
+    public let prf: MakeCredentialPrfInput?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * PRF input for WebAuthn registration request.
+         */prf: MakeCredentialPrfInput?) {
+        self.prf = prf
+    }
+}
+
+#if compiler(>=6)
+extension MakeCredentialExtensionsInput: Sendable {}
+#endif
+
+
+
+
+
+extension MakeCredentialExtensionsInput: Equatable, Hashable {
+    public static func ==(lhs: MakeCredentialExtensionsInput, rhs: MakeCredentialExtensionsInput) -> Bool {
+        if lhs.prf != rhs.prf {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(prf)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeCredentialExtensionsInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialExtensionsInput {
+        return
+            try MakeCredentialExtensionsInput(
+                prf: FfiConverterOptionTypeMakeCredentialPrfInput.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeCredentialExtensionsInput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeMakeCredentialPrfInput.write(value.prf, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialExtensionsInput_lift(_ buf: RustBuffer) throws -> MakeCredentialExtensionsInput {
+    return try FfiConverterTypeMakeCredentialExtensionsInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialExtensionsInput_lower(_ value: MakeCredentialExtensionsInput) -> RustBuffer {
+    return FfiConverterTypeMakeCredentialExtensionsInput.lower(value)
+}
+
+
+/**
+ * WebAuthn extension output for registration extensions.
+ */
+public struct MakeCredentialExtensionsOutput {
+    /**
+     * PRF output for registration extensions.
+     */
+    public let prf: MakeCredentialPrfOutput?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * PRF output for registration extensions.
+         */prf: MakeCredentialPrfOutput?) {
+        self.prf = prf
+    }
+}
+
+#if compiler(>=6)
+extension MakeCredentialExtensionsOutput: Sendable {}
+#endif
+
+
+
+
+
+extension MakeCredentialExtensionsOutput: Equatable, Hashable {
+    public static func ==(lhs: MakeCredentialExtensionsOutput, rhs: MakeCredentialExtensionsOutput) -> Bool {
+        if lhs.prf != rhs.prf {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(prf)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeCredentialExtensionsOutput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialExtensionsOutput {
+        return
+            try MakeCredentialExtensionsOutput(
+                prf: FfiConverterOptionTypeMakeCredentialPrfOutput.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeCredentialExtensionsOutput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeMakeCredentialPrfOutput.write(value.prf, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialExtensionsOutput_lift(_ buf: RustBuffer) throws -> MakeCredentialExtensionsOutput {
+    return try FfiConverterTypeMakeCredentialExtensionsOutput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialExtensionsOutput_lower(_ value: MakeCredentialExtensionsOutput) -> RustBuffer {
+    return FfiConverterTypeMakeCredentialExtensionsOutput.lower(value)
+}
+
+
+/**
+ * WebAuthn PRF extension input for use during registration.
+ */
+public struct MakeCredentialPrfInput {
+    /**
+     * PRF inputs.
+     */
+    public let eval: PrfInputValues?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * PRF inputs.
+         */eval: PrfInputValues?) {
+        self.eval = eval
+    }
+}
+
+#if compiler(>=6)
+extension MakeCredentialPrfInput: Sendable {}
+#endif
+
+
+
+
+
+extension MakeCredentialPrfInput: Equatable, Hashable {
+    public static func ==(lhs: MakeCredentialPrfInput, rhs: MakeCredentialPrfInput) -> Bool {
+        if lhs.eval != rhs.eval {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(eval)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeCredentialPrfInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialPrfInput {
+        return
+            try MakeCredentialPrfInput(
+                eval: FfiConverterOptionTypePrfInputValues.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeCredentialPrfInput, into buf: inout [UInt8]) {
+        FfiConverterOptionTypePrfInputValues.write(value.eval, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialPrfInput_lift(_ buf: RustBuffer) throws -> MakeCredentialPrfInput {
+    return try FfiConverterTypeMakeCredentialPrfInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialPrfInput_lower(_ value: MakeCredentialPrfInput) -> RustBuffer {
+    return FfiConverterTypeMakeCredentialPrfInput.lower(value)
+}
+
+
+/**
+ * WebAuthn PRF extension output used during registration.
+ */
+public struct MakeCredentialPrfOutput {
+    /**
+     * Whether PRF is successfully processed for the newly created credential.
+     */
+    public let enabled: Bool
+    /**
+     * PRF outputs.
+     */
+    public let results: PrfOutputValues?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Whether PRF is successfully processed for the newly created credential.
+         */enabled: Bool, 
+        /**
+         * PRF outputs.
+         */results: PrfOutputValues?) {
+        self.enabled = enabled
+        self.results = results
+    }
+}
+
+#if compiler(>=6)
+extension MakeCredentialPrfOutput: Sendable {}
+#endif
+
+
+
+
+
+extension MakeCredentialPrfOutput: Equatable, Hashable {
+    public static func ==(lhs: MakeCredentialPrfOutput, rhs: MakeCredentialPrfOutput) -> Bool {
+        if lhs.enabled != rhs.enabled {
+            return false
+        }
+        if lhs.results != rhs.results {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(enabled)
+        hasher.combine(results)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMakeCredentialPrfOutput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeCredentialPrfOutput {
+        return
+            try MakeCredentialPrfOutput(
+                enabled: FfiConverterBool.read(from: &buf), 
+                results: FfiConverterOptionTypePrfOutputValues.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: MakeCredentialPrfOutput, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterOptionTypePrfOutputValues.write(value.results, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialPrfOutput_lift(_ buf: RustBuffer) throws -> MakeCredentialPrfOutput {
+    return try FfiConverterTypeMakeCredentialPrfOutput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMakeCredentialPrfOutput_lower(_ value: MakeCredentialPrfOutput) -> RustBuffer {
+    return FfiConverterTypeMakeCredentialPrfOutput.lower(value)
+}
+
+
 public struct MakeCredentialRequest {
     public let clientDataHash: Data
     public let rp: PublicKeyCredentialRpEntity
@@ -1229,11 +1950,21 @@ public struct MakeCredentialRequest {
     public let pubKeyCredParams: [PublicKeyCredentialParameters]
     public let excludeList: [PublicKeyCredentialDescriptor]?
     public let options: Options
-    public let extensions: String?
+    /**
+     * WebAuthn client extension inputs for credential creation requests.
+     *
+     * Cf. <https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-extensions>.
+     */
+    public let extensions: MakeCredentialExtensionsInput?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(clientDataHash: Data, rp: PublicKeyCredentialRpEntity, user: PublicKeyCredentialUserEntity, pubKeyCredParams: [PublicKeyCredentialParameters], excludeList: [PublicKeyCredentialDescriptor]?, options: Options, extensions: String?) {
+    public init(clientDataHash: Data, rp: PublicKeyCredentialRpEntity, user: PublicKeyCredentialUserEntity, pubKeyCredParams: [PublicKeyCredentialParameters], excludeList: [PublicKeyCredentialDescriptor]?, options: Options, 
+        /**
+         * WebAuthn client extension inputs for credential creation requests.
+         *
+         * Cf. <https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-extensions>.
+         */extensions: MakeCredentialExtensionsInput?) {
         self.clientDataHash = clientDataHash
         self.rp = rp
         self.user = user
@@ -1304,7 +2035,7 @@ public struct FfiConverterTypeMakeCredentialRequest: FfiConverterRustBuffer {
                 pubKeyCredParams: FfiConverterSequenceTypePublicKeyCredentialParameters.read(from: &buf), 
                 excludeList: FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.read(from: &buf), 
                 options: FfiConverterTypeOptions.read(from: &buf), 
-                extensions: FfiConverterOptionString.read(from: &buf)
+                extensions: FfiConverterOptionTypeMakeCredentialExtensionsInput.read(from: &buf)
         )
     }
 
@@ -1315,7 +2046,7 @@ public struct FfiConverterTypeMakeCredentialRequest: FfiConverterRustBuffer {
         FfiConverterSequenceTypePublicKeyCredentialParameters.write(value.pubKeyCredParams, into: &buf)
         FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor.write(value.excludeList, into: &buf)
         FfiConverterTypeOptions.write(value.options, into: &buf)
-        FfiConverterOptionString.write(value.extensions, into: &buf)
+        FfiConverterOptionTypeMakeCredentialExtensionsInput.write(value.extensions, into: &buf)
     }
 }
 
@@ -1335,17 +2066,74 @@ public func FfiConverterTypeMakeCredentialRequest_lower(_ value: MakeCredentialR
 }
 
 
+/**
+ * Fields corresponding to a WebAuthn [PublicKeyCredential][pub-key-cred]
+ * with an [AuthenticatorAttestationResponse][authenticator-attestation-response].
+ *
+ * [pub-key-cred]: https://www.w3.org/TR/webauthn-3/#publickeycredential
+ * [authenticator-attestation-response]: https://www.w3.org/TR/webauthn-3/#authenticatorattestationresponse
+ */
 public struct MakeCredentialResult {
+    /**
+     * The authenticator data extracted from within the
+     * [`attestation_object`][Self::attestation_object].
+     */
     public let authenticatorData: Data
+    /**
+     * [WebAuthn attestation object][webauthn-attestation-object] for the
+     * authenticator response containing both the authenticator data and
+     * attestation statement for the credential.
+     *
+     * [webauthn-attestation-object]: https://www.w3.org/TR/webauthn-3/#dom-authenticatorattestationresponse-attestationobject
+     */
     public let attestationObject: Data
+    /**
+     * ID for this credential, corresponding to [PublicKeyCredential.rawId][raw-id].
+     *
+     * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+     */
     public let credentialId: Data
+    /**
+     * Mix of CTAP [unsigned extension output][unsigned-extensions] and
+     * [WebAuthn client extensions][webauthn-client-extensions] output returned
+     * by the authenticator.
+     *
+     * [unsigned-extensions]: https://www.w3.org/TR/webauthn-3/#unsigned-extension-outputs
+     * [webauthn-client-extensions]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-clientextensionsresults-slot
+     */
+    public let extensions: MakeCredentialExtensionsOutput
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(authenticatorData: Data, attestationObject: Data, credentialId: Data) {
+    public init(
+        /**
+         * The authenticator data extracted from within the
+         * [`attestation_object`][Self::attestation_object].
+         */authenticatorData: Data, 
+        /**
+         * [WebAuthn attestation object][webauthn-attestation-object] for the
+         * authenticator response containing both the authenticator data and
+         * attestation statement for the credential.
+         *
+         * [webauthn-attestation-object]: https://www.w3.org/TR/webauthn-3/#dom-authenticatorattestationresponse-attestationobject
+         */attestationObject: Data, 
+        /**
+         * ID for this credential, corresponding to [PublicKeyCredential.rawId][raw-id].
+         *
+         * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+         */credentialId: Data, 
+        /**
+         * Mix of CTAP [unsigned extension output][unsigned-extensions] and
+         * [WebAuthn client extensions][webauthn-client-extensions] output returned
+         * by the authenticator.
+         *
+         * [unsigned-extensions]: https://www.w3.org/TR/webauthn-3/#unsigned-extension-outputs
+         * [webauthn-client-extensions]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-clientextensionsresults-slot
+         */extensions: MakeCredentialExtensionsOutput) {
         self.authenticatorData = authenticatorData
         self.attestationObject = attestationObject
         self.credentialId = credentialId
+        self.extensions = extensions
     }
 }
 
@@ -1368,6 +2156,9 @@ extension MakeCredentialResult: Equatable, Hashable {
         if lhs.credentialId != rhs.credentialId {
             return false
         }
+        if lhs.extensions != rhs.extensions {
+            return false
+        }
         return true
     }
 
@@ -1375,6 +2166,7 @@ extension MakeCredentialResult: Equatable, Hashable {
         hasher.combine(authenticatorData)
         hasher.combine(attestationObject)
         hasher.combine(credentialId)
+        hasher.combine(extensions)
     }
 }
 
@@ -1389,7 +2181,8 @@ public struct FfiConverterTypeMakeCredentialResult: FfiConverterRustBuffer {
             try MakeCredentialResult(
                 authenticatorData: FfiConverterData.read(from: &buf), 
                 attestationObject: FfiConverterData.read(from: &buf), 
-                credentialId: FfiConverterData.read(from: &buf)
+                credentialId: FfiConverterData.read(from: &buf), 
+                extensions: FfiConverterTypeMakeCredentialExtensionsOutput.read(from: &buf)
         )
     }
 
@@ -1397,6 +2190,7 @@ public struct FfiConverterTypeMakeCredentialResult: FfiConverterRustBuffer {
         FfiConverterData.write(value.authenticatorData, into: &buf)
         FfiConverterData.write(value.attestationObject, into: &buf)
         FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterTypeMakeCredentialExtensionsOutput.write(value.extensions, into: &buf)
     }
 }
 
@@ -1486,6 +2280,182 @@ public func FfiConverterTypeOptions_lift(_ buf: RustBuffer) throws -> Options {
 #endif
 public func FfiConverterTypeOptions_lower(_ value: Options) -> RustBuffer {
     return FfiConverterTypeOptions.lower(value)
+}
+
+
+/**
+ * Salt inputs for WebAuthn PRF extension.
+ */
+public struct PrfInputValues {
+    /**
+     * An input on which to evaluate PRF. Required.
+     */
+    public let first: Data
+    /**
+     * An optional secondary input on which to evaluate PRF.
+     */
+    public let second: Data?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * An input on which to evaluate PRF. Required.
+         */first: Data, 
+        /**
+         * An optional secondary input on which to evaluate PRF.
+         */second: Data?) {
+        self.first = first
+        self.second = second
+    }
+}
+
+#if compiler(>=6)
+extension PrfInputValues: Sendable {}
+#endif
+
+
+
+
+
+extension PrfInputValues: Equatable, Hashable {
+    public static func ==(lhs: PrfInputValues, rhs: PrfInputValues) -> Bool {
+        if lhs.first != rhs.first {
+            return false
+        }
+        if lhs.second != rhs.second {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(first)
+        hasher.combine(second)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePrfInputValues: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PrfInputValues {
+        return
+            try PrfInputValues(
+                first: FfiConverterData.read(from: &buf), 
+                second: FfiConverterOptionData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PrfInputValues, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.first, into: &buf)
+        FfiConverterOptionData.write(value.second, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrfInputValues_lift(_ buf: RustBuffer) throws -> PrfInputValues {
+    return try FfiConverterTypePrfInputValues.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrfInputValues_lower(_ value: PrfInputValues) -> RustBuffer {
+    return FfiConverterTypePrfInputValues.lower(value)
+}
+
+
+/**
+ * WebAuthn PRF output values.
+ */
+public struct PrfOutputValues {
+    /**
+     * The output of the PRF evaluation of the first PRF input.
+     */
+    public let first: Data
+    /**
+     * The output of the PRF evaluation of the second PRF input, if it was specified.
+     */
+    public let second: Data?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The output of the PRF evaluation of the first PRF input.
+         */first: Data, 
+        /**
+         * The output of the PRF evaluation of the second PRF input, if it was specified.
+         */second: Data?) {
+        self.first = first
+        self.second = second
+    }
+}
+
+#if compiler(>=6)
+extension PrfOutputValues: Sendable {}
+#endif
+
+
+
+
+
+extension PrfOutputValues: Equatable, Hashable {
+    public static func ==(lhs: PrfOutputValues, rhs: PrfOutputValues) -> Bool {
+        if lhs.first != rhs.first {
+            return false
+        }
+        if lhs.second != rhs.second {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(first)
+        hasher.combine(second)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePrfOutputValues: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PrfOutputValues {
+        return
+            try PrfOutputValues(
+                first: FfiConverterData.read(from: &buf), 
+                second: FfiConverterOptionData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PrfOutputValues, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.first, into: &buf)
+        FfiConverterOptionData.write(value.second, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrfOutputValues_lift(_ buf: RustBuffer) throws -> PrfOutputValues {
+    return try FfiConverterTypePrfOutputValues.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrfOutputValues_lower(_ value: PrfOutputValues) -> RustBuffer {
+    return FfiConverterTypePrfOutputValues.lower(value)
 }
 
 
@@ -2575,8 +3545,6 @@ public enum GetAssertionError: Swift.Error {
     
     case UnknownEnum(message: String)
     
-    case Serde(message: String)
-    
     case GetSelectedCredential(message: String)
     
     case InvalidGuid(message: String)
@@ -2605,23 +3573,19 @@ public struct FfiConverterTypeGetAssertionError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .Serde(
+        case 2: return .GetSelectedCredential(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .GetSelectedCredential(
+        case 3: return .InvalidGuid(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .InvalidGuid(
+        case 4: return .MissingUser(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .MissingUser(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 6: return .Other(
+        case 5: return .Other(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -2638,16 +3602,14 @@ public struct FfiConverterTypeGetAssertionError: FfiConverterRustBuffer {
         
         case .UnknownEnum(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .Serde(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
         case .GetSelectedCredential(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(2))
         case .InvalidGuid(_ /* message is ignored*/):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
         case .MissingUser(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(4))
         case .Other(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(5))
 
         
         }
@@ -2693,8 +3655,6 @@ public enum MakeCredentialError: Swift.Error {
     
     case UnknownEnum(message: String)
     
-    case Serde(message: String)
-    
     case MissingAttestedCredentialData(message: String)
     
     case Other(message: String)
@@ -2723,15 +3683,11 @@ public struct FfiConverterTypeMakeCredentialError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .Serde(
+        case 3: return .MissingAttestedCredentialData(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .MissingAttestedCredentialData(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 5: return .Other(
+        case 4: return .Other(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -2750,12 +3706,10 @@ public struct FfiConverterTypeMakeCredentialError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .UnknownEnum(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
-        case .Serde(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
         case .MissingAttestedCredentialData(_ /* message is ignored*/):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
         case .Other(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(4))
 
         
         }
@@ -3240,6 +4194,198 @@ fileprivate struct FfiConverterOptionTypeCredPropsResult: FfiConverterRustBuffer
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeGetAssertionExtensionsInput: FfiConverterRustBuffer {
+    typealias SwiftType = GetAssertionExtensionsInput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeGetAssertionExtensionsInput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeGetAssertionExtensionsInput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeGetAssertionPrfInput: FfiConverterRustBuffer {
+    typealias SwiftType = GetAssertionPrfInput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeGetAssertionPrfInput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeGetAssertionPrfInput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeGetAssertionPrfOutput: FfiConverterRustBuffer {
+    typealias SwiftType = GetAssertionPrfOutput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeGetAssertionPrfOutput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeGetAssertionPrfOutput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeMakeCredentialExtensionsInput: FfiConverterRustBuffer {
+    typealias SwiftType = MakeCredentialExtensionsInput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeMakeCredentialExtensionsInput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeMakeCredentialExtensionsInput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeMakeCredentialPrfInput: FfiConverterRustBuffer {
+    typealias SwiftType = MakeCredentialPrfInput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeMakeCredentialPrfInput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeMakeCredentialPrfInput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeMakeCredentialPrfOutput: FfiConverterRustBuffer {
+    typealias SwiftType = MakeCredentialPrfOutput?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeMakeCredentialPrfOutput.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeMakeCredentialPrfOutput.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePrfInputValues: FfiConverterRustBuffer {
+    typealias SwiftType = PrfInputValues?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePrfInputValues.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePrfInputValues.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePrfOutputValues: FfiConverterRustBuffer {
+    typealias SwiftType = PrfOutputValues?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePrfOutputValues.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePrfOutputValues.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
     typealias SwiftType = [String]?
 
@@ -3280,6 +4426,30 @@ fileprivate struct FfiConverterOptionSequenceTypePublicKeyCredentialDescriptor: 
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterSequenceTypePublicKeyCredentialDescriptor.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionDictionaryDataTypePrfInputValues: FfiConverterRustBuffer {
+    typealias SwiftType = [Data: PrfInputValues]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterDictionaryDataTypePrfInputValues.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterDictionaryDataTypePrfInputValues.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -3360,6 +4530,32 @@ fileprivate struct FfiConverterSequenceTypePublicKeyCredentialParameters: FfiCon
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryDataTypePrfInputValues: FfiConverterRustBuffer {
+    public static func write(_ value: [Data: PrfInputValues], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterData.write(key, into: &buf)
+            FfiConverterTypePrfInputValues.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Data: PrfInputValues] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [Data: PrfInputValues]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterData.read(from: &buf)
+            let value = try FfiConverterTypePrfInputValues.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -3376,8 +4572,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 
