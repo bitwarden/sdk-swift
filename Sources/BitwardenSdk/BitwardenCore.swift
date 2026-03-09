@@ -1755,6 +1755,75 @@ public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResp
 
 
 /**
+ * Represents the local user data key, wrapped by user key.
+ * This key is used to encrypt local user data (e.g., password generator history).
+ */
+public struct LocalUserDataKeyState {
+    public let wrappedKey: EncString
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(wrappedKey: EncString) {
+        self.wrappedKey = wrappedKey
+    }
+}
+
+#if compiler(>=6)
+extension LocalUserDataKeyState: Sendable {}
+#endif
+
+
+
+
+
+extension LocalUserDataKeyState: Equatable, Hashable {
+    public static func ==(lhs: LocalUserDataKeyState, rhs: LocalUserDataKeyState) -> Bool {
+        if lhs.wrappedKey != rhs.wrappedKey {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(wrappedKey)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLocalUserDataKeyState: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocalUserDataKeyState {
+        return
+            try LocalUserDataKeyState(
+                wrappedKey: FfiConverterTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LocalUserDataKeyState, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.wrappedKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalUserDataKeyState_lift(_ buf: RustBuffer) throws -> LocalUserDataKeyState {
+    return try FfiConverterTypeLocalUserDataKeyState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalUserDataKeyState_lower(_ value: LocalUserDataKeyState) -> RustBuffer {
+    return FfiConverterTypeLocalUserDataKeyState.lower(value)
+}
+
+
+/**
  * Response from the `make_key_pair` function
  */
 public struct MakeKeyPairResponse {
@@ -4121,6 +4190,16 @@ public enum EncryptionSettingsError: Swift.Error {
     
     case InvalidUpgradeToken(message: String)
     
+    /**
+     * The local user data key could not be initialized.
+     */
+    case LocalUserDataKeyInitFailed(message: String)
+    
+    /**
+     * The local user data key could not be loaded into the key store context.
+     */
+    case LocalUserDataKeyLoadFailed(message: String)
+    
 }
 
 
@@ -4169,6 +4248,14 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 9: return .LocalUserDataKeyInitFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .LocalUserDataKeyLoadFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4196,6 +4283,10 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(7))
         case .InvalidUpgradeToken(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
+        case .LocalUserDataKeyInitFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
 
         
         }
