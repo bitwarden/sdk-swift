@@ -2844,6 +2844,98 @@ public func FfiConverterTypeDecryptCipherListResult_lower(_ value: DecryptCipher
 }
 
 
+/**
+ * Represents the result of decrypting a list of ciphers.
+ *
+ * This struct contains two vectors: `successes` and `failures`.
+ * `successes` contains the decrypted `CipherView` objects,
+ * while `failures` contains the original `Cipher` objects that failed to decrypt.
+ */
+public struct DecryptCipherResult {
+    /**
+     * The decrypted `CipherView` objects.
+     */
+    public let successes: [CipherView]
+    /**
+     * The original `Cipher` objects that failed to decrypt.
+     */
+    public let failures: [Cipher]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The decrypted `CipherView` objects.
+         */successes: [CipherView], 
+        /**
+         * The original `Cipher` objects that failed to decrypt.
+         */failures: [Cipher]) {
+        self.successes = successes
+        self.failures = failures
+    }
+}
+
+#if compiler(>=6)
+extension DecryptCipherResult: Sendable {}
+#endif
+
+
+
+
+
+extension DecryptCipherResult: Equatable, Hashable {
+    public static func ==(lhs: DecryptCipherResult, rhs: DecryptCipherResult) -> Bool {
+        if lhs.successes != rhs.successes {
+            return false
+        }
+        if lhs.failures != rhs.failures {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(successes)
+        hasher.combine(failures)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptCipherResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptCipherResult {
+        return
+            try DecryptCipherResult(
+                successes: FfiConverterSequenceTypeCipherView.read(from: &buf), 
+                failures: FfiConverterSequenceTypeCipher.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DecryptCipherResult, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeCipherView.write(value.successes, into: &buf)
+        FfiConverterSequenceTypeCipher.write(value.failures, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCipherResult_lift(_ buf: RustBuffer) throws -> DecryptCipherResult {
+    return try FfiConverterTypeDecryptCipherResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCipherResult_lower(_ value: DecryptCipherResult) -> RustBuffer {
+    return FfiConverterTypeDecryptCipherResult.lower(value)
+}
+
+
 public struct EncryptionContext {
     /**
      * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
@@ -9670,6 +9762,31 @@ fileprivate struct FfiConverterSequenceTypeCipherListView: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeCipherView: FfiConverterRustBuffer {
+    typealias SwiftType = [CipherView]
+
+    public static func write(_ value: [CipherView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCipherView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CipherView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CipherView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCipherView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeFido2Credential: FfiConverterRustBuffer {
     typealias SwiftType = [Fido2Credential]
 
@@ -10118,8 +10235,8 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
     return InitializationResult.ok
 }()
 
