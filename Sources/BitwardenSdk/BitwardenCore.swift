@@ -4191,6 +4191,11 @@ public enum EncryptionSettingsError: Swift.Error {
     case InvalidUpgradeToken(message: String)
     
     /**
+     * Retrieval of the key-connector-key from key-connector failed
+     */
+    case KeyConnectorRetrievalFailed(message: String)
+    
+    /**
      * The local user data key could not be initialized.
      */
     case LocalUserDataKeyInitFailed(message: String)
@@ -4248,11 +4253,15 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .LocalUserDataKeyInitFailed(
+        case 9: return .KeyConnectorRetrievalFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .LocalUserDataKeyLoadFailed(
+        case 10: return .LocalUserDataKeyInitFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .LocalUserDataKeyLoadFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -4283,10 +4292,12 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(7))
         case .InvalidUpgradeToken(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
-        case .LocalUserDataKeyInitFailed(_ /* message is ignored*/):
+        case .KeyConnectorRetrievalFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
-        case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
+        case .LocalUserDataKeyInitFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
+        case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
 
         
         }
@@ -4564,6 +4575,17 @@ public enum InitUserCryptoMethod {
          * The user's encrypted symmetric crypto key
          */userKey: EncString
     )
+    /**
+     * In contrast to key-connector, this does all of the connection with key-connector in the sdk
+     */
+    case keyConnectorUrl(
+        /**
+         * The url to retrieve the key-connector-key from
+         */url: String, 
+        /**
+         * The encrypted user key, encrypted with the key connector key retrieved from the url
+         */keyConnectorKeyWrappedUserKey: EncString
+    )
 
 }
 #if compiler(>=6)
@@ -4599,6 +4621,9 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         )
         
         case 7: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        case 8: return .keyConnectorUrl(url: try FfiConverterString.read(from: &buf), keyConnectorKeyWrappedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -4649,6 +4674,12 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             writeInt(&buf, Int32(7))
             FfiConverterTypeB64.write(masterKey, into: &buf)
             FfiConverterTypeEncString.write(userKey, into: &buf)
+            
+        
+        case let .keyConnectorUrl(url,keyConnectorKeyWrappedUserKey):
+            writeInt(&buf, Int32(8))
+            FfiConverterString.write(url, into: &buf)
+            FfiConverterTypeEncString.write(keyConnectorKeyWrappedUserKey, into: &buf)
             
         }
     }
