@@ -1366,6 +1366,74 @@ public func FfiConverterTypeEnrollPinResponse_lower(_ value: EnrollPinResponse) 
 
 
 /**
+ * Represents the PIN envelope in memory, when ephemeral PIN unlock is used.
+ */
+public struct EphemeralPinEnvelopeState {
+    public let pinEnvelope: PasswordProtectedKeyEnvelope
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(pinEnvelope: PasswordProtectedKeyEnvelope) {
+        self.pinEnvelope = pinEnvelope
+    }
+}
+
+#if compiler(>=6)
+extension EphemeralPinEnvelopeState: Sendable {}
+#endif
+
+
+
+
+
+extension EphemeralPinEnvelopeState: Equatable, Hashable {
+    public static func ==(lhs: EphemeralPinEnvelopeState, rhs: EphemeralPinEnvelopeState) -> Bool {
+        if lhs.pinEnvelope != rhs.pinEnvelope {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pinEnvelope)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEphemeralPinEnvelopeState: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EphemeralPinEnvelopeState {
+        return
+            try EphemeralPinEnvelopeState(
+                pinEnvelope: FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: EphemeralPinEnvelopeState, into buf: inout [UInt8]) {
+        FfiConverterTypePasswordProtectedKeyEnvelope.write(value.pinEnvelope, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEphemeralPinEnvelopeState_lift(_ buf: RustBuffer) throws -> EphemeralPinEnvelopeState {
+    return try FfiConverterTypeEphemeralPinEnvelopeState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEphemeralPinEnvelopeState_lower(_ value: EphemeralPinEnvelopeState) -> RustBuffer {
+    return FfiConverterTypeEphemeralPinEnvelopeState.lower(value)
+}
+
+
+/**
  * Request to generate a fingerprint.
  */
 public struct FingerprintRequest {
