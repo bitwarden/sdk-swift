@@ -477,25 +477,21 @@ fileprivate struct FfiConverterString: FfiConverter {
 public protocol ServerCommunicationConfigPlatformApi: AnyObject, Sendable {
     
     /**
-     * Acquires cookies for the given hostname
+     * Acquires cookies using the provided vault URL
      *
      * The platform client should trigger any necessary user interaction
      * (e.g., browser redirect to IdP) to acquire cookies from the
      * load balancer.
      *
-     * For sharded cookies, the platform should return multiple `AcquiredCookie`
-     * entries, each with its full name including the `-{N}` suffix.
-     *
-     * # Arguments
-     *
-     * * `hostname` - The server hostname (e.g., "vault.acme.com")
+     * # Parameters
+     * - `vault_url`: The full vault URL (scheme + host + port, e.g., `"https://vault.bitwarden.com"`
+     * or `"https://localhost:8000"`). This URL is used for constructing the redirect URL.
      *
      * # Returns
-     *
-     * - `Some(cookies)` - Cookies were successfully acquired
-     * - `None` - Cookie acquisition failed or was cancelled
+     * Returns `Some(Vec<AcquiredCookie>)` if cookies were successfully acquired,
+     * or `None` if the operation was cancelled or failed.
      */
-    func acquireCookies(hostname: String) async  -> [AcquiredCookie]?
+    func acquireCookies(vaultUrl: String) async  -> [AcquiredCookie]?
     
 }
 /**
@@ -555,31 +551,27 @@ open class ServerCommunicationConfigPlatformApiImpl: ServerCommunicationConfigPl
 
     
     /**
-     * Acquires cookies for the given hostname
+     * Acquires cookies using the provided vault URL
      *
      * The platform client should trigger any necessary user interaction
      * (e.g., browser redirect to IdP) to acquire cookies from the
      * load balancer.
      *
-     * For sharded cookies, the platform should return multiple `AcquiredCookie`
-     * entries, each with its full name including the `-{N}` suffix.
-     *
-     * # Arguments
-     *
-     * * `hostname` - The server hostname (e.g., "vault.acme.com")
+     * # Parameters
+     * - `vault_url`: The full vault URL (scheme + host + port, e.g., `"https://vault.bitwarden.com"`
+     * or `"https://localhost:8000"`). This URL is used for constructing the redirect URL.
      *
      * # Returns
-     *
-     * - `Some(cookies)` - Cookies were successfully acquired
-     * - `None` - Cookie acquisition failed or was cancelled
+     * Returns `Some(Vec<AcquiredCookie>)` if cookies were successfully acquired,
+     * or `None` if the operation was cancelled or failed.
      */
-open func acquireCookies(hostname: String)async  -> [AcquiredCookie]?  {
+open func acquireCookies(vaultUrl: String)async  -> [AcquiredCookie]?  {
     return
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_server_communication_config_fn_method_servercommunicationconfigplatformapi_acquire_cookies(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(vaultUrl)
                 )
             },
             pollFunc: ffi_bitwarden_server_communication_config_rust_future_poll_rust_buffer,
@@ -620,7 +612,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigPlatformApi {
         },
         acquireCookies: { (
             uniffiHandle: UInt64,
-            hostname: RustBuffer,
+            vaultUrl: RustBuffer,
             uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
             uniffiCallbackData: UInt64,
             uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
@@ -631,7 +623,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigPlatformApi {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.acquireCookies(
-                     hostname: try FfiConverterString.lift(hostname)
+                     vaultUrl: try FfiConverterString.lift(vaultUrl)
                 )
             }
 
@@ -919,6 +911,13 @@ public struct SsoCookieVendorConfig {
      */
     public let cookieDomain: String?
     /**
+     * Vault URL for cookie acquisition redirect
+     *
+     * This is the full vault URL (scheme + host + port) where the browser
+     * should be redirected for SSO cookie acquisition.
+     */
+    public let vaultUrl: String?
+    /**
      * Acquired cookies
      *
      * For sharded cookies, this contains multiple entries with names like
@@ -940,6 +939,12 @@ public struct SsoCookieVendorConfig {
          * Cookie domain for validation
          */cookieDomain: String?, 
         /**
+         * Vault URL for cookie acquisition redirect
+         *
+         * This is the full vault URL (scheme + host + port) where the browser
+         * should be redirected for SSO cookie acquisition.
+         */vaultUrl: String?, 
+        /**
          * Acquired cookies
          *
          * For sharded cookies, this contains multiple entries with names like
@@ -949,6 +954,7 @@ public struct SsoCookieVendorConfig {
         self.idpLoginUrl = idpLoginUrl
         self.cookieName = cookieName
         self.cookieDomain = cookieDomain
+        self.vaultUrl = vaultUrl
         self.cookieValue = cookieValue
     }
 }
@@ -972,6 +978,9 @@ extension SsoCookieVendorConfig: Equatable, Hashable {
         if lhs.cookieDomain != rhs.cookieDomain {
             return false
         }
+        if lhs.vaultUrl != rhs.vaultUrl {
+            return false
+        }
         if lhs.cookieValue != rhs.cookieValue {
             return false
         }
@@ -982,6 +991,7 @@ extension SsoCookieVendorConfig: Equatable, Hashable {
         hasher.combine(idpLoginUrl)
         hasher.combine(cookieName)
         hasher.combine(cookieDomain)
+        hasher.combine(vaultUrl)
         hasher.combine(cookieValue)
     }
 }
@@ -998,6 +1008,7 @@ public struct FfiConverterTypeSsoCookieVendorConfig: FfiConverterRustBuffer {
                 idpLoginUrl: FfiConverterOptionString.read(from: &buf), 
                 cookieName: FfiConverterOptionString.read(from: &buf), 
                 cookieDomain: FfiConverterOptionString.read(from: &buf), 
+                vaultUrl: FfiConverterOptionString.read(from: &buf), 
                 cookieValue: FfiConverterOptionSequenceTypeAcquiredCookie.read(from: &buf)
         )
     }
@@ -1006,6 +1017,7 @@ public struct FfiConverterTypeSsoCookieVendorConfig: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.idpLoginUrl, into: &buf)
         FfiConverterOptionString.write(value.cookieName, into: &buf)
         FfiConverterOptionString.write(value.cookieDomain, into: &buf)
+        FfiConverterOptionString.write(value.vaultUrl, into: &buf)
         FfiConverterOptionSequenceTypeAcquiredCookie.write(value.cookieValue, into: &buf)
     }
 }
@@ -1536,7 +1548,7 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_server_communication_config_checksum_method_servercommunicationconfigplatformapi_acquire_cookies() != 15464) {
+    if (uniffi_bitwarden_server_communication_config_checksum_method_servercommunicationconfigplatformapi_acquire_cookies() != 37684) {
         return InitializationResult.apiChecksumMismatch
     }
 
