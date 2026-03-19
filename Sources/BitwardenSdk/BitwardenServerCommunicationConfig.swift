@@ -893,6 +893,86 @@ public func FfiConverterTypeServerCommunicationConfig_lower(_ value: ServerCommu
 
 
 /**
+ * Request to set server communication configuration for a hostname
+ *
+ * This is the input type for
+ * [`ServerCommunicationConfigClient::set_communication_type`](crate::ServerCommunicationConfigClient::set_communication_type).
+ * Unlike [`ServerCommunicationConfig`], this type does not include acquired cookies,
+ * since cookies are managed separately via
+ * [`ServerCommunicationConfigClient::acquire_cookie`](crate::ServerCommunicationConfigClient::acquire_cookie).
+ */
+public struct SetCommunicationTypeRequest {
+    /**
+     * Bootstrap configuration determining how to establish server communication
+     */
+    public let bootstrap: BootstrapConfigRequest
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Bootstrap configuration determining how to establish server communication
+         */bootstrap: BootstrapConfigRequest) {
+        self.bootstrap = bootstrap
+    }
+}
+
+#if compiler(>=6)
+extension SetCommunicationTypeRequest: Sendable {}
+#endif
+
+
+
+
+
+extension SetCommunicationTypeRequest: Equatable, Hashable {
+    public static func ==(lhs: SetCommunicationTypeRequest, rhs: SetCommunicationTypeRequest) -> Bool {
+        if lhs.bootstrap != rhs.bootstrap {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(bootstrap)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSetCommunicationTypeRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SetCommunicationTypeRequest {
+        return
+            try SetCommunicationTypeRequest(
+                bootstrap: FfiConverterTypeBootstrapConfigRequest.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SetCommunicationTypeRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeBootstrapConfigRequest.write(value.bootstrap, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSetCommunicationTypeRequest_lift(_ buf: RustBuffer) throws -> SetCommunicationTypeRequest {
+    return try FfiConverterTypeSetCommunicationTypeRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSetCommunicationTypeRequest_lower(_ value: SetCommunicationTypeRequest) -> RustBuffer {
+    return FfiConverterTypeSetCommunicationTypeRequest.lower(value)
+}
+
+
+/**
  * SSO cookie vendor configuration
  *
  * This configuration is provided by the server.
@@ -1035,6 +1115,130 @@ public func FfiConverterTypeSsoCookieVendorConfig_lift(_ buf: RustBuffer) throws
 #endif
 public func FfiConverterTypeSsoCookieVendorConfig_lower(_ value: SsoCookieVendorConfig) -> RustBuffer {
     return FfiConverterTypeSsoCookieVendorConfig.lower(value)
+}
+
+
+/**
+ * SSO cookie vendor configuration for [`SetCommunicationTypeRequest`]
+ *
+ * Contains the server-provided configuration fields without acquired cookies.
+ */
+public struct SsoCookieVendorConfigRequest {
+    /**
+     * Identity provider login URL for browser redirect during bootstrap
+     */
+    public let idpLoginUrl: String?
+    /**
+     * Cookie name (base name, without shard suffix)
+     */
+    public let cookieName: String?
+    /**
+     * Cookie domain for validation
+     */
+    public let cookieDomain: String?
+    /**
+     * Vault URL for cookie acquisition redirect
+     *
+     * This is the full vault URL (scheme + host + port) where the browser
+     * should be redirected for SSO cookie acquisition.
+     */
+    public let vaultUrl: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Identity provider login URL for browser redirect during bootstrap
+         */idpLoginUrl: String?, 
+        /**
+         * Cookie name (base name, without shard suffix)
+         */cookieName: String?, 
+        /**
+         * Cookie domain for validation
+         */cookieDomain: String?, 
+        /**
+         * Vault URL for cookie acquisition redirect
+         *
+         * This is the full vault URL (scheme + host + port) where the browser
+         * should be redirected for SSO cookie acquisition.
+         */vaultUrl: String?) {
+        self.idpLoginUrl = idpLoginUrl
+        self.cookieName = cookieName
+        self.cookieDomain = cookieDomain
+        self.vaultUrl = vaultUrl
+    }
+}
+
+#if compiler(>=6)
+extension SsoCookieVendorConfigRequest: Sendable {}
+#endif
+
+
+
+
+
+extension SsoCookieVendorConfigRequest: Equatable, Hashable {
+    public static func ==(lhs: SsoCookieVendorConfigRequest, rhs: SsoCookieVendorConfigRequest) -> Bool {
+        if lhs.idpLoginUrl != rhs.idpLoginUrl {
+            return false
+        }
+        if lhs.cookieName != rhs.cookieName {
+            return false
+        }
+        if lhs.cookieDomain != rhs.cookieDomain {
+            return false
+        }
+        if lhs.vaultUrl != rhs.vaultUrl {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(idpLoginUrl)
+        hasher.combine(cookieName)
+        hasher.combine(cookieDomain)
+        hasher.combine(vaultUrl)
+    }
+}
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoCookieVendorConfigRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoCookieVendorConfigRequest {
+        return
+            try SsoCookieVendorConfigRequest(
+                idpLoginUrl: FfiConverterOptionString.read(from: &buf), 
+                cookieName: FfiConverterOptionString.read(from: &buf), 
+                cookieDomain: FfiConverterOptionString.read(from: &buf), 
+                vaultUrl: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SsoCookieVendorConfigRequest, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.idpLoginUrl, into: &buf)
+        FfiConverterOptionString.write(value.cookieName, into: &buf)
+        FfiConverterOptionString.write(value.cookieDomain, into: &buf)
+        FfiConverterOptionString.write(value.vaultUrl, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoCookieVendorConfigRequest_lift(_ buf: RustBuffer) throws -> SsoCookieVendorConfigRequest {
+    return try FfiConverterTypeSsoCookieVendorConfigRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoCookieVendorConfigRequest_lower(_ value: SsoCookieVendorConfigRequest) -> RustBuffer {
+    return FfiConverterTypeSsoCookieVendorConfigRequest.lower(value)
 }
 
 
@@ -1240,6 +1444,91 @@ public func FfiConverterTypeBootstrapConfig_lower(_ value: BootstrapConfig) -> R
 
 
 extension BootstrapConfig: Equatable, Hashable {}
+
+
+
+
+
+
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Bootstrap configuration variant for [`SetCommunicationTypeRequest`]
+ */
+
+public enum BootstrapConfigRequest {
+    
+    /**
+     * Direct connection with no special authentication requirements
+     */
+    case direct
+    /**
+     * SSO cookie vendor configuration for load balancer authentication
+     */
+    case ssoCookieVendor(SsoCookieVendorConfigRequest
+    )
+
+}
+#if compiler(>=6)
+extension BootstrapConfigRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBootstrapConfigRequest: FfiConverterRustBuffer {
+    typealias SwiftType = BootstrapConfigRequest
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BootstrapConfigRequest {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .direct
+        
+        case 2: return .ssoCookieVendor(try FfiConverterTypeSsoCookieVendorConfigRequest.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: BootstrapConfigRequest, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .direct:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .ssoCookieVendor(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeSsoCookieVendorConfigRequest.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBootstrapConfigRequest_lift(_ buf: RustBuffer) throws -> BootstrapConfigRequest {
+    return try FfiConverterTypeBootstrapConfigRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBootstrapConfigRequest_lower(_ value: BootstrapConfigRequest) -> RustBuffer {
+    return FfiConverterTypeBootstrapConfigRequest.lower(value)
+}
+
+
+
+
+extension BootstrapConfigRequest: Equatable, Hashable {}
 
 
 

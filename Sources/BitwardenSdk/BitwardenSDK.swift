@@ -7442,8 +7442,9 @@ public protocol ServerCommunicationConfigClientProtocol: AnyObject, Sendable {
      *
      * This method saves the provided communication configuration to the repository.
      * Typically called when receiving the `/api/config` response from the server.
+     * Previously acquired cookies are preserved automatically.
      */
-    func setCommunicationType(hostname: String, config: ServerCommunicationConfig) async throws 
+    func setCommunicationType(hostname: String, request: SetCommunicationTypeRequest) async throws 
     
 }
 /**
@@ -7584,14 +7585,15 @@ open func needsBootstrap(hostname: String)async  -> Bool  {
      *
      * This method saves the provided communication configuration to the repository.
      * Typically called when receiving the `/api/config` response from the server.
+     * Previously acquired cookies are preserved automatically.
      */
-open func setCommunicationType(hostname: String, config: ServerCommunicationConfig)async throws   {
+open func setCommunicationType(hostname: String, request: SetCommunicationTypeRequest)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_set_communication_type(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname),FfiConverterTypeServerCommunicationConfig_lower(config)
+                    FfiConverterString.lower(hostname),FfiConverterTypeSetCommunicationTypeRequest_lower(request)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -11873,7 +11875,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 7155) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 16527) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 52521) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 49157) {
@@ -11955,18 +11957,18 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitLogCallback()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenFidoInitialized()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
-    uniffiEnsureBitwardenStateInitialized()
-    uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenCollectionsInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenSshInitialized()
+    uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenCollectionsInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenFidoInitialized()
+    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
