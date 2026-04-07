@@ -544,6 +544,11 @@ open class ServerCommunicationConfigPlatformApiImpl: ServerCommunicationConfigPl
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_server_communication_config_fn_free_servercommunicationconfigplatformapi(handle, $0) }
     }
 
@@ -582,6 +587,8 @@ open func acquireCookies(vaultUrl: String)async  -> [AcquiredCookie]?  {
             
         )
 }
+    
+
     
 }
 
@@ -700,9 +707,6 @@ public struct FfiConverterTypeServerCommunicationConfigPlatformApi: FfiConverter
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -727,7 +731,7 @@ public func FfiConverterTypeServerCommunicationConfigPlatformApi_lower(_ value: 
  * For sharded cookies (AWS ALB pattern), each shard is a separate `AcquiredCookie` with
  * its own name including the `-{N}` suffix (e.g., `AWSELBAuthSessionCookie-0`).
  */
-public struct AcquiredCookie {
+public struct AcquiredCookie: Equatable, Hashable {
     /**
      * Cookie name
      *
@@ -755,34 +759,15 @@ public struct AcquiredCookie {
         self.name = name
         self.value = value
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AcquiredCookie: Sendable {}
 #endif
-
-
-
-
-
-extension AcquiredCookie: Equatable, Hashable {
-    public static func ==(lhs: AcquiredCookie, rhs: AcquiredCookie) -> Bool {
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.value != rhs.value {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(value)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -821,7 +806,7 @@ public func FfiConverterTypeAcquiredCookie_lower(_ value: AcquiredCookie) -> Rus
 /**
  * Server communication configuration
  */
-public struct ServerCommunicationConfig {
+public struct ServerCommunicationConfig: Equatable, Hashable {
     /**
      * Bootstrap configuration determining how to establish server communication
      */
@@ -835,30 +820,15 @@ public struct ServerCommunicationConfig {
          */bootstrap: BootstrapConfig) {
         self.bootstrap = bootstrap
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension ServerCommunicationConfig: Sendable {}
 #endif
-
-
-
-
-
-extension ServerCommunicationConfig: Equatable, Hashable {
-    public static func ==(lhs: ServerCommunicationConfig, rhs: ServerCommunicationConfig) -> Bool {
-        if lhs.bootstrap != rhs.bootstrap {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(bootstrap)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -901,7 +871,7 @@ public func FfiConverterTypeServerCommunicationConfig_lower(_ value: ServerCommu
  * since cookies are managed separately via
  * [`ServerCommunicationConfigClient::acquire_cookie`](crate::ServerCommunicationConfigClient::acquire_cookie).
  */
-public struct SetCommunicationTypeRequest {
+public struct SetCommunicationTypeRequest: Equatable, Hashable {
     /**
      * Bootstrap configuration determining how to establish server communication
      */
@@ -915,30 +885,15 @@ public struct SetCommunicationTypeRequest {
          */bootstrap: BootstrapConfigRequest) {
         self.bootstrap = bootstrap
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SetCommunicationTypeRequest: Sendable {}
 #endif
-
-
-
-
-
-extension SetCommunicationTypeRequest: Equatable, Hashable {
-    public static func ==(lhs: SetCommunicationTypeRequest, rhs: SetCommunicationTypeRequest) -> Bool {
-        if lhs.bootstrap != rhs.bootstrap {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(bootstrap)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -977,7 +932,7 @@ public func FfiConverterTypeSetCommunicationTypeRequest_lower(_ value: SetCommun
  *
  * This configuration is provided by the server.
  */
-public struct SsoCookieVendorConfig {
+public struct SsoCookieVendorConfig: Equatable, Hashable {
     /**
      * Identity provider login URL for browser redirect during bootstrap
      */
@@ -1037,46 +992,15 @@ public struct SsoCookieVendorConfig {
         self.vaultUrl = vaultUrl
         self.cookieValue = cookieValue
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SsoCookieVendorConfig: Sendable {}
 #endif
-
-
-
-
-
-extension SsoCookieVendorConfig: Equatable, Hashable {
-    public static func ==(lhs: SsoCookieVendorConfig, rhs: SsoCookieVendorConfig) -> Bool {
-        if lhs.idpLoginUrl != rhs.idpLoginUrl {
-            return false
-        }
-        if lhs.cookieName != rhs.cookieName {
-            return false
-        }
-        if lhs.cookieDomain != rhs.cookieDomain {
-            return false
-        }
-        if lhs.vaultUrl != rhs.vaultUrl {
-            return false
-        }
-        if lhs.cookieValue != rhs.cookieValue {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(idpLoginUrl)
-        hasher.combine(cookieName)
-        hasher.combine(cookieDomain)
-        hasher.combine(vaultUrl)
-        hasher.combine(cookieValue)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1123,7 +1047,7 @@ public func FfiConverterTypeSsoCookieVendorConfig_lower(_ value: SsoCookieVendor
  *
  * Contains the server-provided configuration fields without acquired cookies.
  */
-public struct SsoCookieVendorConfigRequest {
+public struct SsoCookieVendorConfigRequest: Equatable, Hashable {
     /**
      * Identity provider login URL for browser redirect during bootstrap
      */
@@ -1167,42 +1091,15 @@ public struct SsoCookieVendorConfigRequest {
         self.cookieDomain = cookieDomain
         self.vaultUrl = vaultUrl
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SsoCookieVendorConfigRequest: Sendable {}
 #endif
-
-
-
-
-
-extension SsoCookieVendorConfigRequest: Equatable, Hashable {
-    public static func ==(lhs: SsoCookieVendorConfigRequest, rhs: SsoCookieVendorConfigRequest) -> Bool {
-        if lhs.idpLoginUrl != rhs.idpLoginUrl {
-            return false
-        }
-        if lhs.cookieName != rhs.cookieName {
-            return false
-        }
-        if lhs.cookieDomain != rhs.cookieDomain {
-            return false
-        }
-        if lhs.vaultUrl != rhs.vaultUrl {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(idpLoginUrl)
-        hasher.combine(cookieName)
-        hasher.combine(cookieDomain)
-        hasher.combine(vaultUrl)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1245,7 +1142,7 @@ public func FfiConverterTypeSsoCookieVendorConfigRequest_lower(_ value: SsoCooki
 /**
  * Errors that can occur during cookie acquisition
  */
-public enum AcquireCookieError: Swift.Error {
+public enum AcquireCookieError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1274,8 +1171,21 @@ public enum AcquireCookieError: Swift.Error {
      */
     case RepositorySaveError(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension AcquireCookieError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1352,28 +1262,13 @@ public func FfiConverterTypeAcquireCookieError_lower(_ value: AcquireCookieError
     return FfiConverterTypeAcquireCookieError.lower(value)
 }
 
-
-extension AcquireCookieError: Equatable, Hashable {}
-
-
-
-
-extension AcquireCookieError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Bootstrap configuration for server communication
  */
 
-public enum BootstrapConfig {
+public enum BootstrapConfig: Equatable, Hashable {
     
     /**
      * Direct connection with no special authentication requirements
@@ -1385,7 +1280,12 @@ public enum BootstrapConfig {
     case ssoCookieVendor(SsoCookieVendorConfig
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension BootstrapConfig: Sendable {}
 #endif
@@ -1441,24 +1341,13 @@ public func FfiConverterTypeBootstrapConfig_lower(_ value: BootstrapConfig) -> R
 }
 
 
-
-
-extension BootstrapConfig: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Bootstrap configuration variant for [`SetCommunicationTypeRequest`]
  */
 
-public enum BootstrapConfigRequest {
+public enum BootstrapConfigRequest: Equatable, Hashable {
     
     /**
      * Direct connection with no special authentication requirements
@@ -1470,7 +1359,12 @@ public enum BootstrapConfigRequest {
     case ssoCookieVendor(SsoCookieVendorConfigRequest
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension BootstrapConfigRequest: Sendable {}
 #endif
@@ -1527,21 +1421,10 @@ public func FfiConverterTypeBootstrapConfigRequest_lower(_ value: BootstrapConfi
 
 
 
-
-extension BootstrapConfigRequest: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
 /**
  * Repository errors for configuration storage operations
  */
-public enum ServerCommunicationConfigRepositoryError: Swift.Error {
+public enum ServerCommunicationConfigRepositoryError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1555,8 +1438,21 @@ public enum ServerCommunicationConfigRepositoryError: Swift.Error {
      */
     case SaveError(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ServerCommunicationConfigRepositoryError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1614,21 +1510,6 @@ public func FfiConverterTypeServerCommunicationConfigRepositoryError_lift(_ buf:
 public func FfiConverterTypeServerCommunicationConfigRepositoryError_lower(_ value: ServerCommunicationConfigRepositoryError) -> RustBuffer {
     return FfiConverterTypeServerCommunicationConfigRepositoryError.lower(value)
 }
-
-
-extension ServerCommunicationConfigRepositoryError: Equatable, Hashable {}
-
-
-
-
-extension ServerCommunicationConfigRepositoryError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1727,7 +1608,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
         pollResult = await withUnsafeContinuation {
             pollFunc(
                 rustFuture,
-                uniffiFutureContinuationCallback,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
                 uniffiContinuationHandleMap.insert(obj: $0)
             )
         }
@@ -1755,11 +1638,22 @@ private func uniffiTraitInterfaceCallAsync<T>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // Note: it's important we call either `handleSuccess` or `handleError` exactly once.  Each
+        // call consumes an Arc reference, which means there should be no possibility of a double
+        // call.  The following code is structured so that will will never call both `handleSuccess`
+        // and `handleError`, even in the face of weird errors.
+        //
+        // On platforms that need extra machinery to make C-ABI calls, like JNA or ctypes, it's
+        // possible that we fail to make either call.  However, it doesn't seem like this is
+        // possible on Swift since swift can just make the C call directly.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -1776,13 +1670,19 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // See the note in uniffiTraitInterfaceCallAsync for details on `handleSuccess` and
+        // `handleError`.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch let error as E {
             handleError(CALL_ERROR, lowerError(error))
+            return
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -1837,7 +1737,7 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_server_communication_config_checksum_method_servercommunicationconfigplatformapi_acquire_cookies() != 37684) {
+    if (uniffi_bitwarden_server_communication_config_checksum_method_servercommunicationconfigplatformapi_acquire_cookies() != 25493) {
         return InitializationResult.apiChecksumMismatch
     }
 

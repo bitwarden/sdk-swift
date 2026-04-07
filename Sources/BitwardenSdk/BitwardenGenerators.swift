@@ -501,7 +501,7 @@ fileprivate struct FfiConverterString: FfiConverter {
 /**
  * Passphrase generator request options.
  */
-public struct PassphraseGeneratorRequest {
+public struct PassphraseGeneratorRequest: Equatable, Hashable {
     /**
      * Number of words in the generated passphrase.
      * This value must be between 3 and 20.
@@ -543,42 +543,15 @@ public struct PassphraseGeneratorRequest {
         self.capitalize = capitalize
         self.includeNumber = includeNumber
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PassphraseGeneratorRequest: Sendable {}
 #endif
-
-
-
-
-
-extension PassphraseGeneratorRequest: Equatable, Hashable {
-    public static func ==(lhs: PassphraseGeneratorRequest, rhs: PassphraseGeneratorRequest) -> Bool {
-        if lhs.numWords != rhs.numWords {
-            return false
-        }
-        if lhs.wordSeparator != rhs.wordSeparator {
-            return false
-        }
-        if lhs.capitalize != rhs.capitalize {
-            return false
-        }
-        if lhs.includeNumber != rhs.includeNumber {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(numWords)
-        hasher.combine(wordSeparator)
-        hasher.combine(capitalize)
-        hasher.combine(includeNumber)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -621,7 +594,7 @@ public func FfiConverterTypePassphraseGeneratorRequest_lower(_ value: Passphrase
 /**
  * Password generator request options.
  */
-public struct PasswordGeneratorRequest {
+public struct PasswordGeneratorRequest: Equatable, Hashable {
     /**
      * Include lowercase characters (a-z).
      */
@@ -719,66 +692,15 @@ public struct PasswordGeneratorRequest {
         self.minNumber = minNumber
         self.minSpecial = minSpecial
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PasswordGeneratorRequest: Sendable {}
 #endif
-
-
-
-
-
-extension PasswordGeneratorRequest: Equatable, Hashable {
-    public static func ==(lhs: PasswordGeneratorRequest, rhs: PasswordGeneratorRequest) -> Bool {
-        if lhs.lowercase != rhs.lowercase {
-            return false
-        }
-        if lhs.uppercase != rhs.uppercase {
-            return false
-        }
-        if lhs.numbers != rhs.numbers {
-            return false
-        }
-        if lhs.special != rhs.special {
-            return false
-        }
-        if lhs.length != rhs.length {
-            return false
-        }
-        if lhs.avoidAmbiguous != rhs.avoidAmbiguous {
-            return false
-        }
-        if lhs.minLowercase != rhs.minLowercase {
-            return false
-        }
-        if lhs.minUppercase != rhs.minUppercase {
-            return false
-        }
-        if lhs.minNumber != rhs.minNumber {
-            return false
-        }
-        if lhs.minSpecial != rhs.minSpecial {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(lowercase)
-        hasher.combine(uppercase)
-        hasher.combine(numbers)
-        hasher.combine(special)
-        hasher.combine(length)
-        hasher.combine(avoidAmbiguous)
-        hasher.combine(minLowercase)
-        hasher.combine(minUppercase)
-        hasher.combine(minNumber)
-        hasher.combine(minSpecial)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -832,7 +754,7 @@ public func FfiConverterTypePasswordGeneratorRequest_lower(_ value: PasswordGene
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum AppendType {
+public enum AppendType: Equatable, Hashable {
     
     /**
      * Generates a random string of 8 lowercase characters as part of your username
@@ -844,7 +766,12 @@ public enum AppendType {
     case websiteName(website: String
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension AppendType: Sendable {}
 #endif
@@ -900,17 +827,6 @@ public func FfiConverterTypeAppendType_lower(_ value: AppendType) -> RustBuffer 
 }
 
 
-
-
-extension AppendType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -919,7 +835,7 @@ extension AppendType: Equatable, Hashable {}
  * <https://bitwarden.com/help/generator/#username-types>
  */
 
-public enum ForwarderServiceType {
+public enum ForwarderServiceType: Equatable, Hashable {
     
     /**
      * Previously known as "AnonAddy"
@@ -937,7 +853,12 @@ public enum ForwarderServiceType {
     case simpleLogin(apiKey: String, baseUrl: String
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension ForwarderServiceType: Sendable {}
 #endif
@@ -1032,25 +953,27 @@ public func FfiConverterTypeForwarderServiceType_lower(_ value: ForwarderService
 
 
 
-
-extension ForwarderServiceType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum PassphraseError: Swift.Error {
+public enum PassphraseError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case InvalidNumWords(minimum: UInt8, maximum: UInt8
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension PassphraseError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1106,22 +1029,7 @@ public func FfiConverterTypePassphraseError_lower(_ value: PassphraseError) -> R
 }
 
 
-extension PassphraseError: Equatable, Hashable {}
-
-
-
-
-extension PassphraseError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum PasswordError: Swift.Error {
+public enum PasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1129,8 +1037,21 @@ public enum PasswordError: Swift.Error {
     
     case InvalidLength(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension PasswordError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1190,22 +1111,7 @@ public func FfiConverterTypePasswordError_lower(_ value: PasswordError) -> RustB
 }
 
 
-extension PasswordError: Equatable, Hashable {}
-
-
-
-
-extension PasswordError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum UsernameError: Swift.Error {
+public enum UsernameError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1217,8 +1123,21 @@ public enum UsernameError: Swift.Error {
     
     case Reqwest(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension UsernameError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1289,25 +1208,10 @@ public func FfiConverterTypeUsernameError_lower(_ value: UsernameError) -> RustB
     return FfiConverterTypeUsernameError.lower(value)
 }
 
-
-extension UsernameError: Equatable, Hashable {}
-
-
-
-
-extension UsernameError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum UsernameGeneratorRequest {
+public enum UsernameGeneratorRequest: Equatable, Hashable {
     
     /**
      * Generates a single word username
@@ -1352,7 +1256,12 @@ public enum UsernameGeneratorRequest {
          */website: String?
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension UsernameGeneratorRequest: Sendable {}
 #endif
@@ -1428,17 +1337,6 @@ public func FfiConverterTypeUsernameGeneratorRequest_lift(_ buf: RustBuffer) thr
 public func FfiConverterTypeUsernameGeneratorRequest_lower(_ value: UsernameGeneratorRequest) -> RustBuffer {
     return FfiConverterTypeUsernameGeneratorRequest.lower(value)
 }
-
-
-
-
-extension UsernameGeneratorRequest: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)

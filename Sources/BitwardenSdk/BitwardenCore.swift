@@ -616,6 +616,11 @@ open class ClientManagedTokensImpl: ClientManagedTokens, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_core_fn_free_clientmanagedtokens(handle, $0) }
     }
 
@@ -642,6 +647,8 @@ open func getAccessToken()async  -> String?  {
             
         )
 }
+    
+
     
 }
 
@@ -758,9 +765,6 @@ public struct FfiConverterTypeClientManagedTokens: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -781,7 +785,7 @@ public func FfiConverterTypeClientManagedTokens_lower(_ value: ClientManagedToke
 /**
  * Response for `new_auth_request`.
  */
-public struct AuthRequestResponse {
+public struct AuthRequestResponse: Equatable, Hashable {
     /**
      * Base64 encoded private key
      * This key is temporarily passed back and will most likely not be available in the future
@@ -821,42 +825,15 @@ public struct AuthRequestResponse {
         self.fingerprint = fingerprint
         self.accessCode = accessCode
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AuthRequestResponse: Sendable {}
 #endif
-
-
-
-
-
-extension AuthRequestResponse: Equatable, Hashable {
-    public static func ==(lhs: AuthRequestResponse, rhs: AuthRequestResponse) -> Bool {
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.fingerprint != rhs.fingerprint {
-            return false
-        }
-        if lhs.accessCode != rhs.accessCode {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privateKey)
-        hasher.combine(publicKey)
-        hasher.combine(fingerprint)
-        hasher.combine(accessCode)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -916,7 +893,7 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * let default = ClientSettings::default();
  * ```
  */
-public struct ClientSettings {
+public struct ClientSettings: Equatable, Hashable {
     /**
      * The identity url of the targeted Bitwarden instance. Defaults to `https://identity.bitwarden.com`
      */
@@ -980,54 +957,15 @@ public struct ClientSettings {
         self.bitwardenClientVersion = bitwardenClientVersion
         self.bitwardenPackageType = bitwardenPackageType
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension ClientSettings: Sendable {}
 #endif
-
-
-
-
-
-extension ClientSettings: Equatable, Hashable {
-    public static func ==(lhs: ClientSettings, rhs: ClientSettings) -> Bool {
-        if lhs.identityUrl != rhs.identityUrl {
-            return false
-        }
-        if lhs.apiUrl != rhs.apiUrl {
-            return false
-        }
-        if lhs.userAgent != rhs.userAgent {
-            return false
-        }
-        if lhs.deviceType != rhs.deviceType {
-            return false
-        }
-        if lhs.deviceIdentifier != rhs.deviceIdentifier {
-            return false
-        }
-        if lhs.bitwardenClientVersion != rhs.bitwardenClientVersion {
-            return false
-        }
-        if lhs.bitwardenPackageType != rhs.bitwardenPackageType {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(identityUrl)
-        hasher.combine(apiUrl)
-        hasher.combine(userAgent)
-        hasher.combine(deviceType)
-        hasher.combine(deviceIdentifier)
-        hasher.combine(bitwardenClientVersion)
-        hasher.combine(bitwardenPackageType)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1076,7 +1014,7 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 /**
  * Request for migrating an account from password to key connector.
  */
-public struct DeriveKeyConnectorRequest {
+public struct DeriveKeyConnectorRequest: Equatable, Hashable {
     /**
      * Encrypted user key, used to validate the master key
      */
@@ -1114,42 +1052,15 @@ public struct DeriveKeyConnectorRequest {
         self.kdf = kdf
         self.email = email
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension DeriveKeyConnectorRequest: Sendable {}
 #endif
-
-
-
-
-
-extension DeriveKeyConnectorRequest: Equatable, Hashable {
-    public static func ==(lhs: DeriveKeyConnectorRequest, rhs: DeriveKeyConnectorRequest) -> Bool {
-        if lhs.userKeyEncrypted != rhs.userKeyEncrypted {
-            return false
-        }
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.kdf != rhs.kdf {
-            return false
-        }
-        if lhs.email != rhs.email {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userKeyEncrypted)
-        hasher.combine(password)
-        hasher.combine(kdf)
-        hasher.combine(email)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1192,7 +1103,7 @@ public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyCo
 /**
  * Request for deriving a pin protected user key
  */
-public struct DerivePinKeyResponse {
+public struct DerivePinKeyResponse: Equatable, Hashable {
     /**
      * [UserKey] protected by PIN
      */
@@ -1214,34 +1125,15 @@ public struct DerivePinKeyResponse {
         self.pinProtectedUserKey = pinProtectedUserKey
         self.encryptedPin = encryptedPin
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension DerivePinKeyResponse: Sendable {}
 #endif
-
-
-
-
-
-extension DerivePinKeyResponse: Equatable, Hashable {
-    public static func ==(lhs: DerivePinKeyResponse, rhs: DerivePinKeyResponse) -> Bool {
-        if lhs.pinProtectedUserKey != rhs.pinProtectedUserKey {
-            return false
-        }
-        if lhs.encryptedPin != rhs.encryptedPin {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(pinProtectedUserKey)
-        hasher.combine(encryptedPin)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1280,7 +1172,7 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
 /**
  * Request for deriving a pin protected user key
  */
-public struct EnrollPinResponse {
+public struct EnrollPinResponse: Equatable, Hashable {
     /**
      * [UserKey] protected by PIN
      */
@@ -1302,34 +1194,15 @@ public struct EnrollPinResponse {
         self.pinProtectedUserKeyEnvelope = pinProtectedUserKeyEnvelope
         self.userKeyEncryptedPin = userKeyEncryptedPin
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension EnrollPinResponse: Sendable {}
 #endif
-
-
-
-
-
-extension EnrollPinResponse: Equatable, Hashable {
-    public static func ==(lhs: EnrollPinResponse, rhs: EnrollPinResponse) -> Bool {
-        if lhs.pinProtectedUserKeyEnvelope != rhs.pinProtectedUserKeyEnvelope {
-            return false
-        }
-        if lhs.userKeyEncryptedPin != rhs.userKeyEncryptedPin {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(pinProtectedUserKeyEnvelope)
-        hasher.combine(userKeyEncryptedPin)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1368,7 +1241,7 @@ public func FfiConverterTypeEnrollPinResponse_lower(_ value: EnrollPinResponse) 
 /**
  * Represents the PIN envelope in memory, when ephemeral PIN unlock is used.
  */
-public struct EphemeralPinEnvelopeState {
+public struct EphemeralPinEnvelopeState: Equatable, Hashable {
     public let pinEnvelope: PasswordProtectedKeyEnvelope
 
     // Default memberwise initializers are never public by default, so we
@@ -1376,30 +1249,15 @@ public struct EphemeralPinEnvelopeState {
     public init(pinEnvelope: PasswordProtectedKeyEnvelope) {
         self.pinEnvelope = pinEnvelope
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension EphemeralPinEnvelopeState: Sendable {}
 #endif
-
-
-
-
-
-extension EphemeralPinEnvelopeState: Equatable, Hashable {
-    public static func ==(lhs: EphemeralPinEnvelopeState, rhs: EphemeralPinEnvelopeState) -> Bool {
-        if lhs.pinEnvelope != rhs.pinEnvelope {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(pinEnvelope)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1436,7 +1294,7 @@ public func FfiConverterTypeEphemeralPinEnvelopeState_lower(_ value: EphemeralPi
 /**
  * Request to generate a fingerprint.
  */
-public struct FingerprintRequest {
+public struct FingerprintRequest: Equatable, Hashable {
     /**
      * The input material, used in the fingerprint generation process.
      */
@@ -1458,34 +1316,15 @@ public struct FingerprintRequest {
         self.fingerprintMaterial = fingerprintMaterial
         self.publicKey = publicKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension FingerprintRequest: Sendable {}
 #endif
-
-
-
-
-
-extension FingerprintRequest: Equatable, Hashable {
-    public static func ==(lhs: FingerprintRequest, rhs: FingerprintRequest) -> Bool {
-        if lhs.fingerprintMaterial != rhs.fingerprintMaterial {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(fingerprintMaterial)
-        hasher.combine(publicKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1524,7 +1363,7 @@ public func FfiConverterTypeFingerprintRequest_lower(_ value: FingerprintRequest
 /**
  * Represents the request to initialize the user's organizational cryptographic state.
  */
-public struct InitOrgCryptoRequest {
+public struct InitOrgCryptoRequest: Equatable, Hashable {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
@@ -1538,30 +1377,15 @@ public struct InitOrgCryptoRequest {
          */organizationKeys: [OrganizationId: UnsignedSharedKey]) {
         self.organizationKeys = organizationKeys
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension InitOrgCryptoRequest: Sendable {}
 #endif
-
-
-
-
-
-extension InitOrgCryptoRequest: Equatable, Hashable {
-    public static func ==(lhs: InitOrgCryptoRequest, rhs: InitOrgCryptoRequest) -> Bool {
-        if lhs.organizationKeys != rhs.organizationKeys {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(organizationKeys)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1598,7 +1422,7 @@ public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoReq
 /**
  * State used for initializing the user cryptographic state.
  */
-public struct InitUserCryptoRequest {
+public struct InitUserCryptoRequest: Equatable, Hashable {
     /**
      * The user's ID.
      */
@@ -1654,50 +1478,15 @@ public struct InitUserCryptoRequest {
         self.method = method
         self.upgradeToken = upgradeToken
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension InitUserCryptoRequest: Sendable {}
 #endif
-
-
-
-
-
-extension InitUserCryptoRequest: Equatable, Hashable {
-    public static func ==(lhs: InitUserCryptoRequest, rhs: InitUserCryptoRequest) -> Bool {
-        if lhs.userId != rhs.userId {
-            return false
-        }
-        if lhs.kdfParams != rhs.kdfParams {
-            return false
-        }
-        if lhs.email != rhs.email {
-            return false
-        }
-        if lhs.accountCryptographicState != rhs.accountCryptographicState {
-            return false
-        }
-        if lhs.method != rhs.method {
-            return false
-        }
-        if lhs.upgradeToken != rhs.upgradeToken {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userId)
-        hasher.combine(kdfParams)
-        hasher.combine(email)
-        hasher.combine(accountCryptographicState)
-        hasher.combine(method)
-        hasher.combine(upgradeToken)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1741,7 +1530,7 @@ public func FfiConverterTypeInitUserCryptoRequest_lower(_ value: InitUserCryptoR
 }
 
 
-public struct KeyConnectorResponse {
+public struct KeyConnectorResponse: Equatable, Hashable {
     public let masterKey: B64
     public let encryptedUserKey: String
     public let keys: RsaKeyPair
@@ -1753,38 +1542,15 @@ public struct KeyConnectorResponse {
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension KeyConnectorResponse: Sendable {}
 #endif
-
-
-
-
-
-extension KeyConnectorResponse: Equatable, Hashable {
-    public static func ==(lhs: KeyConnectorResponse, rhs: KeyConnectorResponse) -> Bool {
-        if lhs.masterKey != rhs.masterKey {
-            return false
-        }
-        if lhs.encryptedUserKey != rhs.encryptedUserKey {
-            return false
-        }
-        if lhs.keys != rhs.keys {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(masterKey)
-        hasher.combine(encryptedUserKey)
-        hasher.combine(keys)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1826,7 +1592,7 @@ public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResp
  * Represents the local user data key, wrapped by user key.
  * This key is used to encrypt local user data (e.g., password generator history).
  */
-public struct LocalUserDataKeyState {
+public struct LocalUserDataKeyState: Equatable, Hashable {
     public let wrappedKey: EncString
 
     // Default memberwise initializers are never public by default, so we
@@ -1834,30 +1600,15 @@ public struct LocalUserDataKeyState {
     public init(wrappedKey: EncString) {
         self.wrappedKey = wrappedKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LocalUserDataKeyState: Sendable {}
 #endif
-
-
-
-
-
-extension LocalUserDataKeyState: Equatable, Hashable {
-    public static func ==(lhs: LocalUserDataKeyState, rhs: LocalUserDataKeyState) -> Bool {
-        if lhs.wrappedKey != rhs.wrappedKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(wrappedKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1894,7 +1645,7 @@ public func FfiConverterTypeLocalUserDataKeyState_lower(_ value: LocalUserDataKe
 /**
  * Response from the `make_key_pair` function
  */
-public struct MakeKeyPairResponse {
+public struct MakeKeyPairResponse: Equatable, Hashable {
     /**
      * The user's public key
      */
@@ -1916,34 +1667,15 @@ public struct MakeKeyPairResponse {
         self.userPublicKey = userPublicKey
         self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeKeyPairResponse: Sendable {}
 #endif
-
-
-
-
-
-extension MakeKeyPairResponse: Equatable, Hashable {
-    public static func ==(lhs: MakeKeyPairResponse, rhs: MakeKeyPairResponse) -> Bool {
-        if lhs.userPublicKey != rhs.userPublicKey {
-            return false
-        }
-        if lhs.userKeyEncryptedPrivateKey != rhs.userKeyEncryptedPrivateKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userPublicKey)
-        hasher.combine(userKeyEncryptedPrivateKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1982,7 +1714,7 @@ public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairRespon
 /**
  * Represents the data required to authenticate with the master password.
  */
-public struct MasterPasswordAuthenticationData {
+public struct MasterPasswordAuthenticationData: Equatable, Hashable {
     public let kdf: Kdf
     public let salt: String
     public let masterPasswordAuthenticationHash: B64
@@ -1994,38 +1726,15 @@ public struct MasterPasswordAuthenticationData {
         self.salt = salt
         self.masterPasswordAuthenticationHash = masterPasswordAuthenticationHash
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MasterPasswordAuthenticationData: Sendable {}
 #endif
-
-
-
-
-
-extension MasterPasswordAuthenticationData: Equatable, Hashable {
-    public static func ==(lhs: MasterPasswordAuthenticationData, rhs: MasterPasswordAuthenticationData) -> Bool {
-        if lhs.kdf != rhs.kdf {
-            return false
-        }
-        if lhs.salt != rhs.salt {
-            return false
-        }
-        if lhs.masterPasswordAuthenticationHash != rhs.masterPasswordAuthenticationHash {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(kdf)
-        hasher.combine(salt)
-        hasher.combine(masterPasswordAuthenticationHash)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2063,7 +1772,7 @@ public func FfiConverterTypeMasterPasswordAuthenticationData_lower(_ value: Mast
 }
 
 
-public struct MasterPasswordPolicyOptions {
+public struct MasterPasswordPolicyOptions: Equatable, Hashable {
     public let minComplexity: UInt8
     public let minLength: UInt8
     public let requireUpper: Bool
@@ -2093,54 +1802,15 @@ public struct MasterPasswordPolicyOptions {
         self.requireSpecial = requireSpecial
         self.enforceOnLogin = enforceOnLogin
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MasterPasswordPolicyOptions: Sendable {}
 #endif
-
-
-
-
-
-extension MasterPasswordPolicyOptions: Equatable, Hashable {
-    public static func ==(lhs: MasterPasswordPolicyOptions, rhs: MasterPasswordPolicyOptions) -> Bool {
-        if lhs.minComplexity != rhs.minComplexity {
-            return false
-        }
-        if lhs.minLength != rhs.minLength {
-            return false
-        }
-        if lhs.requireUpper != rhs.requireUpper {
-            return false
-        }
-        if lhs.requireLower != rhs.requireLower {
-            return false
-        }
-        if lhs.requireNumbers != rhs.requireNumbers {
-            return false
-        }
-        if lhs.requireSpecial != rhs.requireSpecial {
-            return false
-        }
-        if lhs.enforceOnLogin != rhs.enforceOnLogin {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(minComplexity)
-        hasher.combine(minLength)
-        hasher.combine(requireUpper)
-        hasher.combine(requireLower)
-        hasher.combine(requireNumbers)
-        hasher.combine(requireSpecial)
-        hasher.combine(enforceOnLogin)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2189,7 +1859,7 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 /**
  * Represents the data required to unlock with the master password.
  */
-public struct MasterPasswordUnlockData {
+public struct MasterPasswordUnlockData: Equatable, Hashable {
     /**
      * The key derivation function used to derive the master key
      */
@@ -2219,38 +1889,15 @@ public struct MasterPasswordUnlockData {
         self.masterKeyWrappedUserKey = masterKeyWrappedUserKey
         self.salt = salt
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MasterPasswordUnlockData: Sendable {}
 #endif
-
-
-
-
-
-extension MasterPasswordUnlockData: Equatable, Hashable {
-    public static func ==(lhs: MasterPasswordUnlockData, rhs: MasterPasswordUnlockData) -> Bool {
-        if lhs.kdf != rhs.kdf {
-            return false
-        }
-        if lhs.masterKeyWrappedUserKey != rhs.masterKeyWrappedUserKey {
-            return false
-        }
-        if lhs.salt != rhs.salt {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(kdf)
-        hasher.combine(masterKeyWrappedUserKey)
-        hasher.combine(salt)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2288,7 +1935,7 @@ public func FfiConverterTypeMasterPasswordUnlockData_lower(_ value: MasterPasswo
 }
 
 
-public struct RegisterKeyResponse {
+public struct RegisterKeyResponse: Equatable, Hashable {
     public let masterPasswordHash: B64
     public let encryptedUserKey: EncString
     public let keys: RsaKeyPair
@@ -2300,38 +1947,15 @@ public struct RegisterKeyResponse {
         self.encryptedUserKey = encryptedUserKey
         self.keys = keys
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension RegisterKeyResponse: Sendable {}
 #endif
-
-
-
-
-
-extension RegisterKeyResponse: Equatable, Hashable {
-    public static func ==(lhs: RegisterKeyResponse, rhs: RegisterKeyResponse) -> Bool {
-        if lhs.masterPasswordHash != rhs.masterPasswordHash {
-            return false
-        }
-        if lhs.encryptedUserKey != rhs.encryptedUserKey {
-            return false
-        }
-        if lhs.keys != rhs.keys {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(masterPasswordHash)
-        hasher.combine(encryptedUserKey)
-        hasher.combine(keys)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2369,7 +1993,7 @@ public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyRespon
 }
 
 
-public struct RegisterTdeKeyResponse {
+public struct RegisterTdeKeyResponse: Equatable, Hashable {
     public let privateKey: EncString
     public let publicKey: B64
     public let adminReset: UnsignedSharedKey
@@ -2383,42 +2007,15 @@ public struct RegisterTdeKeyResponse {
         self.adminReset = adminReset
         self.deviceKey = deviceKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension RegisterTdeKeyResponse: Sendable {}
 #endif
-
-
-
-
-
-extension RegisterTdeKeyResponse: Equatable, Hashable {
-    public static func ==(lhs: RegisterTdeKeyResponse, rhs: RegisterTdeKeyResponse) -> Bool {
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.adminReset != rhs.adminReset {
-            return false
-        }
-        if lhs.deviceKey != rhs.deviceKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privateKey)
-        hasher.combine(publicKey)
-        hasher.combine(adminReset)
-        hasher.combine(deviceKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2458,7 +2055,7 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKey
 }
 
 
-public struct UniffiConverterDummyRecord {
+public struct UniffiConverterDummyRecord: Equatable, Hashable {
     public let uuid: Uuid
     public let date: DateTime
 
@@ -2468,34 +2065,15 @@ public struct UniffiConverterDummyRecord {
         self.uuid = uuid
         self.date = date
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UniffiConverterDummyRecord: Sendable {}
 #endif
-
-
-
-
-
-extension UniffiConverterDummyRecord: Equatable, Hashable {
-    public static func ==(lhs: UniffiConverterDummyRecord, rhs: UniffiConverterDummyRecord) -> Bool {
-        if lhs.uuid != rhs.uuid {
-            return false
-        }
-        if lhs.date != rhs.date {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(uuid)
-        hasher.combine(date)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2534,7 +2112,7 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConv
 /**
  * Response from the `update_kdf` function
  */
-public struct UpdateKdfResponse {
+public struct UpdateKdfResponse: Equatable, Hashable {
     /**
      * The authentication data for the new KDF setting
      */
@@ -2564,38 +2142,15 @@ public struct UpdateKdfResponse {
         self.masterPasswordUnlockData = masterPasswordUnlockData
         self.oldMasterPasswordAuthenticationData = oldMasterPasswordAuthenticationData
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UpdateKdfResponse: Sendable {}
 #endif
-
-
-
-
-
-extension UpdateKdfResponse: Equatable, Hashable {
-    public static func ==(lhs: UpdateKdfResponse, rhs: UpdateKdfResponse) -> Bool {
-        if lhs.masterPasswordAuthenticationData != rhs.masterPasswordAuthenticationData {
-            return false
-        }
-        if lhs.masterPasswordUnlockData != rhs.masterPasswordUnlockData {
-            return false
-        }
-        if lhs.oldMasterPasswordAuthenticationData != rhs.oldMasterPasswordAuthenticationData {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(masterPasswordAuthenticationData)
-        hasher.combine(masterPasswordUnlockData)
-        hasher.combine(oldMasterPasswordAuthenticationData)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2636,7 +2191,7 @@ public func FfiConverterTypeUpdateKdfResponse_lower(_ value: UpdateKdfResponse) 
 /**
  * Response from the `make_update_password` function
  */
-public struct UpdatePasswordResponse {
+public struct UpdatePasswordResponse: Equatable, Hashable {
     /**
      * Hash of the new password
      */
@@ -2658,34 +2213,15 @@ public struct UpdatePasswordResponse {
         self.passwordHash = passwordHash
         self.newKey = newKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UpdatePasswordResponse: Sendable {}
 #endif
-
-
-
-
-
-extension UpdatePasswordResponse: Equatable, Hashable {
-    public static func ==(lhs: UpdatePasswordResponse, rhs: UpdatePasswordResponse) -> Bool {
-        if lhs.passwordHash != rhs.passwordHash {
-            return false
-        }
-        if lhs.newKey != rhs.newKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(passwordHash)
-        hasher.combine(newKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2724,7 +2260,7 @@ public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePassword
 /**
  * Response for the `make_keys_for_user_crypto_v2`, containing a set of keys for a user
  */
-public struct UserCryptoV2KeysResponse {
+public struct UserCryptoV2KeysResponse: Equatable, Hashable {
     /**
      * User key
      */
@@ -2794,58 +2330,15 @@ public struct UserCryptoV2KeysResponse {
         self.securityState = securityState
         self.securityVersion = securityVersion
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UserCryptoV2KeysResponse: Sendable {}
 #endif
-
-
-
-
-
-extension UserCryptoV2KeysResponse: Equatable, Hashable {
-    public static func ==(lhs: UserCryptoV2KeysResponse, rhs: UserCryptoV2KeysResponse) -> Bool {
-        if lhs.userKey != rhs.userKey {
-            return false
-        }
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.signedPublicKey != rhs.signedPublicKey {
-            return false
-        }
-        if lhs.signingKey != rhs.signingKey {
-            return false
-        }
-        if lhs.verifyingKey != rhs.verifyingKey {
-            return false
-        }
-        if lhs.securityState != rhs.securityState {
-            return false
-        }
-        if lhs.securityVersion != rhs.securityVersion {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userKey)
-        hasher.combine(privateKey)
-        hasher.combine(publicKey)
-        hasher.combine(signedPublicKey)
-        hasher.combine(signingKey)
-        hasher.combine(verifyingKey)
-        hasher.combine(securityState)
-        hasher.combine(securityVersion)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2897,7 +2390,7 @@ public func FfiConverterTypeUserCryptoV2KeysResponse_lower(_ value: UserCryptoV2
  * Represents the decrypted symmetric user-key of a user. This is held in ephemeral state of the
  * client.
  */
-public struct UserKeyState {
+public struct UserKeyState: Equatable, Hashable {
     public let decryptedUserKey: B64
 
     // Default memberwise initializers are never public by default, so we
@@ -2905,30 +2398,15 @@ public struct UserKeyState {
     public init(decryptedUserKey: B64) {
         self.decryptedUserKey = decryptedUserKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UserKeyState: Sendable {}
 #endif
-
-
-
-
-
-extension UserKeyState: Equatable, Hashable {
-    public static func ==(lhs: UserKeyState, rhs: UserKeyState) -> Bool {
-        if lhs.decryptedUserKey != rhs.decryptedUserKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(decryptedUserKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2965,7 +2443,7 @@ public func FfiConverterTypeUserKeyState_lower(_ value: UserKeyState) -> RustBuf
 /**
  * Holds both V1 and V2 user keys, each wrapped by the other.
  */
-public struct V2UpgradeToken {
+public struct V2UpgradeToken: Equatable, Hashable {
     /**
      * V1 user key encrypted with V2 key (Cose_Encrypt0_B64 format)
      */
@@ -2987,34 +2465,15 @@ public struct V2UpgradeToken {
         self.wrappedUserKey1 = wrappedUserKey1
         self.wrappedUserKey2 = wrappedUserKey2
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension V2UpgradeToken: Sendable {}
 #endif
-
-
-
-
-
-extension V2UpgradeToken: Equatable, Hashable {
-    public static func ==(lhs: V2UpgradeToken, rhs: V2UpgradeToken) -> Bool {
-        if lhs.wrappedUserKey1 != rhs.wrappedUserKey1 {
-            return false
-        }
-        if lhs.wrappedUserKey2 != rhs.wrappedUserKey2 {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(wrappedUserKey1)
-        hasher.combine(wrappedUserKey2)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3053,7 +2512,7 @@ public func FfiConverterTypeV2UpgradeToken_lower(_ value: V2UpgradeToken) -> Rus
 /**
  * Request for `verify_asymmetric_keys`.
  */
-public struct VerifyAsymmetricKeysRequest {
+public struct VerifyAsymmetricKeysRequest: Equatable, Hashable {
     /**
      * The user's user key
      */
@@ -3083,38 +2542,15 @@ public struct VerifyAsymmetricKeysRequest {
         self.userPublicKey = userPublicKey
         self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension VerifyAsymmetricKeysRequest: Sendable {}
 #endif
-
-
-
-
-
-extension VerifyAsymmetricKeysRequest: Equatable, Hashable {
-    public static func ==(lhs: VerifyAsymmetricKeysRequest, rhs: VerifyAsymmetricKeysRequest) -> Bool {
-        if lhs.userKey != rhs.userKey {
-            return false
-        }
-        if lhs.userPublicKey != rhs.userPublicKey {
-            return false
-        }
-        if lhs.userKeyEncryptedPrivateKey != rhs.userKeyEncryptedPrivateKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userKey)
-        hasher.combine(userPublicKey)
-        hasher.combine(userKeyEncryptedPrivateKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3155,7 +2591,7 @@ public func FfiConverterTypeVerifyAsymmetricKeysRequest_lower(_ value: VerifyAsy
 /**
  * Response for `verify_asymmetric_keys`.
  */
-public struct VerifyAsymmetricKeysResponse {
+public struct VerifyAsymmetricKeysResponse: Equatable, Hashable {
     /**
      * Whether the user's private key was decryptable by the user key.
      */
@@ -3177,34 +2613,15 @@ public struct VerifyAsymmetricKeysResponse {
         self.privateKeyDecryptable = privateKeyDecryptable
         self.validPrivateKey = validPrivateKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension VerifyAsymmetricKeysResponse: Sendable {}
 #endif
-
-
-
-
-
-extension VerifyAsymmetricKeysResponse: Equatable, Hashable {
-    public static func ==(lhs: VerifyAsymmetricKeysResponse, rhs: VerifyAsymmetricKeysResponse) -> Bool {
-        if lhs.privateKeyDecryptable != rhs.privateKeyDecryptable {
-            return false
-        }
-        if lhs.validPrivateKey != rhs.validPrivateKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privateKeyDecryptable)
-        hasher.combine(validPrivateKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3243,7 +2660,7 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAs
 /**
  * Errors that can occur during initialization of the account cryptographic state.
  */
-public enum AccountCryptographyInitializationError: Swift.Error {
+public enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3280,8 +2697,21 @@ public enum AccountCryptographyInitializationError: Swift.Error {
      */
     case GenericCrypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension AccountCryptographyInitializationError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3365,25 +2795,10 @@ public func FfiConverterTypeAccountCryptographyInitializationError_lower(_ value
 }
 
 
-extension AccountCryptographyInitializationError: Equatable, Hashable {}
-
-
-
-
-extension AccountCryptographyInitializationError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors from performing network requests.
  */
-public enum ApiError: Swift.Error {
+public enum ApiError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3397,8 +2812,21 @@ public enum ApiError: Swift.Error {
     
     case ResponseContent(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ApiError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3476,29 +2904,27 @@ public func FfiConverterTypeApiError_lower(_ value: ApiError) -> RustBuffer {
 }
 
 
-extension ApiError: Equatable, Hashable {}
-
-
-
-
-extension ApiError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum ApproveAuthRequestError: Swift.Error {
+public enum ApproveAuthRequestError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ApproveAuthRequestError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3551,28 +2977,13 @@ public func FfiConverterTypeApproveAuthRequestError_lower(_ value: ApproveAuthRe
     return FfiConverterTypeApproveAuthRequestError.lower(value)
 }
 
-
-extension ApproveAuthRequestError: Equatable, Hashable {}
-
-
-
-
-extension ApproveAuthRequestError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Auth requests supports multiple initialization methods.
  */
 
-public enum AuthRequestMethod {
+public enum AuthRequestMethod: Equatable, Hashable {
     
     /**
      * User Key
@@ -3594,7 +3005,12 @@ public enum AuthRequestMethod {
          */authRequestKey: EncString
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension AuthRequestMethod: Sendable {}
 #endif
@@ -3654,21 +3070,10 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 
 
 
-
-extension AuthRequestMethod: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
 /**
  * Error for authentication related operations
  */
-public enum AuthValidateError: Swift.Error {
+public enum AuthValidateError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3680,8 +3085,21 @@ public enum AuthValidateError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension AuthValidateError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3753,25 +3171,10 @@ public func FfiConverterTypeAuthValidateError_lower(_ value: AuthValidateError) 
 }
 
 
-extension AuthValidateError: Equatable, Hashable {}
-
-
-
-
-extension AuthValidateError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Catch all error for mobile crypto operations.
  */
-public enum CryptoClientError: Swift.Error {
+public enum CryptoClientError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3791,8 +3194,21 @@ public enum CryptoClientError: Swift.Error {
     
     case InvalidKeyType(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CryptoClientError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3888,22 +3304,7 @@ public func FfiConverterTypeCryptoClientError_lower(_ value: CryptoClientError) 
 }
 
 
-extension CryptoClientError: Equatable, Hashable {}
-
-
-
-
-extension CryptoClientError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum DeriveKeyConnectorError: Swift.Error {
+public enum DeriveKeyConnectorError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3911,8 +3312,21 @@ public enum DeriveKeyConnectorError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DeriveKeyConnectorError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3971,25 +3385,10 @@ public func FfiConverterTypeDeriveKeyConnectorError_lower(_ value: DeriveKeyConn
     return FfiConverterTypeDeriveKeyConnectorError.lower(value)
 }
 
-
-extension DeriveKeyConnectorError: Equatable, Hashable {}
-
-
-
-
-extension DeriveKeyConnectorError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum DeviceType {
+public enum DeviceType: Equatable, Hashable {
     
     case android
     case iOs
@@ -4019,7 +3418,12 @@ public enum DeviceType {
     case linuxCli
     case duckDuckGoBrowser
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension DeviceType: Sendable {}
 #endif
@@ -4224,18 +3628,7 @@ public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer 
 
 
 
-
-extension DeviceType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum EncryptionSettingsError: Swift.Error {
+public enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -4273,8 +3666,21 @@ public enum EncryptionSettingsError: Swift.Error {
      */
     case LocalUserDataKeyLoadFailed(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EncryptionSettingsError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4388,29 +3794,27 @@ public func FfiConverterTypeEncryptionSettingsError_lower(_ value: EncryptionSet
 }
 
 
-extension EncryptionSettingsError: Equatable, Hashable {}
-
-
-
-
-extension EncryptionSettingsError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum EnrollAdminPasswordResetError: Swift.Error {
+public enum EnrollAdminPasswordResetError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EnrollAdminPasswordResetError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4464,32 +3868,30 @@ public func FfiConverterTypeEnrollAdminPasswordResetError_lower(_ value: EnrollA
 }
 
 
-extension EnrollAdminPasswordResetError: Equatable, Hashable {}
-
-
-
-
-extension EnrollAdminPasswordResetError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum FingerprintError: Swift.Error {
+public enum FingerprintError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(CryptoError
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension FingerprintError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4542,28 +3944,13 @@ public func FfiConverterTypeFingerprintError_lower(_ value: FingerprintError) ->
     return FfiConverterTypeFingerprintError.lower(value)
 }
 
-
-extension FingerprintError: Equatable, Hashable {}
-
-
-
-
-extension FingerprintError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * The crypto method used to initialize the user cryptographic state.
  */
 
-public enum InitUserCryptoMethod {
+public enum InitUserCryptoMethod: Equatable, Hashable {
     
     /**
      * Master Password Unlock
@@ -4655,7 +4042,12 @@ public enum InitUserCryptoMethod {
          */keyConnectorKeyWrappedUserKey: EncString
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension InitUserCryptoMethod: Sendable {}
 #endif
@@ -4770,21 +4162,10 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 
 
 
-
-extension InitUserCryptoMethod: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
 /**
  * Errors that can occur when making keys for account cryptography registration.
  */
-public enum MakeKeysError: Swift.Error {
+public enum MakeKeysError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -4808,8 +4189,21 @@ public enum MakeKeysError: Swift.Error {
      */
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension MakeKeysError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4881,25 +4275,10 @@ public func FfiConverterTypeMakeKeysError_lower(_ value: MakeKeysError) -> RustB
 }
 
 
-extension MakeKeysError: Equatable, Hashable {}
-
-
-
-
-extension MakeKeysError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Error for master password related operations.
  */
-public enum MasterPasswordError: Swift.Error {
+public enum MasterPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -4933,8 +4312,21 @@ public enum MasterPasswordError: Swift.Error {
      */
     case WrongPassword(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension MasterPasswordError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5018,25 +4410,10 @@ public func FfiConverterTypeMasterPasswordError_lower(_ value: MasterPasswordErr
 }
 
 
-extension MasterPasswordError: Equatable, Hashable {}
-
-
-
-
-extension MasterPasswordError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors that can occur during rotation of the account cryptographic state.
  */
-public enum RotateCryptographyStateError: Swift.Error {
+public enum RotateCryptographyStateError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5050,8 +4427,21 @@ public enum RotateCryptographyStateError: Swift.Error {
      */
     case InvalidData(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension RotateCryptographyStateError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5111,26 +4501,11 @@ public func FfiConverterTypeRotateCryptographyStateError_lower(_ value: RotateCr
 }
 
 
-extension RotateCryptographyStateError: Equatable, Hashable {}
-
-
-
-
-extension RotateCryptographyStateError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Signifies that the state is invalid from a cryptographic perspective, such as a required
  * security value missing, or being invalid
  */
-public enum StatefulCryptoError: Swift.Error {
+public enum StatefulCryptoError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5147,8 +4522,21 @@ public enum StatefulCryptoError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension StatefulCryptoError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5214,29 +4602,27 @@ public func FfiConverterTypeStatefulCryptoError_lower(_ value: StatefulCryptoErr
 }
 
 
-extension StatefulCryptoError: Equatable, Hashable {}
-
-
-
-
-extension StatefulCryptoError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum TrustDeviceError: Swift.Error {
+public enum TrustDeviceError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension TrustDeviceError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5290,25 +4676,10 @@ public func FfiConverterTypeTrustDeviceError_lower(_ value: TrustDeviceError) ->
 }
 
 
-extension TrustDeviceError: Equatable, Hashable {}
-
-
-
-
-extension TrustDeviceError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum UserFingerprintError: Swift.Error {
+public enum UserFingerprintError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5316,8 +4687,21 @@ public enum UserFingerprintError: Swift.Error {
     
     case MissingPrivateKey(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension UserFingerprintError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5376,21 +4760,6 @@ public func FfiConverterTypeUserFingerprintError_lower(_ value: UserFingerprintE
     return FfiConverterTypeUserFingerprintError.lower(value)
 }
 
-
-extension UserFingerprintError: Equatable, Hashable {}
-
-
-
-
-extension UserFingerprintError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -5398,7 +4767,7 @@ extension UserFingerprintError: Foundation.LocalizedError {
  * Private keys are protected by the user key.
  */
 
-public enum WrappedAccountCryptographicState {
+public enum WrappedAccountCryptographicState: Equatable, Hashable {
     
     /**
      * A V1 user has only a private key.
@@ -5431,7 +4800,12 @@ public enum WrappedAccountCryptographicState {
          */securityState: SignedSecurityState
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension WrappedAccountCryptographicState: Sendable {}
 #endif
@@ -5490,17 +4864,6 @@ public func FfiConverterTypeWrappedAccountCryptographicState_lift(_ buf: RustBuf
 public func FfiConverterTypeWrappedAccountCryptographicState_lower(_ value: WrappedAccountCryptographicState) -> RustBuffer {
     return FfiConverterTypeWrappedAccountCryptographicState.lower(value)
 }
-
-
-
-
-extension WrappedAccountCryptographicState: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)
@@ -5893,7 +5256,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
         pollResult = await withUnsafeContinuation {
             pollFunc(
                 rustFuture,
-                uniffiFutureContinuationCallback,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
                 uniffiContinuationHandleMap.insert(obj: $0)
             )
         }
@@ -5921,11 +5286,22 @@ private func uniffiTraitInterfaceCallAsync<T>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // Note: it's important we call either `handleSuccess` or `handleError` exactly once.  Each
+        // call consumes an Arc reference, which means there should be no possibility of a double
+        // call.  The following code is structured so that will will never call both `handleSuccess`
+        // and `handleError`, even in the face of weird errors.
+        //
+        // On platforms that need extra machinery to make C-ABI calls, like JNA or ctypes, it's
+        // possible that we fail to make either call.  However, it doesn't seem like this is
+        // possible on Swift since swift can just make the C call directly.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -5942,13 +5318,19 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // See the note in uniffiTraitInterfaceCallAsync for details on `handleSuccess` and
+        // `handleError`.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch let error as E {
             handleError(CALL_ERROR, lowerError(error))
+            return
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -6003,13 +5385,13 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_clientmanagedtokens_get_access_token() != 21873) {
+    if (uniffi_bitwarden_core_checksum_method_clientmanagedtokens_get_access_token() != 59718) {
         return InitializationResult.apiChecksumMismatch
     }
 
     uniffiCallbackInitClientManagedTokens()
-    uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
     return InitializationResult.ok
 }()
 

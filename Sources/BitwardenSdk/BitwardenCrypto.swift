@@ -486,7 +486,7 @@ fileprivate struct FfiConverterString: FfiConverter {
  * - Rotation to a `NewDownstreamKey` by knowing the current `DownstreamKey`, without needing
  * access to the `UpstreamKey`
  */
-public struct RotateableKeySet {
+public struct RotateableKeySet: Equatable, Hashable {
     /**
      * `DownstreamKey` protected by encapsulation key
      */
@@ -516,38 +516,15 @@ public struct RotateableKeySet {
         self.encryptedEncapsulationKey = encryptedEncapsulationKey
         self.encryptedDecapsulationKey = encryptedDecapsulationKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension RotateableKeySet: Sendable {}
 #endif
-
-
-
-
-
-extension RotateableKeySet: Equatable, Hashable {
-    public static func ==(lhs: RotateableKeySet, rhs: RotateableKeySet) -> Bool {
-        if lhs.encapsulatedDownstreamKey != rhs.encapsulatedDownstreamKey {
-            return false
-        }
-        if lhs.encryptedEncapsulationKey != rhs.encryptedEncapsulationKey {
-            return false
-        }
-        if lhs.encryptedDecapsulationKey != rhs.encryptedDecapsulationKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(encapsulatedDownstreamKey)
-        hasher.combine(encryptedEncapsulationKey)
-        hasher.combine(encryptedDecapsulationKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -590,7 +567,7 @@ public func FfiConverterTypeRotateableKeySet_lower(_ value: RotateableKeySet) ->
  *
  * Consists of a public key and an encrypted private key.
  */
-public struct RsaKeyPair {
+public struct RsaKeyPair: Equatable, Hashable {
     /**
      * Base64 encoded DER representation of the public key
      */
@@ -612,34 +589,15 @@ public struct RsaKeyPair {
         self.`public` = `public`
         self.`private` = `private`
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension RsaKeyPair: Sendable {}
 #endif
-
-
-
-
-
-extension RsaKeyPair: Equatable, Hashable {
-    public static func ==(lhs: RsaKeyPair, rhs: RsaKeyPair) -> Bool {
-        if lhs.`public` != rhs.`public` {
-            return false
-        }
-        if lhs.`private` != rhs.`private` {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(`public`)
-        hasher.combine(`private`)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -675,7 +633,7 @@ public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer 
 }
 
 
-public struct TrustDeviceResponse {
+public struct TrustDeviceResponse: Equatable, Hashable {
     /**
      * Base64 encoded device key
      */
@@ -713,42 +671,15 @@ public struct TrustDeviceResponse {
         self.protectedDevicePrivateKey = protectedDevicePrivateKey
         self.protectedDevicePublicKey = protectedDevicePublicKey
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension TrustDeviceResponse: Sendable {}
 #endif
-
-
-
-
-
-extension TrustDeviceResponse: Equatable, Hashable {
-    public static func ==(lhs: TrustDeviceResponse, rhs: TrustDeviceResponse) -> Bool {
-        if lhs.deviceKey != rhs.deviceKey {
-            return false
-        }
-        if lhs.protectedUserKey != rhs.protectedUserKey {
-            return false
-        }
-        if lhs.protectedDevicePrivateKey != rhs.protectedDevicePrivateKey {
-            return false
-        }
-        if lhs.protectedDevicePublicKey != rhs.protectedDevicePublicKey {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(deviceKey)
-        hasher.combine(protectedUserKey)
-        hasher.combine(protectedDevicePrivateKey)
-        hasher.combine(protectedDevicePublicKey)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -788,7 +719,7 @@ public func FfiConverterTypeTrustDeviceResponse_lower(_ value: TrustDeviceRespon
 }
 
 
-public enum CryptoError: Swift.Error {
+public enum CryptoError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -840,8 +771,21 @@ public enum CryptoError: Swift.Error {
     
     case Encoding(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CryptoError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1032,30 +976,20 @@ public func FfiConverterTypeCryptoError_lower(_ value: CryptoError) -> RustBuffe
     return FfiConverterTypeCryptoError.lower(value)
 }
 
-
-extension CryptoError: Equatable, Hashable {}
-
-
-
-
-extension CryptoError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum HashPurpose {
+public enum HashPurpose: Equatable, Hashable {
     
     case serverAuthorization
     case localAuthorization
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension HashPurpose: Sendable {}
 #endif
@@ -1109,17 +1043,6 @@ public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffe
 }
 
 
-
-
-extension HashPurpose: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -1129,14 +1052,19 @@ extension HashPurpose: Equatable, Hashable {}
  * Enum represents all the possible KDFs.
  */
 
-public enum Kdf {
+public enum Kdf: Equatable, Hashable {
     
     case pbkdf2(iterations: NonZeroU32
     )
     case argon2id(iterations: NonZeroU32, memory: NonZeroU32, parallelism: NonZeroU32
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension Kdf: Sendable {}
 #endif
@@ -1196,31 +1124,25 @@ public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
 }
 
 
-
-
-extension Kdf: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * The type of key / signature scheme used for signing and verifying.
  */
 
-public enum SignatureAlgorithm {
+public enum SignatureAlgorithm: Equatable, Hashable {
     
     /**
      * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves.
      */
     case ed25519
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension SignatureAlgorithm: Sendable {}
 #endif
@@ -1266,17 +1188,6 @@ public func FfiConverterTypeSignatureAlgorithm_lift(_ buf: RustBuffer) throws ->
 public func FfiConverterTypeSignatureAlgorithm_lower(_ value: SignatureAlgorithm) -> RustBuffer {
     return FfiConverterTypeSignatureAlgorithm.lower(value)
 }
-
-
-
-
-extension SignatureAlgorithm: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 

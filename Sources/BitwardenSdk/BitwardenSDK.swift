@@ -627,6 +627,11 @@ open class AttachmentsClient: AttachmentsClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_attachmentsclient(handle, $0) }
     }
 
@@ -690,6 +695,8 @@ open func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFileP
 })
 }
     
+
+    
 }
 
 
@@ -717,9 +724,6 @@ public struct FfiConverterTypeAttachmentsClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -873,6 +877,11 @@ open class AuthClient: AuthClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_authclient(handle, $0) }
     }
 
@@ -1075,6 +1084,8 @@ open func validatePinProtectedUserKeyEnvelope(pin: String, pinProtectedUserKeyEn
 })
 }
     
+
+    
 }
 
 
@@ -1102,9 +1113,6 @@ public struct FfiConverterTypeAuthClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -1187,6 +1195,11 @@ open class CipherRepositoryImpl: CipherRepository, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_cipherrepository(handle, $0) }
     }
 
@@ -1328,6 +1341,8 @@ open func has(id: String)async throws  -> Bool  {
             errorHandler: FfiConverterTypeRepositoryError_lift
         )
 }
+    
+
     
 }
 
@@ -1736,9 +1751,6 @@ public struct FfiConverterTypeCipherRepository: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1836,6 +1848,11 @@ open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_ciphersclient(handle, $0) }
     }
 
@@ -1933,6 +1950,8 @@ open func prepareCiphersForBulkShare(ciphers: [CipherView], organizationId: Orga
         )
 }
     
+
+    
 }
 
 
@@ -1960,9 +1979,6 @@ public struct FfiConverterTypeCiphersClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2088,6 +2104,11 @@ public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSett
 }
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_client(handle, $0) }
     }
 
@@ -2211,6 +2232,8 @@ open func vault() -> VaultClient  {
 })
 }
     
+
+    
 }
 
 
@@ -2238,9 +2261,6 @@ public struct FfiConverterTypeClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2313,6 +2333,11 @@ open class ClientFido2: ClientFido2Protocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientfido2(handle, $0) }
     }
 
@@ -2348,6 +2373,8 @@ open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fid
 })
 }
     
+
+    
 }
 
 
@@ -2375,9 +2402,6 @@ public struct FfiConverterTypeClientFido2: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2452,6 +2476,11 @@ open class ClientFido2Authenticator: ClientFido2AuthenticatorProtocol, @unchecke
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientfido2authenticator(handle, $0) }
     }
 
@@ -2526,6 +2555,8 @@ open func silentlyDiscoverCredentials(rpId: String, userHandle: Data?)async thro
         )
 }
     
+
+    
 }
 
 
@@ -2553,9 +2584,6 @@ public struct FfiConverterTypeClientFido2Authenticator: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2626,6 +2654,11 @@ open class ClientFido2Client: ClientFido2ClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientfido2client(handle, $0) }
     }
 
@@ -2666,6 +2699,8 @@ open func register(origin: Origin, request: String, clientData: ClientData)async
         )
 }
     
+
+    
 }
 
 
@@ -2693,9 +2728,6 @@ public struct FfiConverterTypeClientFido2Client: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2770,6 +2802,11 @@ open class CollectionViewNodeItem: CollectionViewNodeItemProtocol, @unchecked Se
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_collectionviewnodeitem(handle, $0) }
     }
 
@@ -2808,6 +2845,8 @@ open func getParent() -> CollectionView?  {
 })
 }
     
+
+    
 }
 
 
@@ -2835,9 +2874,6 @@ public struct FfiConverterTypeCollectionViewNodeItem: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -2910,6 +2946,11 @@ open class CollectionViewTree: CollectionViewTreeProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_collectionviewtree(handle, $0) }
     }
 
@@ -2941,6 +2982,8 @@ open func getRootItems() -> [CollectionViewNodeItem]  {
 })
 }
     
+
+    
 }
 
 
@@ -2968,9 +3011,6 @@ public struct FfiConverterTypeCollectionViewTree: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -3054,6 +3094,11 @@ open class CollectionsClient: CollectionsClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_collectionsclient(handle, $0) }
     }
 
@@ -3098,6 +3143,8 @@ open func getCollectionTree(collections: [CollectionView]) -> CollectionViewTree
 })
 }
     
+
+    
 }
 
 
@@ -3125,9 +3172,6 @@ public struct FfiConverterTypeCollectionsClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -3273,6 +3317,11 @@ open class CryptoClient: CryptoClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_cryptoclient(handle, $0) }
     }
 
@@ -3474,6 +3523,8 @@ open func makeUpdatePassword(newPassword: String)throws  -> UpdatePasswordRespon
 })
 }
     
+
+    
 }
 
 
@@ -3501,9 +3552,6 @@ public struct FfiConverterTypeCryptoClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -3586,6 +3634,11 @@ open class EphemeralPinEnvelopeStateRepositoryImpl: EphemeralPinEnvelopeStateRep
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_ephemeralpinenvelopestaterepository(handle, $0) }
     }
 
@@ -3727,6 +3780,8 @@ open func has(id: String)async throws  -> Bool  {
             errorHandler: FfiConverterTypeRepositoryError_lift
         )
 }
+    
+
     
 }
 
@@ -4135,9 +4190,6 @@ public struct FfiConverterTypeEphemeralPinEnvelopeStateRepository: FfiConverter 
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4232,6 +4284,11 @@ open class ExporterClient: ExporterClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_exporterclient(handle, $0) }
     }
 
@@ -4301,6 +4358,8 @@ open func importCxf(payload: String)throws  -> [Cipher]  {
 })
 }
     
+
+    
 }
 
 
@@ -4328,9 +4387,6 @@ public struct FfiConverterTypeExporterClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -4403,6 +4459,11 @@ open class Fido2CredentialStoreImpl: Fido2CredentialStore, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_fido2credentialstore(handle, $0) }
     }
 
@@ -4459,6 +4520,8 @@ open func saveCredential(cred: EncryptionContext)async throws   {
             errorHandler: FfiConverterTypeFido2CallbackError_lift
         )
 }
+    
+
     
 }
 
@@ -4664,9 +4727,6 @@ public struct FfiConverterTypeFido2CredentialStore: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4739,6 +4799,11 @@ open class Fido2UserInterfaceImpl: Fido2UserInterface, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_fido2userinterface(handle, $0) }
     }
 
@@ -4803,6 +4868,8 @@ open func isVerificationEnabled() -> Bool  {
     )
 })
 }
+    
+
     
 }
 
@@ -5034,9 +5101,6 @@ public struct FfiConverterTypeFido2UserInterface: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -5117,6 +5181,11 @@ open class FolderRepositoryImpl: FolderRepository, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_folderrepository(handle, $0) }
     }
 
@@ -5258,6 +5327,8 @@ open func has(id: String)async throws  -> Bool  {
             errorHandler: FfiConverterTypeRepositoryError_lift
         )
 }
+    
+
     
 }
 
@@ -5666,9 +5737,6 @@ public struct FfiConverterTypeFolderRepository: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -5748,6 +5816,11 @@ open class FoldersClient: FoldersClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_foldersclient(handle, $0) }
     }
 
@@ -5790,6 +5863,8 @@ open func encrypt(folder: FolderView)throws  -> Folder  {
 })
 }
     
+
+    
 }
 
 
@@ -5817,9 +5892,6 @@ public struct FfiConverterTypeFoldersClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -5901,6 +5973,11 @@ open class GeneratorClients: GeneratorClientsProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_generatorclients(handle, $0) }
     }
 
@@ -5951,6 +6028,8 @@ open func username(settings: UsernameGeneratorRequest)async throws  -> String  {
         )
 }
     
+
+    
 }
 
 
@@ -5978,9 +6057,6 @@ public struct FfiConverterTypeGeneratorClients: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -6063,6 +6139,11 @@ open class LocalUserDataKeyStateRepositoryImpl: LocalUserDataKeyStateRepository,
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_localuserdatakeystaterepository(handle, $0) }
     }
 
@@ -6204,6 +6285,8 @@ open func has(id: String)async throws  -> Bool  {
             errorHandler: FfiConverterTypeRepositoryError_lift
         )
 }
+    
+
     
 }
 
@@ -6612,9 +6695,6 @@ public struct FfiConverterTypeLocalUserDataKeyStateRepository: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -6701,6 +6781,11 @@ open class LogCallbackImpl: LogCallback, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_logcallback(handle, $0) }
     }
 
@@ -6728,6 +6813,8 @@ open func onLog(level: String, target: String, message: String)throws   {try rus
     )
 }
 }
+    
+
     
 }
 
@@ -6833,9 +6920,6 @@ public struct FfiConverterTypeLogCallback: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -6910,6 +6994,11 @@ open class PasswordHistoryClient: PasswordHistoryClientProtocol, @unchecked Send
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_passwordhistoryclient(handle, $0) }
     }
 
@@ -6940,6 +7029,8 @@ open func encrypt(passwordHistory: PasswordHistoryView)throws  -> PasswordHistor
 })
 }
     
+
+    
 }
 
 
@@ -6967,9 +7058,6 @@ public struct FfiConverterTypePasswordHistoryClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -7063,6 +7151,11 @@ open class PlatformClient: PlatformClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_platformclient(handle, $0) }
     }
 
@@ -7136,6 +7229,8 @@ open func userFingerprint(fingerprintMaterial: String)throws  -> String  {
 })
 }
     
+
+    
 }
 
 
@@ -7163,9 +7258,6 @@ public struct FfiConverterTypePlatformClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -7267,6 +7359,11 @@ open class SendClient: SendClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_sendclient(handle, $0) }
     }
 
@@ -7361,6 +7458,8 @@ open func encryptFile(send: Send, decryptedFilePath: String, encryptedFilePath: 
 }
 }
     
+
+    
 }
 
 
@@ -7388,9 +7487,6 @@ public struct FfiConverterTypeSendClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -7492,6 +7588,11 @@ open class ServerCommunicationConfigClient: ServerCommunicationConfigClientProto
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_servercommunicationconfigclient(handle, $0) }
     }
 
@@ -7604,6 +7705,8 @@ open func setCommunicationType(hostname: String, request: SetCommunicationTypeRe
         )
 }
     
+
+    
 }
 
 
@@ -7631,9 +7734,6 @@ public struct FfiConverterTypeServerCommunicationConfigClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -7716,6 +7816,11 @@ open class ServerCommunicationConfigRepositoryImpl: ServerCommunicationConfigRep
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_servercommunicationconfigrepository(handle, $0) }
     }
 
@@ -7761,6 +7866,8 @@ open func save(hostname: String, config: ServerCommunicationConfig)async throws 
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
+    
+
     
 }
 
@@ -7923,9 +8030,6 @@ public struct FfiConverterTypeServerCommunicationConfigRepository: FfiConverter 
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -7994,6 +8098,11 @@ open class SshClient: SshClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_sshclient(handle, $0) }
     }
 
@@ -8018,6 +8127,8 @@ open func importSshKey(importedKey: String, password: String?)throws  -> SshKeyV
     )
 })
 }
+    
+
     
 }
 
@@ -8046,9 +8157,6 @@ public struct FfiConverterTypeSshClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -8124,6 +8232,11 @@ open class StateClient: StateClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_stateclient(handle, $0) }
     }
 
@@ -8166,6 +8279,8 @@ open func registerClientManagedRepositories(repositories: Repositories)  {try! r
 }
 }
     
+
+    
 }
 
 
@@ -8193,9 +8308,6 @@ public struct FfiConverterTypeStateClient: FfiConverter {
         writeInt(&buf, lower(value))
     }
 }
-
-
-
 
 
 #if swift(>=5.8)
@@ -8278,6 +8390,11 @@ open class UserKeyStateRepositoryImpl: UserKeyStateRepository, @unchecked Sendab
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_userkeystaterepository(handle, $0) }
     }
 
@@ -8419,6 +8536,8 @@ open func has(id: String)async throws  -> Bool  {
             errorHandler: FfiConverterTypeRepositoryError_lift
         )
 }
+    
+
     
 }
 
@@ -8827,9 +8946,6 @@ public struct FfiConverterTypeUserKeyStateRepository: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -8934,6 +9050,11 @@ open class VaultClient: VaultClientProtocol, @unchecked Sendable {
     // No primary constructor declared for this class.
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { uniffi_bitwarden_uniffi_fn_free_vaultclient(handle, $0) }
     }
 
@@ -9026,6 +9147,8 @@ open func passwordHistory() -> PasswordHistoryClient  {
 })
 }
     
+
+    
 }
 
 
@@ -9055,9 +9178,6 @@ public struct FfiConverterTypeVaultClient: FfiConverter {
 }
 
 
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -9075,7 +9195,7 @@ public func FfiConverterTypeVaultClient_lower(_ value: VaultClient) -> UInt64 {
 
 
 
-public struct CheckUserAndPickCredentialForCreationResult {
+public struct CheckUserAndPickCredentialForCreationResult: Equatable, Hashable {
     public let cipher: CipherViewWrapper
     public let checkUserResult: CheckUserResult
 
@@ -9085,34 +9205,15 @@ public struct CheckUserAndPickCredentialForCreationResult {
         self.cipher = cipher
         self.checkUserResult = checkUserResult
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CheckUserAndPickCredentialForCreationResult: Sendable {}
 #endif
-
-
-
-
-
-extension CheckUserAndPickCredentialForCreationResult: Equatable, Hashable {
-    public static func ==(lhs: CheckUserAndPickCredentialForCreationResult, rhs: CheckUserAndPickCredentialForCreationResult) -> Bool {
-        if lhs.cipher != rhs.cipher {
-            return false
-        }
-        if lhs.checkUserResult != rhs.checkUserResult {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(cipher)
-        hasher.combine(checkUserResult)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9148,7 +9249,7 @@ public func FfiConverterTypeCheckUserAndPickCredentialForCreationResult_lower(_ 
 }
 
 
-public struct CheckUserResult {
+public struct CheckUserResult: Equatable, Hashable {
     public let userPresent: Bool
     public let userVerified: Bool
 
@@ -9158,34 +9259,15 @@ public struct CheckUserResult {
         self.userPresent = userPresent
         self.userVerified = userVerified
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CheckUserResult: Sendable {}
 #endif
-
-
-
-
-
-extension CheckUserResult: Equatable, Hashable {
-    public static func ==(lhs: CheckUserResult, rhs: CheckUserResult) -> Bool {
-        if lhs.userPresent != rhs.userPresent {
-            return false
-        }
-        if lhs.userVerified != rhs.userVerified {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(userPresent)
-        hasher.combine(userVerified)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9221,7 +9303,7 @@ public func FfiConverterTypeCheckUserResult_lower(_ value: CheckUserResult) -> R
 }
 
 
-public struct CipherViewWrapper {
+public struct CipherViewWrapper: Equatable, Hashable {
     public let cipher: CipherView
 
     // Default memberwise initializers are never public by default, so we
@@ -9229,30 +9311,15 @@ public struct CipherViewWrapper {
     public init(cipher: CipherView) {
         self.cipher = cipher
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherViewWrapper: Sendable {}
 #endif
-
-
-
-
-
-extension CipherViewWrapper: Equatable, Hashable {
-    public static func ==(lhs: CipherViewWrapper, rhs: CipherViewWrapper) -> Bool {
-        if lhs.cipher != rhs.cipher {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(cipher)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9302,16 +9369,15 @@ public struct Repositories {
         self.localUserDataKeyState = localUserDataKeyState
         self.ephemeralPinEnvelopeState = ephemeralPinEnvelopeState
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Repositories: Sendable {}
 #endif
-
-
-
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9353,7 +9419,7 @@ public func FfiConverterTypeRepositories_lower(_ value: Repositories) -> RustBuf
 }
 
 
-public struct SqliteConfiguration {
+public struct SqliteConfiguration: Equatable, Hashable {
     public let dbName: String
     public let folderPath: String
 
@@ -9363,34 +9429,15 @@ public struct SqliteConfiguration {
         self.dbName = dbName
         self.folderPath = folderPath
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SqliteConfiguration: Sendable {}
 #endif
-
-
-
-
-
-extension SqliteConfiguration: Equatable, Hashable {
-    public static func ==(lhs: SqliteConfiguration, rhs: SqliteConfiguration) -> Bool {
-        if lhs.dbName != rhs.dbName {
-            return false
-        }
-        if lhs.folderPath != rhs.folderPath {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(dbName)
-        hasher.combine(folderPath)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9426,7 +9473,7 @@ public func FfiConverterTypeSqliteConfiguration_lower(_ value: SqliteConfigurati
 }
 
 
-public enum BitwardenError: Swift.Error {
+public enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -9503,8 +9550,21 @@ public enum BitwardenError: Swift.Error {
     case CallbackError
     case Conversion(String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension BitwardenError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9843,22 +9903,7 @@ public func FfiConverterTypeBitwardenError_lower(_ value: BitwardenError) -> Rus
 }
 
 
-extension BitwardenError: Equatable, Hashable {}
-
-
-
-
-extension BitwardenError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum Fido2CallbackError: Swift.Error {
+public enum Fido2CallbackError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -9866,8 +9911,21 @@ public enum Fido2CallbackError: Swift.Error {
     case OperationCancelled
     case Unknown(reason: String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension Fido2CallbackError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -9931,29 +9989,27 @@ public func FfiConverterTypeFido2CallbackError_lower(_ value: Fido2CallbackError
 }
 
 
-extension Fido2CallbackError: Equatable, Hashable {}
-
-
-
-
-extension Fido2CallbackError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum RepositoryError: Swift.Error {
+public enum RepositoryError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Internal(String
     )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension RepositoryError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -10006,25 +10062,10 @@ public func FfiConverterTypeRepositoryError_lower(_ value: RepositoryError) -> R
     return FfiConverterTypeRepositoryError.lower(value)
 }
 
-
-extension RepositoryError: Equatable, Hashable {}
-
-
-
-
-extension RepositoryError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum UiHint {
+public enum UiHint: Equatable, Hashable {
     
     case informExcludedCredentialFound(CipherView
     )
@@ -10034,7 +10075,12 @@ public enum UiHint {
     case requestExistingCredential(CipherView
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension UiHint: Sendable {}
 #endif
@@ -10105,17 +10151,6 @@ public func FfiConverterTypeUIHint_lift(_ buf: RustBuffer) throws -> UiHint {
 public func FfiConverterTypeUIHint_lower(_ value: UiHint) -> RustBuffer {
     return FfiConverterTypeUIHint.lower(value)
 }
-
-
-
-
-extension UiHint: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)
@@ -11328,7 +11363,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
         pollResult = await withUnsafeContinuation {
             pollFunc(
                 rustFuture,
-                uniffiFutureContinuationCallback,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
                 uniffiContinuationHandleMap.insert(obj: $0)
             )
         }
@@ -11356,11 +11393,22 @@ private func uniffiTraitInterfaceCallAsync<T>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // Note: it's important we call either `handleSuccess` or `handleError` exactly once.  Each
+        // call consumes an Arc reference, which means there should be no possibility of a double
+        // call.  The following code is structured so that will will never call both `handleSuccess`
+        // and `handleError`, even in the face of weird errors.
+        //
+        // On platforms that need extra machinery to make C-ABI calls, like JNA or ctypes, it's
+        // possible that we fail to make either call.  However, it doesn't seem like this is
+        // possible on Swift since swift can just make the C call directly.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -11377,13 +11425,19 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
+        // See the note in uniffiTraitInterfaceCallAsync for details on `handleSuccess` and
+        // `handleError`.
+        var callResult: T
         do {
-            handleSuccess(try await makeCall())
+            callResult = try await makeCall()
         } catch let error as E {
             handleError(CALL_ERROR, lowerError(error))
+            return
         } catch {
             handleError(CALL_UNEXPECTED_ERROR, FfiConverterString.lower(String(describing: error)))
+            return
         }
+        handleSuccess(callResult)
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
     droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
@@ -11467,484 +11521,484 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 21222) {
+    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 52582) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 3394) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 21774) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_file() != 40902) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_buffer() != 49510) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_file() != 30690) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 38643) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 50707) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_key_connector_keys() != 27013) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_keys() != 40755) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_tde_keys() != 55088) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_new_auth_request() != 19097) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_password_strength() != 22685) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_satisfies_policy() != 62787) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_trust_device() != 6930) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password() != 29694) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password_user_key() != 27283) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin() != 64836) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin_protected_user_key_envelope() != 5097) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_get() != 51068) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_list() != 19184) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set() != 48582) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set_bulk() != 61193) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove() != 23376) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_bulk() != 29988) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_all() != 52618) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_has() != 51348) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt() != 28575) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_fido2_credentials() != 1425) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 63651) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 44847) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 31667) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 57722) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_prepare_ciphers_for_bulk_share() != 63676) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 4128) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 36308) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 1549) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 61009) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_exporters() != 15812) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_exporters() != 15464) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 32887) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 2321) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 31705) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 43705) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 7178) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 22973) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 40143) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 15997) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 22745) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 17969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 46726) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 35701) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_authenticator() != 50893) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_approve_auth_request() != 61224) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_client() != 33583) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 47890) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_decrypt_fido2_autofill_credentials() != 12395) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_key_connector_keys() != 20908) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_credentials_for_autofill() != 13813) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_keys() != 18797) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_get_assertion() != 30) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_register_tde_keys() != 5783) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_make_credential() != 60687) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_new_auth_request() != 9318) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_silently_discover_credentials() != 58714) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_password_strength() != 55742) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_authenticate() != 36920) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_satisfies_policy() != 33163) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_register() != 29872) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_trust_device() != 1678) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 5868) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password() != 31982) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_children() != 43392) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_password_user_key() != 46560) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_item() != 13549) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin() != 60865) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_parent() != 30834) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin_protected_user_key_envelope() != 39253) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_flat_items() != 13872) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_key_connector() != 12365) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_item_for_view() != 33356) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_key() != 22823) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_root_items() != 18012) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_user_key() != 63081) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt() != 51124) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 24171) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt_list() != 25745) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin() != 81) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_get_collection_tree() != 8212) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin_with_encrypted_pin() != 34775) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_key_connector() != 37483) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_upgraded_user_key() != 5934) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_key() != 33066) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 38176) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_pin_user_key() != 36786) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_org_crypto() != 18945) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_admin_password_reset() != 47066) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_user_crypto() != 27484) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin() != 30399) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_prf_user_key_set() != 40733) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin_with_encrypted_pin() != 52668) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 1083) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_upgraded_user_key() != 33561) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_password() != 46975) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_user_encryption_key() != 58176) {
+    if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 8139) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_org_crypto() != 40659) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_get() != 47885) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_initialize_user_crypto() != 14921) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_list() != 14944) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_prf_user_key_set() != 20813) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set() != 18705) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 38445) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_set_bulk() != 33050) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_password() != 31827) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove() != 23508) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_get() != 47038) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_bulk() != 36529) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_list() != 13121) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_remove_all() != 14768) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_set() != 50077) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_has() != 60032) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_set_bulk() != 40253) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_get() != 41125) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove() != 53541) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_list() != 52100) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove_bulk() != 3201) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_set() != 59301) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove_all() != 56366) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_set_bulk() != 54825) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_has() != 39932) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove() != 43781) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 54193) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove_bulk() != 1792) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_organization_vault() != 9022) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_remove_all() != 28804) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_vault() != 34958) {
+    if (uniffi_bitwarden_uniffi_checksum_method_ephemeralpinenvelopestaterepository_has() != 30797) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 25169) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_get() != 52557) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_find_credentials() != 51027) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_list() != 54019) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 16553) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set() != 38999) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 44560) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set_bulk() != 36244) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user() != 19175) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove() != 35338) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_pick_credential_for_authentication() != 7910) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_bulk() != 17032) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user_and_pick_credential_for_creation() != 20994) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_all() != 2679) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_is_verification_enabled() != 29318) {
+    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_has() != 38338) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_get() != 11479) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_get() != 15817) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_list() != 36630) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_list() != 28344) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set() != 44760) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_set() != 35666) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_set_bulk() != 61025) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_set_bulk() != 32018) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove() != 58409) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove() != 55773) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_bulk() != 8699) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove_bulk() != 28783) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_remove_all() != 61833) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove_all() != 23055) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_folderrepository_has() != 4078) {
+    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_has() != 39746) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt() != 16696) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_fido2() != 48293) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt_list() != 19863) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_fingerprint() != 54766) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_encrypt() != 36620) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_load_flags() != 4777) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_passphrase() != 3861) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_server_communication_config() != 61182) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password() != 34649) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_state() != 9085) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 5151) {
+    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_user_fingerprint() != 36590) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_get() != 46160) {
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_initialize_state() != 18589) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_list() != 25382) {
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 40885) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_set() != 7825) {
+    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_client_managed_repositories() != 15394) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_set_bulk() != 22434) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_get() != 24643) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove() != 48436) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_list() != 39214) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove_bulk() != 17681) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set() != 52869) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_remove_all() != 49864) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set_bulk() != 45261) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_localuserdatakeystaterepository_has() != 19345) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove() != 59650) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 30067) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_bulk() != 36614) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_decrypt_list() != 29372) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_all() != 18334) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_encrypt() != 24902) {
+    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_has() != 16461) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_fido2() != 21208) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_authenticator() != 39965) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_fingerprint() != 40869) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_client() != 45150) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_load_flags() != 42830) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_decrypt_fido2_autofill_credentials() != 7120) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_server_communication_config() != 55854) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_credentials_for_autofill() != 6328) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_state() != 26467) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_get_assertion() != 50916) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_platformclient_user_fingerprint() != 48707) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_make_credential() != 4523) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 52806) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_silently_discover_credentials() != 62739) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_buffer() != 27082) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_authenticate() != 33195) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_file() != 59566) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2client_register() != 60011) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_list() != 22125) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_find_credentials() != 45230) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt() != 13864) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_all_credentials() != 48572) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_buffer() != 18315) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2credentialstore_save_credential() != 36789) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 15411) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user() != 50269) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 32468) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_pick_credential_for_authentication() != 46635) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_cookies() != 9586) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_check_user_and_pick_credential_for_creation() != 20884) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_config() != 42962) {
+    if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_is_verification_enabled() != 47338) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 7155) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 64906) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 52521) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_cookies() != 25228) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 49157) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_config() != 830) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 45504) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 51186) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 17409) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 32839) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 34814) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 49845) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_initialize_state() != 46901) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 62307) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 63324) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 47547) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_client_managed_repositories() != 13707) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_organization_vault() != 52588) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_get() != 37027) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_vault() != 63389) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_list() != 24184) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 33437) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set() != 22984) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_passphrase() != 32758) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_set_bulk() != 34544) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password() != 43436) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove() != 26230) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 52745) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_bulk() != 11575) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 20640) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_remove_all() != 2696) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_buffer() != 34422) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_userkeystaterepository_has() != 1007) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_file() != 57816) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 23471) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_list() != 15785) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_ciphers() != 43827) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt() != 23858) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_collections() != 5415) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_buffer() != 31209) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_folders() != 60384) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 48231) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_generate_totp() != 64427) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 35871) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_generate_totp_cipher_view() != 29623) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 14138) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_password_history() != 2661) {
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 47384) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 35277) {
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_ciphers() != 35435) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_collections() != 24766) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_folders() != 34165) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_generate_totp() != 62325) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_generate_totp_cipher_view() != 12806) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_password_history() != 61261) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 63282) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_file() != 13267) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_buffer() != 55117) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_file() != 11658) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt() != 30911) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_fido2_credentials() != 10673) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 2579) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 3426) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 8063) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 29347) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_prepare_ciphers_for_bulk_share() != 20568) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 40268) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_children() != 8557) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_item() != 31015) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_parent() != 54944) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_flat_items() != 62504) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_item_for_view() != 61180) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewtree_get_root_items() != 17240) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt() != 60903) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt_list() != 34291) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_get_collection_tree() != 55321) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt() != 19270) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt_list() != 30001) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_encrypt() != 31395) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_decrypt_list() != 19302) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_encrypt() != 35524) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 46660) {
         return InitializationResult.apiChecksumMismatch
     }
 
@@ -11957,18 +12011,18 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitLogCallback()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
-    uniffiEnsureBitwardenEncodingInitialized()
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
-    uniffiEnsureBitwardenSshInitialized()
-    uniffiEnsureBitwardenSendInitialized()
-    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenEncodingInitialized()
+    uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenCryptoInitialized()
-    uniffiEnsureBitwardenExportersInitialized()
+    uniffiEnsureBitwardenSendInitialized()
+    uniffiEnsureBitwardenServerCommunicationConfigInitialized()
+    uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 

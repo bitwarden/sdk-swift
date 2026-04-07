@@ -482,7 +482,7 @@ fileprivate struct FfiConverterString: FfiConverter {
 }
 
 
-public struct Collection {
+public struct Collection: Equatable, Hashable {
     public let id: CollectionId?
     public let organizationId: OrganizationId
     public let name: EncString
@@ -506,62 +506,15 @@ public struct Collection {
         self.defaultUserCollectionEmail = defaultUserCollectionEmail
         self.type = type
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Collection: Sendable {}
 #endif
-
-
-
-
-
-extension Collection: Equatable, Hashable {
-    public static func ==(lhs: Collection, rhs: Collection) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.externalId != rhs.externalId {
-            return false
-        }
-        if lhs.hidePasswords != rhs.hidePasswords {
-            return false
-        }
-        if lhs.readOnly != rhs.readOnly {
-            return false
-        }
-        if lhs.manage != rhs.manage {
-            return false
-        }
-        if lhs.defaultUserCollectionEmail != rhs.defaultUserCollectionEmail {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(name)
-        hasher.combine(externalId)
-        hasher.combine(hidePasswords)
-        hasher.combine(readOnly)
-        hasher.combine(manage)
-        hasher.combine(defaultUserCollectionEmail)
-        hasher.combine(type)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -611,7 +564,7 @@ public func FfiConverterTypeCollection_lower(_ value: Collection) -> RustBuffer 
 }
 
 
-public struct CollectionView {
+public struct CollectionView: Equatable, Hashable {
     public let id: CollectionId?
     public let organizationId: OrganizationId
     public let name: String
@@ -633,58 +586,15 @@ public struct CollectionView {
         self.manage = manage
         self.type = type
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CollectionView: Sendable {}
 #endif
-
-
-
-
-
-extension CollectionView: Equatable, Hashable {
-    public static func ==(lhs: CollectionView, rhs: CollectionView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.externalId != rhs.externalId {
-            return false
-        }
-        if lhs.hidePasswords != rhs.hidePasswords {
-            return false
-        }
-        if lhs.readOnly != rhs.readOnly {
-            return false
-        }
-        if lhs.manage != rhs.manage {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(name)
-        hasher.combine(externalId)
-        hasher.combine(hidePasswords)
-        hasher.combine(readOnly)
-        hasher.combine(manage)
-        hasher.combine(type)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -732,14 +642,27 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 }
 
 
-public enum CollectionDecryptError: Swift.Error {
+public enum CollectionDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CollectionDecryptError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -792,28 +715,13 @@ public func FfiConverterTypeCollectionDecryptError_lower(_ value: CollectionDecr
     return FfiConverterTypeCollectionDecryptError.lower(value)
 }
 
-
-extension CollectionDecryptError: Equatable, Hashable {}
-
-
-
-
-extension CollectionDecryptError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Type of collection
  */
 
-public enum CollectionType : UInt8 {
+public enum CollectionType: UInt8, Equatable, Hashable {
     
     /**
      * Default collection type. Can be assigned by an organization to user(s) or group(s)
@@ -825,7 +733,12 @@ public enum CollectionType : UInt8 {
      */
     case defaultUserCollection = 1
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CollectionType: Sendable {}
 #endif
@@ -877,17 +790,6 @@ public func FfiConverterTypeCollectionType_lift(_ buf: RustBuffer) throws -> Col
 public func FfiConverterTypeCollectionType_lower(_ value: CollectionType) -> RustBuffer {
     return FfiConverterTypeCollectionType.lower(value)
 }
-
-
-
-
-extension CollectionType: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)

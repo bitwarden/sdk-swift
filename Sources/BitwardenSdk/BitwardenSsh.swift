@@ -460,13 +460,18 @@ fileprivate struct FfiConverterString: FfiConverter {
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum KeyAlgorithm {
+public enum KeyAlgorithm: Equatable, Hashable {
     
     case ed25519
     case rsa3072
     case rsa4096
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension KeyAlgorithm: Sendable {}
 #endif
@@ -527,18 +532,7 @@ public func FfiConverterTypeKeyAlgorithm_lower(_ value: KeyAlgorithm) -> RustBuf
 
 
 
-
-extension KeyAlgorithm: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum KeyGenerationError: Swift.Error {
+public enum KeyGenerationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -546,8 +540,21 @@ public enum KeyGenerationError: Swift.Error {
     
     case KeyConversion(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension KeyGenerationError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -607,29 +614,27 @@ public func FfiConverterTypeKeyGenerationError_lower(_ value: KeyGenerationError
 }
 
 
-extension KeyGenerationError: Equatable, Hashable {}
-
-
-
-
-extension KeyGenerationError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum SshKeyExportError: Swift.Error {
+public enum SshKeyExportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case KeyConversion(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SshKeyExportError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -683,22 +688,7 @@ public func FfiConverterTypeSshKeyExportError_lower(_ value: SshKeyExportError) 
 }
 
 
-extension SshKeyExportError: Equatable, Hashable {}
-
-
-
-
-extension SshKeyExportError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum SshKeyImportError: Swift.Error {
+public enum SshKeyImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -710,8 +700,21 @@ public enum SshKeyImportError: Swift.Error {
     
     case UnsupportedKeyType(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SshKeyImportError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -781,21 +784,6 @@ public func FfiConverterTypeSshKeyImportError_lift(_ buf: RustBuffer) throws -> 
 public func FfiConverterTypeSshKeyImportError_lower(_ value: SshKeyImportError) -> RustBuffer {
     return FfiConverterTypeSshKeyImportError.lower(value)
 }
-
-
-extension SshKeyImportError: Equatable, Hashable {}
-
-
-
-
-extension SshKeyImportError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
 
 private enum InitializationResult {
     case ok

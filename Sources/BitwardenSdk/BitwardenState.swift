@@ -458,7 +458,7 @@ fileprivate struct FfiConverterString: FfiConverter {
 }
 
 
-public enum DatabaseError: Swift.Error {
+public enum DatabaseError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -472,8 +472,21 @@ public enum DatabaseError: Swift.Error {
     
     case Internal(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DatabaseError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -551,22 +564,7 @@ public func FfiConverterTypeDatabaseError_lower(_ value: DatabaseError) -> RustB
 }
 
 
-extension DatabaseError: Equatable, Hashable {}
-
-
-
-
-extension DatabaseError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum StateRegistryError: Swift.Error {
+public enum StateRegistryError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -576,8 +574,21 @@ public enum StateRegistryError: Swift.Error {
     
     case Database(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension StateRegistryError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -641,21 +652,6 @@ public func FfiConverterTypeStateRegistryError_lift(_ buf: RustBuffer) throws ->
 public func FfiConverterTypeStateRegistryError_lower(_ value: StateRegistryError) -> RustBuffer {
     return FfiConverterTypeStateRegistryError.lower(value)
 }
-
-
-extension StateRegistryError: Equatable, Hashable {}
-
-
-
-
-extension StateRegistryError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
 
 private enum InitializationResult {
     case ok

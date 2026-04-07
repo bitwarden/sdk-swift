@@ -570,7 +570,7 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
-public struct AncestorMap {
+public struct AncestorMap: Equatable, Hashable {
     public let ancestors: [CollectionId: String]
 
     // Default memberwise initializers are never public by default, so we
@@ -578,30 +578,15 @@ public struct AncestorMap {
     public init(ancestors: [CollectionId: String]) {
         self.ancestors = ancestors
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AncestorMap: Sendable {}
 #endif
-
-
-
-
-
-extension AncestorMap: Equatable, Hashable {
-    public static func ==(lhs: AncestorMap, rhs: AncestorMap) -> Bool {
-        if lhs.ancestors != rhs.ancestors {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ancestors)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -635,7 +620,7 @@ public func FfiConverterTypeAncestorMap_lower(_ value: AncestorMap) -> RustBuffe
 }
 
 
-public struct Attachment {
+public struct Attachment: Equatable, Hashable {
     public let id: String?
     public let url: String?
     public let size: String?
@@ -659,50 +644,15 @@ public struct Attachment {
         self.fileName = fileName
         self.key = key
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Attachment: Sendable {}
 #endif
-
-
-
-
-
-extension Attachment: Equatable, Hashable {
-    public static func ==(lhs: Attachment, rhs: Attachment) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.url != rhs.url {
-            return false
-        }
-        if lhs.size != rhs.size {
-            return false
-        }
-        if lhs.sizeName != rhs.sizeName {
-            return false
-        }
-        if lhs.fileName != rhs.fileName {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(url)
-        hasher.combine(size)
-        hasher.combine(sizeName)
-        hasher.combine(fileName)
-        hasher.combine(key)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -746,7 +696,7 @@ public func FfiConverterTypeAttachment_lower(_ value: Attachment) -> RustBuffer 
 }
 
 
-public struct AttachmentEncryptResult {
+public struct AttachmentEncryptResult: Equatable, Hashable {
     public let attachment: Attachment
     public let contents: Data
 
@@ -756,34 +706,15 @@ public struct AttachmentEncryptResult {
         self.attachment = attachment
         self.contents = contents
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AttachmentEncryptResult: Sendable {}
 #endif
-
-
-
-
-
-extension AttachmentEncryptResult: Equatable, Hashable {
-    public static func ==(lhs: AttachmentEncryptResult, rhs: AttachmentEncryptResult) -> Bool {
-        if lhs.attachment != rhs.attachment {
-            return false
-        }
-        if lhs.contents != rhs.contents {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(attachment)
-        hasher.combine(contents)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -819,7 +750,7 @@ public func FfiConverterTypeAttachmentEncryptResult_lower(_ value: AttachmentEnc
 }
 
 
-public struct AttachmentView {
+public struct AttachmentView: Equatable, Hashable {
     public let id: String?
     public let url: String?
     public let size: String?
@@ -837,50 +768,15 @@ public struct AttachmentView {
         self.fileName = fileName
         self.key = key
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AttachmentView: Sendable {}
 #endif
-
-
-
-
-
-extension AttachmentView: Equatable, Hashable {
-    public static func ==(lhs: AttachmentView, rhs: AttachmentView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.url != rhs.url {
-            return false
-        }
-        if lhs.size != rhs.size {
-            return false
-        }
-        if lhs.sizeName != rhs.sizeName {
-            return false
-        }
-        if lhs.fileName != rhs.fileName {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(url)
-        hasher.combine(size)
-        hasher.combine(sizeName)
-        hasher.combine(fileName)
-        hasher.combine(key)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -924,7 +820,7 @@ public func FfiConverterTypeAttachmentView_lower(_ value: AttachmentView) -> Rus
 }
 
 
-public struct Card {
+public struct Card: Equatable, Hashable {
     public let cardholderName: EncString?
     public let expMonth: EncString?
     public let expYear: EncString?
@@ -942,50 +838,15 @@ public struct Card {
         self.brand = brand
         self.number = number
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Card: Sendable {}
 #endif
-
-
-
-
-
-extension Card: Equatable, Hashable {
-    public static func ==(lhs: Card, rhs: Card) -> Bool {
-        if lhs.cardholderName != rhs.cardholderName {
-            return false
-        }
-        if lhs.expMonth != rhs.expMonth {
-            return false
-        }
-        if lhs.expYear != rhs.expYear {
-            return false
-        }
-        if lhs.code != rhs.code {
-            return false
-        }
-        if lhs.brand != rhs.brand {
-            return false
-        }
-        if lhs.number != rhs.number {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(cardholderName)
-        hasher.combine(expMonth)
-        hasher.combine(expYear)
-        hasher.combine(code)
-        hasher.combine(brand)
-        hasher.combine(number)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1032,7 +893,7 @@ public func FfiConverterTypeCard_lower(_ value: Card) -> RustBuffer {
 /**
  * Minimal CardView only including the needed details for list views
  */
-public struct CardListView {
+public struct CardListView: Equatable, Hashable {
     /**
      * The brand of the card, e.g. Visa, Mastercard, etc.
      */
@@ -1046,30 +907,15 @@ public struct CardListView {
          */brand: String?) {
         self.brand = brand
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CardListView: Sendable {}
 #endif
-
-
-
-
-
-extension CardListView: Equatable, Hashable {
-    public static func ==(lhs: CardListView, rhs: CardListView) -> Bool {
-        if lhs.brand != rhs.brand {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(brand)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1103,7 +949,7 @@ public func FfiConverterTypeCardListView_lower(_ value: CardListView) -> RustBuf
 }
 
 
-public struct CardView {
+public struct CardView: Equatable, Hashable {
     public let cardholderName: String?
     public let expMonth: String?
     public let expYear: String?
@@ -1121,50 +967,15 @@ public struct CardView {
         self.brand = brand
         self.number = number
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CardView: Sendable {}
 #endif
-
-
-
-
-
-extension CardView: Equatable, Hashable {
-    public static func ==(lhs: CardView, rhs: CardView) -> Bool {
-        if lhs.cardholderName != rhs.cardholderName {
-            return false
-        }
-        if lhs.expMonth != rhs.expMonth {
-            return false
-        }
-        if lhs.expYear != rhs.expYear {
-            return false
-        }
-        if lhs.code != rhs.code {
-            return false
-        }
-        if lhs.brand != rhs.brand {
-            return false
-        }
-        if lhs.number != rhs.number {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(cardholderName)
-        hasher.combine(expMonth)
-        hasher.combine(expYear)
-        hasher.combine(code)
-        hasher.combine(brand)
-        hasher.combine(number)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1208,7 +1019,7 @@ public func FfiConverterTypeCardView_lower(_ value: CardView) -> RustBuffer {
 }
 
 
-public struct Cipher {
+public struct Cipher: Equatable, Hashable {
     public let id: CipherId?
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
@@ -1278,138 +1089,15 @@ public struct Cipher {
         self.archivedDate = archivedDate
         self.data = data
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Cipher: Sendable {}
 #endif
-
-
-
-
-
-extension Cipher: Equatable, Hashable {
-    public static func ==(lhs: Cipher, rhs: Cipher) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.folderId != rhs.folderId {
-            return false
-        }
-        if lhs.collectionIds != rhs.collectionIds {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.login != rhs.login {
-            return false
-        }
-        if lhs.identity != rhs.identity {
-            return false
-        }
-        if lhs.card != rhs.card {
-            return false
-        }
-        if lhs.secureNote != rhs.secureNote {
-            return false
-        }
-        if lhs.sshKey != rhs.sshKey {
-            return false
-        }
-        if lhs.favorite != rhs.favorite {
-            return false
-        }
-        if lhs.reprompt != rhs.reprompt {
-            return false
-        }
-        if lhs.organizationUseTotp != rhs.organizationUseTotp {
-            return false
-        }
-        if lhs.edit != rhs.edit {
-            return false
-        }
-        if lhs.permissions != rhs.permissions {
-            return false
-        }
-        if lhs.viewPassword != rhs.viewPassword {
-            return false
-        }
-        if lhs.localData != rhs.localData {
-            return false
-        }
-        if lhs.attachments != rhs.attachments {
-            return false
-        }
-        if lhs.fields != rhs.fields {
-            return false
-        }
-        if lhs.passwordHistory != rhs.passwordHistory {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        if lhs.deletedDate != rhs.deletedDate {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.archivedDate != rhs.archivedDate {
-            return false
-        }
-        if lhs.data != rhs.data {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(folderId)
-        hasher.combine(collectionIds)
-        hasher.combine(key)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(type)
-        hasher.combine(login)
-        hasher.combine(identity)
-        hasher.combine(card)
-        hasher.combine(secureNote)
-        hasher.combine(sshKey)
-        hasher.combine(favorite)
-        hasher.combine(reprompt)
-        hasher.combine(organizationUseTotp)
-        hasher.combine(edit)
-        hasher.combine(permissions)
-        hasher.combine(viewPassword)
-        hasher.combine(localData)
-        hasher.combine(attachments)
-        hasher.combine(fields)
-        hasher.combine(passwordHistory)
-        hasher.combine(creationDate)
-        hasher.combine(deletedDate)
-        hasher.combine(revisionDate)
-        hasher.combine(archivedDate)
-        hasher.combine(data)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1500,7 +1188,7 @@ public func FfiConverterTypeCipher_lower(_ value: Cipher) -> RustBuffer {
 /**
  * Request to add a cipher.
  */
-public struct CipherCreateRequest {
+public struct CipherCreateRequest: Equatable, Hashable {
     public let organizationId: OrganizationId?
     public let collectionIds: [CollectionId]
     public let folderId: FolderId?
@@ -1524,62 +1212,15 @@ public struct CipherCreateRequest {
         self.type = type
         self.fields = fields
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherCreateRequest: Sendable {}
 #endif
-
-
-
-
-
-extension CipherCreateRequest: Equatable, Hashable {
-    public static func ==(lhs: CipherCreateRequest, rhs: CipherCreateRequest) -> Bool {
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.collectionIds != rhs.collectionIds {
-            return false
-        }
-        if lhs.folderId != rhs.folderId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.favorite != rhs.favorite {
-            return false
-        }
-        if lhs.reprompt != rhs.reprompt {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.fields != rhs.fields {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(organizationId)
-        hasher.combine(collectionIds)
-        hasher.combine(folderId)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(favorite)
-        hasher.combine(reprompt)
-        hasher.combine(type)
-        hasher.combine(fields)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1632,7 +1273,7 @@ public func FfiConverterTypeCipherCreateRequest_lower(_ value: CipherCreateReque
 /**
  * Request to edit a cipher.
  */
-public struct CipherEditRequest {
+public struct CipherEditRequest: Equatable, Hashable {
     public let id: CipherId
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
@@ -1664,78 +1305,15 @@ public struct CipherEditRequest {
         self.attachments = attachments
         self.key = key
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherEditRequest: Sendable {}
 #endif
-
-
-
-
-
-extension CipherEditRequest: Equatable, Hashable {
-    public static func ==(lhs: CipherEditRequest, rhs: CipherEditRequest) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.folderId != rhs.folderId {
-            return false
-        }
-        if lhs.favorite != rhs.favorite {
-            return false
-        }
-        if lhs.reprompt != rhs.reprompt {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.fields != rhs.fields {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.archivedDate != rhs.archivedDate {
-            return false
-        }
-        if lhs.attachments != rhs.attachments {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(folderId)
-        hasher.combine(favorite)
-        hasher.combine(reprompt)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(fields)
-        hasher.combine(type)
-        hasher.combine(revisionDate)
-        hasher.combine(archivedDate)
-        hasher.combine(attachments)
-        hasher.combine(key)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1793,7 +1371,7 @@ public func FfiConverterTypeCipherEditRequest_lower(_ value: CipherEditRequest) 
 }
 
 
-public struct CipherListView {
+public struct CipherListView: Equatable, Hashable {
     public let id: CipherId?
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
@@ -1867,114 +1445,15 @@ public struct CipherListView {
         self.copyableFields = copyableFields
         self.localData = localData
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherListView: Sendable {}
 #endif
-
-
-
-
-
-extension CipherListView: Equatable, Hashable {
-    public static func ==(lhs: CipherListView, rhs: CipherListView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.folderId != rhs.folderId {
-            return false
-        }
-        if lhs.collectionIds != rhs.collectionIds {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.subtitle != rhs.subtitle {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.favorite != rhs.favorite {
-            return false
-        }
-        if lhs.reprompt != rhs.reprompt {
-            return false
-        }
-        if lhs.organizationUseTotp != rhs.organizationUseTotp {
-            return false
-        }
-        if lhs.edit != rhs.edit {
-            return false
-        }
-        if lhs.permissions != rhs.permissions {
-            return false
-        }
-        if lhs.viewPassword != rhs.viewPassword {
-            return false
-        }
-        if lhs.attachments != rhs.attachments {
-            return false
-        }
-        if lhs.hasOldAttachments != rhs.hasOldAttachments {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        if lhs.deletedDate != rhs.deletedDate {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.archivedDate != rhs.archivedDate {
-            return false
-        }
-        if lhs.copyableFields != rhs.copyableFields {
-            return false
-        }
-        if lhs.localData != rhs.localData {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(folderId)
-        hasher.combine(collectionIds)
-        hasher.combine(key)
-        hasher.combine(name)
-        hasher.combine(subtitle)
-        hasher.combine(type)
-        hasher.combine(favorite)
-        hasher.combine(reprompt)
-        hasher.combine(organizationUseTotp)
-        hasher.combine(edit)
-        hasher.combine(permissions)
-        hasher.combine(viewPassword)
-        hasher.combine(attachments)
-        hasher.combine(hasOldAttachments)
-        hasher.combine(creationDate)
-        hasher.combine(deletedDate)
-        hasher.combine(revisionDate)
-        hasher.combine(archivedDate)
-        hasher.combine(copyableFields)
-        hasher.combine(localData)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2053,7 +1532,7 @@ public func FfiConverterTypeCipherListView_lower(_ value: CipherListView) -> Rus
 /**
  * Login cipher data needed for risk evaluation.
  */
-public struct CipherLoginDetails {
+public struct CipherLoginDetails: Equatable, Hashable {
     /**
      * Cipher ID to identify which cipher in results.
      */
@@ -2083,38 +1562,15 @@ public struct CipherLoginDetails {
         self.password = password
         self.username = username
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherLoginDetails: Sendable {}
 #endif
-
-
-
-
-
-extension CipherLoginDetails: Equatable, Hashable {
-    public static func ==(lhs: CipherLoginDetails, rhs: CipherLoginDetails) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.username != rhs.username {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(password)
-        hasher.combine(username)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2152,7 +1608,7 @@ public func FfiConverterTypeCipherLoginDetails_lower(_ value: CipherLoginDetails
 }
 
 
-public struct CipherPermissions {
+public struct CipherPermissions: Equatable, Hashable {
     public let delete: Bool
     public let restore: Bool
 
@@ -2162,34 +1618,15 @@ public struct CipherPermissions {
         self.delete = delete
         self.restore = restore
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherPermissions: Sendable {}
 #endif
-
-
-
-
-
-extension CipherPermissions: Equatable, Hashable {
-    public static func ==(lhs: CipherPermissions, rhs: CipherPermissions) -> Bool {
-        if lhs.delete != rhs.delete {
-            return false
-        }
-        if lhs.restore != rhs.restore {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(delete)
-        hasher.combine(restore)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2228,7 +1665,7 @@ public func FfiConverterTypeCipherPermissions_lower(_ value: CipherPermissions) 
 /**
  * Options for configuring risk computation.
  */
-public struct CipherRiskOptions {
+public struct CipherRiskOptions: Equatable, Hashable {
     /**
      * Pre-computed password reuse map (password → count).
      * If provided, enables reuse detection across ciphers.
@@ -2264,38 +1701,15 @@ public struct CipherRiskOptions {
         self.checkExposed = checkExposed
         self.hibpBaseUrl = hibpBaseUrl
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherRiskOptions: Sendable {}
 #endif
-
-
-
-
-
-extension CipherRiskOptions: Equatable, Hashable {
-    public static func ==(lhs: CipherRiskOptions, rhs: CipherRiskOptions) -> Bool {
-        if lhs.passwordMap != rhs.passwordMap {
-            return false
-        }
-        if lhs.checkExposed != rhs.checkExposed {
-            return false
-        }
-        if lhs.hibpBaseUrl != rhs.hibpBaseUrl {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(passwordMap)
-        hasher.combine(checkExposed)
-        hasher.combine(hibpBaseUrl)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2336,7 +1750,7 @@ public func FfiConverterTypeCipherRiskOptions_lower(_ value: CipherRiskOptions) 
 /**
  * Risk evaluation result for a single cipher.
  */
-public struct CipherRiskResult {
+public struct CipherRiskResult: Equatable, Hashable {
     /**
      * Cipher ID matching the input CipherLoginDetails.
      */
@@ -2384,42 +1798,15 @@ public struct CipherRiskResult {
         self.exposedResult = exposedResult
         self.reuseCount = reuseCount
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherRiskResult: Sendable {}
 #endif
-
-
-
-
-
-extension CipherRiskResult: Equatable, Hashable {
-    public static func ==(lhs: CipherRiskResult, rhs: CipherRiskResult) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.passwordStrength != rhs.passwordStrength {
-            return false
-        }
-        if lhs.exposedResult != rhs.exposedResult {
-            return false
-        }
-        if lhs.reuseCount != rhs.reuseCount {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(passwordStrength)
-        hasher.combine(exposedResult)
-        hasher.combine(reuseCount)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2459,7 +1846,7 @@ public func FfiConverterTypeCipherRiskResult_lower(_ value: CipherRiskResult) ->
 }
 
 
-public struct CipherView {
+public struct CipherView: Equatable, Hashable {
     public let id: CipherId?
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
@@ -2533,138 +1920,15 @@ public struct CipherView {
         self.revisionDate = revisionDate
         self.archivedDate = archivedDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CipherView: Sendable {}
 #endif
-
-
-
-
-
-extension CipherView: Equatable, Hashable {
-    public static func ==(lhs: CipherView, rhs: CipherView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.organizationId != rhs.organizationId {
-            return false
-        }
-        if lhs.folderId != rhs.folderId {
-            return false
-        }
-        if lhs.collectionIds != rhs.collectionIds {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.login != rhs.login {
-            return false
-        }
-        if lhs.identity != rhs.identity {
-            return false
-        }
-        if lhs.card != rhs.card {
-            return false
-        }
-        if lhs.secureNote != rhs.secureNote {
-            return false
-        }
-        if lhs.sshKey != rhs.sshKey {
-            return false
-        }
-        if lhs.favorite != rhs.favorite {
-            return false
-        }
-        if lhs.reprompt != rhs.reprompt {
-            return false
-        }
-        if lhs.organizationUseTotp != rhs.organizationUseTotp {
-            return false
-        }
-        if lhs.edit != rhs.edit {
-            return false
-        }
-        if lhs.permissions != rhs.permissions {
-            return false
-        }
-        if lhs.viewPassword != rhs.viewPassword {
-            return false
-        }
-        if lhs.localData != rhs.localData {
-            return false
-        }
-        if lhs.attachments != rhs.attachments {
-            return false
-        }
-        if lhs.attachmentDecryptionFailures != rhs.attachmentDecryptionFailures {
-            return false
-        }
-        if lhs.fields != rhs.fields {
-            return false
-        }
-        if lhs.passwordHistory != rhs.passwordHistory {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        if lhs.deletedDate != rhs.deletedDate {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.archivedDate != rhs.archivedDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(organizationId)
-        hasher.combine(folderId)
-        hasher.combine(collectionIds)
-        hasher.combine(key)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(type)
-        hasher.combine(login)
-        hasher.combine(identity)
-        hasher.combine(card)
-        hasher.combine(secureNote)
-        hasher.combine(sshKey)
-        hasher.combine(favorite)
-        hasher.combine(reprompt)
-        hasher.combine(organizationUseTotp)
-        hasher.combine(edit)
-        hasher.combine(permissions)
-        hasher.combine(viewPassword)
-        hasher.combine(localData)
-        hasher.combine(attachments)
-        hasher.combine(attachmentDecryptionFailures)
-        hasher.combine(fields)
-        hasher.combine(passwordHistory)
-        hasher.combine(creationDate)
-        hasher.combine(deletedDate)
-        hasher.combine(revisionDate)
-        hasher.combine(archivedDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2759,7 +2023,7 @@ public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer 
  * `successes` contains the decrypted `CipherListView` objects,
  * while `failures` contains the original `Cipher` objects that failed to decrypt.
  */
-public struct DecryptCipherListResult {
+public struct DecryptCipherListResult: Equatable, Hashable {
     /**
      * The decrypted `CipherListView` objects.
      */
@@ -2781,34 +2045,15 @@ public struct DecryptCipherListResult {
         self.successes = successes
         self.failures = failures
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension DecryptCipherListResult: Sendable {}
 #endif
-
-
-
-
-
-extension DecryptCipherListResult: Equatable, Hashable {
-    public static func ==(lhs: DecryptCipherListResult, rhs: DecryptCipherListResult) -> Bool {
-        if lhs.successes != rhs.successes {
-            return false
-        }
-        if lhs.failures != rhs.failures {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(successes)
-        hasher.combine(failures)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2851,7 +2096,7 @@ public func FfiConverterTypeDecryptCipherListResult_lower(_ value: DecryptCipher
  * `successes` contains the decrypted `CipherView` objects,
  * while `failures` contains the original `Cipher` objects that failed to decrypt.
  */
-public struct DecryptCipherResult {
+public struct DecryptCipherResult: Equatable, Hashable {
     /**
      * The decrypted `CipherView` objects.
      */
@@ -2873,34 +2118,15 @@ public struct DecryptCipherResult {
         self.successes = successes
         self.failures = failures
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension DecryptCipherResult: Sendable {}
 #endif
-
-
-
-
-
-extension DecryptCipherResult: Equatable, Hashable {
-    public static func ==(lhs: DecryptCipherResult, rhs: DecryptCipherResult) -> Bool {
-        if lhs.successes != rhs.successes {
-            return false
-        }
-        if lhs.failures != rhs.failures {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(successes)
-        hasher.combine(failures)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2936,7 +2162,7 @@ public func FfiConverterTypeDecryptCipherResult_lower(_ value: DecryptCipherResu
 }
 
 
-public struct EncryptionContext {
+public struct EncryptionContext: Equatable, Hashable {
     /**
      * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
      * Organization-owned ciphers
@@ -2954,34 +2180,15 @@ public struct EncryptionContext {
         self.encryptedFor = encryptedFor
         self.cipher = cipher
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension EncryptionContext: Sendable {}
 #endif
-
-
-
-
-
-extension EncryptionContext: Equatable, Hashable {
-    public static func ==(lhs: EncryptionContext, rhs: EncryptionContext) -> Bool {
-        if lhs.encryptedFor != rhs.encryptedFor {
-            return false
-        }
-        if lhs.cipher != rhs.cipher {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(encryptedFor)
-        hasher.combine(cipher)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3017,7 +2224,7 @@ public func FfiConverterTypeEncryptionContext_lower(_ value: EncryptionContext) 
 }
 
 
-public struct Fido2Credential {
+public struct Fido2Credential: Equatable, Hashable {
     public let credentialId: EncString
     public let keyType: EncString
     public let keyAlgorithm: EncString
@@ -3049,78 +2256,15 @@ public struct Fido2Credential {
         self.discoverable = discoverable
         self.creationDate = creationDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Fido2Credential: Sendable {}
 #endif
-
-
-
-
-
-extension Fido2Credential: Equatable, Hashable {
-    public static func ==(lhs: Fido2Credential, rhs: Fido2Credential) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.keyType != rhs.keyType {
-            return false
-        }
-        if lhs.keyAlgorithm != rhs.keyAlgorithm {
-            return false
-        }
-        if lhs.keyCurve != rhs.keyCurve {
-            return false
-        }
-        if lhs.keyValue != rhs.keyValue {
-            return false
-        }
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.userName != rhs.userName {
-            return false
-        }
-        if lhs.counter != rhs.counter {
-            return false
-        }
-        if lhs.rpName != rhs.rpName {
-            return false
-        }
-        if lhs.userDisplayName != rhs.userDisplayName {
-            return false
-        }
-        if lhs.discoverable != rhs.discoverable {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(keyType)
-        hasher.combine(keyAlgorithm)
-        hasher.combine(keyCurve)
-        hasher.combine(keyValue)
-        hasher.combine(rpId)
-        hasher.combine(userHandle)
-        hasher.combine(userName)
-        hasher.combine(counter)
-        hasher.combine(rpName)
-        hasher.combine(userDisplayName)
-        hasher.combine(discoverable)
-        hasher.combine(creationDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3178,7 +2322,7 @@ public func FfiConverterTypeFido2Credential_lower(_ value: Fido2Credential) -> R
 }
 
 
-public struct Fido2CredentialListView {
+public struct Fido2CredentialListView: Equatable, Hashable {
     public let credentialId: String
     public let rpId: String
     public let userHandle: String?
@@ -3196,50 +2340,15 @@ public struct Fido2CredentialListView {
         self.userDisplayName = userDisplayName
         self.counter = counter
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Fido2CredentialListView: Sendable {}
 #endif
-
-
-
-
-
-extension Fido2CredentialListView: Equatable, Hashable {
-    public static func ==(lhs: Fido2CredentialListView, rhs: Fido2CredentialListView) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.userName != rhs.userName {
-            return false
-        }
-        if lhs.userDisplayName != rhs.userDisplayName {
-            return false
-        }
-        if lhs.counter != rhs.counter {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(rpId)
-        hasher.combine(userHandle)
-        hasher.combine(userName)
-        hasher.combine(userDisplayName)
-        hasher.combine(counter)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3283,7 +2392,7 @@ public func FfiConverterTypeFido2CredentialListView_lower(_ value: Fido2Credenti
 }
 
 
-public struct Fido2CredentialNewView {
+public struct Fido2CredentialNewView: Equatable, Hashable {
     public let credentialId: String
     public let keyType: String
     public let keyAlgorithm: String
@@ -3311,70 +2420,15 @@ public struct Fido2CredentialNewView {
         self.userDisplayName = userDisplayName
         self.creationDate = creationDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Fido2CredentialNewView: Sendable {}
 #endif
-
-
-
-
-
-extension Fido2CredentialNewView: Equatable, Hashable {
-    public static func ==(lhs: Fido2CredentialNewView, rhs: Fido2CredentialNewView) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.keyType != rhs.keyType {
-            return false
-        }
-        if lhs.keyAlgorithm != rhs.keyAlgorithm {
-            return false
-        }
-        if lhs.keyCurve != rhs.keyCurve {
-            return false
-        }
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.userName != rhs.userName {
-            return false
-        }
-        if lhs.counter != rhs.counter {
-            return false
-        }
-        if lhs.rpName != rhs.rpName {
-            return false
-        }
-        if lhs.userDisplayName != rhs.userDisplayName {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(keyType)
-        hasher.combine(keyAlgorithm)
-        hasher.combine(keyCurve)
-        hasher.combine(rpId)
-        hasher.combine(userHandle)
-        hasher.combine(userName)
-        hasher.combine(counter)
-        hasher.combine(rpName)
-        hasher.combine(userDisplayName)
-        hasher.combine(creationDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3428,7 +2482,7 @@ public func FfiConverterTypeFido2CredentialNewView_lower(_ value: Fido2Credentia
 }
 
 
-public struct Fido2CredentialView {
+public struct Fido2CredentialView: Equatable, Hashable {
     public let credentialId: String
     public let keyType: String
     public let keyAlgorithm: String
@@ -3460,78 +2514,15 @@ public struct Fido2CredentialView {
         self.discoverable = discoverable
         self.creationDate = creationDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Fido2CredentialView: Sendable {}
 #endif
-
-
-
-
-
-extension Fido2CredentialView: Equatable, Hashable {
-    public static func ==(lhs: Fido2CredentialView, rhs: Fido2CredentialView) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.keyType != rhs.keyType {
-            return false
-        }
-        if lhs.keyAlgorithm != rhs.keyAlgorithm {
-            return false
-        }
-        if lhs.keyCurve != rhs.keyCurve {
-            return false
-        }
-        if lhs.keyValue != rhs.keyValue {
-            return false
-        }
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.userName != rhs.userName {
-            return false
-        }
-        if lhs.counter != rhs.counter {
-            return false
-        }
-        if lhs.rpName != rhs.rpName {
-            return false
-        }
-        if lhs.userDisplayName != rhs.userDisplayName {
-            return false
-        }
-        if lhs.discoverable != rhs.discoverable {
-            return false
-        }
-        if lhs.creationDate != rhs.creationDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(keyType)
-        hasher.combine(keyAlgorithm)
-        hasher.combine(keyCurve)
-        hasher.combine(keyValue)
-        hasher.combine(rpId)
-        hasher.combine(userHandle)
-        hasher.combine(userName)
-        hasher.combine(counter)
-        hasher.combine(rpName)
-        hasher.combine(userDisplayName)
-        hasher.combine(discoverable)
-        hasher.combine(creationDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3589,7 +2580,7 @@ public func FfiConverterTypeFido2CredentialView_lower(_ value: Fido2CredentialVi
 }
 
 
-public struct Field {
+public struct Field: Equatable, Hashable {
     public let name: EncString?
     public let value: EncString?
     public let type: FieldType
@@ -3603,42 +2594,15 @@ public struct Field {
         self.type = type
         self.linkedId = linkedId
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Field: Sendable {}
 #endif
-
-
-
-
-
-extension Field: Equatable, Hashable {
-    public static func ==(lhs: Field, rhs: Field) -> Bool {
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.value != rhs.value {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.linkedId != rhs.linkedId {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(value)
-        hasher.combine(type)
-        hasher.combine(linkedId)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3678,7 +2642,7 @@ public func FfiConverterTypeField_lower(_ value: Field) -> RustBuffer {
 }
 
 
-public struct FieldView {
+public struct FieldView: Equatable, Hashable {
     public let name: String?
     public let value: String?
     public let type: FieldType
@@ -3692,42 +2656,15 @@ public struct FieldView {
         self.type = type
         self.linkedId = linkedId
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension FieldView: Sendable {}
 #endif
-
-
-
-
-
-extension FieldView: Equatable, Hashable {
-    public static func ==(lhs: FieldView, rhs: FieldView) -> Bool {
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.value != rhs.value {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.linkedId != rhs.linkedId {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(value)
-        hasher.combine(type)
-        hasher.combine(linkedId)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3767,7 +2704,7 @@ public func FfiConverterTypeFieldView_lower(_ value: FieldView) -> RustBuffer {
 }
 
 
-public struct Folder {
+public struct Folder: Equatable, Hashable {
     public let id: FolderId?
     public let name: EncString
     public let revisionDate: DateTime
@@ -3779,38 +2716,15 @@ public struct Folder {
         self.name = name
         self.revisionDate = revisionDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Folder: Sendable {}
 #endif
-
-
-
-
-
-extension Folder: Equatable, Hashable {
-    public static func ==(lhs: Folder, rhs: Folder) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(name)
-        hasher.combine(revisionDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3851,7 +2765,7 @@ public func FfiConverterTypeFolder_lower(_ value: Folder) -> RustBuffer {
 /**
  * Request to add or edit a folder.
  */
-public struct FolderAddEditRequest {
+public struct FolderAddEditRequest: Equatable, Hashable {
     /**
      * The new name of the folder.
      */
@@ -3865,30 +2779,15 @@ public struct FolderAddEditRequest {
          */name: String) {
         self.name = name
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension FolderAddEditRequest: Sendable {}
 #endif
-
-
-
-
-
-extension FolderAddEditRequest: Equatable, Hashable {
-    public static func ==(lhs: FolderAddEditRequest, rhs: FolderAddEditRequest) -> Bool {
-        if lhs.name != rhs.name {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3922,7 +2821,7 @@ public func FfiConverterTypeFolderAddEditRequest_lower(_ value: FolderAddEditReq
 }
 
 
-public struct FolderView {
+public struct FolderView: Equatable, Hashable {
     public let id: FolderId?
     public let name: String
     public let revisionDate: DateTime
@@ -3934,38 +2833,15 @@ public struct FolderView {
         self.name = name
         self.revisionDate = revisionDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension FolderView: Sendable {}
 #endif
-
-
-
-
-
-extension FolderView: Equatable, Hashable {
-    public static func ==(lhs: FolderView, rhs: FolderView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(name)
-        hasher.combine(revisionDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4003,7 +2879,7 @@ public func FfiConverterTypeFolderView_lower(_ value: FolderView) -> RustBuffer 
 }
 
 
-public struct Identity {
+public struct Identity: Equatable, Hashable {
     public let title: EncString?
     public let firstName: EncString?
     public let middleName: EncString?
@@ -4045,98 +2921,15 @@ public struct Identity {
         self.passportNumber = passportNumber
         self.licenseNumber = licenseNumber
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Identity: Sendable {}
 #endif
-
-
-
-
-
-extension Identity: Equatable, Hashable {
-    public static func ==(lhs: Identity, rhs: Identity) -> Bool {
-        if lhs.title != rhs.title {
-            return false
-        }
-        if lhs.firstName != rhs.firstName {
-            return false
-        }
-        if lhs.middleName != rhs.middleName {
-            return false
-        }
-        if lhs.lastName != rhs.lastName {
-            return false
-        }
-        if lhs.address1 != rhs.address1 {
-            return false
-        }
-        if lhs.address2 != rhs.address2 {
-            return false
-        }
-        if lhs.address3 != rhs.address3 {
-            return false
-        }
-        if lhs.city != rhs.city {
-            return false
-        }
-        if lhs.state != rhs.state {
-            return false
-        }
-        if lhs.postalCode != rhs.postalCode {
-            return false
-        }
-        if lhs.country != rhs.country {
-            return false
-        }
-        if lhs.company != rhs.company {
-            return false
-        }
-        if lhs.email != rhs.email {
-            return false
-        }
-        if lhs.phone != rhs.phone {
-            return false
-        }
-        if lhs.ssn != rhs.ssn {
-            return false
-        }
-        if lhs.username != rhs.username {
-            return false
-        }
-        if lhs.passportNumber != rhs.passportNumber {
-            return false
-        }
-        if lhs.licenseNumber != rhs.licenseNumber {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(title)
-        hasher.combine(firstName)
-        hasher.combine(middleName)
-        hasher.combine(lastName)
-        hasher.combine(address1)
-        hasher.combine(address2)
-        hasher.combine(address3)
-        hasher.combine(city)
-        hasher.combine(state)
-        hasher.combine(postalCode)
-        hasher.combine(country)
-        hasher.combine(company)
-        hasher.combine(email)
-        hasher.combine(phone)
-        hasher.combine(ssn)
-        hasher.combine(username)
-        hasher.combine(passportNumber)
-        hasher.combine(licenseNumber)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4204,7 +2997,7 @@ public func FfiConverterTypeIdentity_lower(_ value: Identity) -> RustBuffer {
 }
 
 
-public struct IdentityView {
+public struct IdentityView: Equatable, Hashable {
     public let title: String?
     public let firstName: String?
     public let middleName: String?
@@ -4246,98 +3039,15 @@ public struct IdentityView {
         self.passportNumber = passportNumber
         self.licenseNumber = licenseNumber
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension IdentityView: Sendable {}
 #endif
-
-
-
-
-
-extension IdentityView: Equatable, Hashable {
-    public static func ==(lhs: IdentityView, rhs: IdentityView) -> Bool {
-        if lhs.title != rhs.title {
-            return false
-        }
-        if lhs.firstName != rhs.firstName {
-            return false
-        }
-        if lhs.middleName != rhs.middleName {
-            return false
-        }
-        if lhs.lastName != rhs.lastName {
-            return false
-        }
-        if lhs.address1 != rhs.address1 {
-            return false
-        }
-        if lhs.address2 != rhs.address2 {
-            return false
-        }
-        if lhs.address3 != rhs.address3 {
-            return false
-        }
-        if lhs.city != rhs.city {
-            return false
-        }
-        if lhs.state != rhs.state {
-            return false
-        }
-        if lhs.postalCode != rhs.postalCode {
-            return false
-        }
-        if lhs.country != rhs.country {
-            return false
-        }
-        if lhs.company != rhs.company {
-            return false
-        }
-        if lhs.email != rhs.email {
-            return false
-        }
-        if lhs.phone != rhs.phone {
-            return false
-        }
-        if lhs.ssn != rhs.ssn {
-            return false
-        }
-        if lhs.username != rhs.username {
-            return false
-        }
-        if lhs.passportNumber != rhs.passportNumber {
-            return false
-        }
-        if lhs.licenseNumber != rhs.licenseNumber {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(title)
-        hasher.combine(firstName)
-        hasher.combine(middleName)
-        hasher.combine(lastName)
-        hasher.combine(address1)
-        hasher.combine(address2)
-        hasher.combine(address3)
-        hasher.combine(city)
-        hasher.combine(state)
-        hasher.combine(postalCode)
-        hasher.combine(country)
-        hasher.combine(company)
-        hasher.combine(email)
-        hasher.combine(phone)
-        hasher.combine(ssn)
-        hasher.combine(username)
-        hasher.combine(passportNumber)
-        hasher.combine(licenseNumber)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4410,7 +3120,7 @@ public func FfiConverterTypeIdentityView_lower(_ value: IdentityView) -> RustBuf
  *
  * Contains the encrypted ciphers from the API alongside their decrypted list views.
  */
-public struct ListOrganizationCiphersResult {
+public struct ListOrganizationCiphersResult: Equatable, Hashable {
     /**
      * All encrypted ciphers returned from the API.
      */
@@ -4432,34 +3142,15 @@ public struct ListOrganizationCiphersResult {
         self.ciphers = ciphers
         self.listViews = listViews
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension ListOrganizationCiphersResult: Sendable {}
 #endif
-
-
-
-
-
-extension ListOrganizationCiphersResult: Equatable, Hashable {
-    public static func ==(lhs: ListOrganizationCiphersResult, rhs: ListOrganizationCiphersResult) -> Bool {
-        if lhs.ciphers != rhs.ciphers {
-            return false
-        }
-        if lhs.listViews != rhs.listViews {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ciphers)
-        hasher.combine(listViews)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4495,7 +3186,7 @@ public func FfiConverterTypeListOrganizationCiphersResult_lower(_ value: ListOrg
 }
 
 
-public struct LocalData {
+public struct LocalData: Equatable, Hashable {
     public let lastUsedDate: DateTime?
     public let lastLaunched: DateTime?
 
@@ -4505,34 +3196,15 @@ public struct LocalData {
         self.lastUsedDate = lastUsedDate
         self.lastLaunched = lastLaunched
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LocalData: Sendable {}
 #endif
-
-
-
-
-
-extension LocalData: Equatable, Hashable {
-    public static func ==(lhs: LocalData, rhs: LocalData) -> Bool {
-        if lhs.lastUsedDate != rhs.lastUsedDate {
-            return false
-        }
-        if lhs.lastLaunched != rhs.lastLaunched {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(lastUsedDate)
-        hasher.combine(lastLaunched)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4568,7 +3240,7 @@ public func FfiConverterTypeLocalData_lower(_ value: LocalData) -> RustBuffer {
 }
 
 
-public struct LocalDataView {
+public struct LocalDataView: Equatable, Hashable {
     public let lastUsedDate: DateTime?
     public let lastLaunched: DateTime?
 
@@ -4578,34 +3250,15 @@ public struct LocalDataView {
         self.lastUsedDate = lastUsedDate
         self.lastLaunched = lastLaunched
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LocalDataView: Sendable {}
 #endif
-
-
-
-
-
-extension LocalDataView: Equatable, Hashable {
-    public static func ==(lhs: LocalDataView, rhs: LocalDataView) -> Bool {
-        if lhs.lastUsedDate != rhs.lastUsedDate {
-            return false
-        }
-        if lhs.lastLaunched != rhs.lastLaunched {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(lastUsedDate)
-        hasher.combine(lastLaunched)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4641,7 +3294,7 @@ public func FfiConverterTypeLocalDataView_lower(_ value: LocalDataView) -> RustB
 }
 
 
-public struct Login {
+public struct Login: Equatable, Hashable {
     public let username: EncString?
     public let password: EncString?
     public let passwordRevisionDate: DateTime?
@@ -4661,54 +3314,15 @@ public struct Login {
         self.autofillOnPageLoad = autofillOnPageLoad
         self.fido2Credentials = fido2Credentials
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Login: Sendable {}
 #endif
-
-
-
-
-
-extension Login: Equatable, Hashable {
-    public static func ==(lhs: Login, rhs: Login) -> Bool {
-        if lhs.username != rhs.username {
-            return false
-        }
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.passwordRevisionDate != rhs.passwordRevisionDate {
-            return false
-        }
-        if lhs.uris != rhs.uris {
-            return false
-        }
-        if lhs.totp != rhs.totp {
-            return false
-        }
-        if lhs.autofillOnPageLoad != rhs.autofillOnPageLoad {
-            return false
-        }
-        if lhs.fido2Credentials != rhs.fido2Credentials {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(username)
-        hasher.combine(password)
-        hasher.combine(passwordRevisionDate)
-        hasher.combine(uris)
-        hasher.combine(totp)
-        hasher.combine(autofillOnPageLoad)
-        hasher.combine(fido2Credentials)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4754,7 +3368,7 @@ public func FfiConverterTypeLogin_lower(_ value: Login) -> RustBuffer {
 }
 
 
-public struct LoginListView {
+public struct LoginListView: Equatable, Hashable {
     public let fido2Credentials: [Fido2CredentialListView]?
     public let hasFido2: Bool
     public let username: String?
@@ -4776,46 +3390,15 @@ public struct LoginListView {
         self.totp = totp
         self.uris = uris
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LoginListView: Sendable {}
 #endif
-
-
-
-
-
-extension LoginListView: Equatable, Hashable {
-    public static func ==(lhs: LoginListView, rhs: LoginListView) -> Bool {
-        if lhs.fido2Credentials != rhs.fido2Credentials {
-            return false
-        }
-        if lhs.hasFido2 != rhs.hasFido2 {
-            return false
-        }
-        if lhs.username != rhs.username {
-            return false
-        }
-        if lhs.totp != rhs.totp {
-            return false
-        }
-        if lhs.uris != rhs.uris {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(fido2Credentials)
-        hasher.combine(hasFido2)
-        hasher.combine(username)
-        hasher.combine(totp)
-        hasher.combine(uris)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4857,7 +3440,7 @@ public func FfiConverterTypeLoginListView_lower(_ value: LoginListView) -> RustB
 }
 
 
-public struct LoginUri {
+public struct LoginUri: Equatable, Hashable {
     public let uri: EncString?
     public let match: UriMatchType?
     public let uriChecksum: EncString?
@@ -4869,38 +3452,15 @@ public struct LoginUri {
         self.match = match
         self.uriChecksum = uriChecksum
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LoginUri: Sendable {}
 #endif
-
-
-
-
-
-extension LoginUri: Equatable, Hashable {
-    public static func ==(lhs: LoginUri, rhs: LoginUri) -> Bool {
-        if lhs.uri != rhs.uri {
-            return false
-        }
-        if lhs.match != rhs.match {
-            return false
-        }
-        if lhs.uriChecksum != rhs.uriChecksum {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(uri)
-        hasher.combine(match)
-        hasher.combine(uriChecksum)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -4938,7 +3498,7 @@ public func FfiConverterTypeLoginUri_lower(_ value: LoginUri) -> RustBuffer {
 }
 
 
-public struct LoginUriView {
+public struct LoginUriView: Equatable, Hashable {
     public let uri: String?
     public let match: UriMatchType?
     public let uriChecksum: String?
@@ -4950,38 +3510,15 @@ public struct LoginUriView {
         self.match = match
         self.uriChecksum = uriChecksum
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LoginUriView: Sendable {}
 #endif
-
-
-
-
-
-extension LoginUriView: Equatable, Hashable {
-    public static func ==(lhs: LoginUriView, rhs: LoginUriView) -> Bool {
-        if lhs.uri != rhs.uri {
-            return false
-        }
-        if lhs.match != rhs.match {
-            return false
-        }
-        if lhs.uriChecksum != rhs.uriChecksum {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(uri)
-        hasher.combine(match)
-        hasher.combine(uriChecksum)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5019,7 +3556,7 @@ public func FfiConverterTypeLoginUriView_lower(_ value: LoginUriView) -> RustBuf
 }
 
 
-public struct LoginView {
+public struct LoginView: Equatable, Hashable {
     public let username: String?
     public let password: String?
     public let passwordRevisionDate: DateTime?
@@ -5039,54 +3576,15 @@ public struct LoginView {
         self.autofillOnPageLoad = autofillOnPageLoad
         self.fido2Credentials = fido2Credentials
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension LoginView: Sendable {}
 #endif
-
-
-
-
-
-extension LoginView: Equatable, Hashable {
-    public static func ==(lhs: LoginView, rhs: LoginView) -> Bool {
-        if lhs.username != rhs.username {
-            return false
-        }
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.passwordRevisionDate != rhs.passwordRevisionDate {
-            return false
-        }
-        if lhs.uris != rhs.uris {
-            return false
-        }
-        if lhs.totp != rhs.totp {
-            return false
-        }
-        if lhs.autofillOnPageLoad != rhs.autofillOnPageLoad {
-            return false
-        }
-        if lhs.fido2Credentials != rhs.fido2Credentials {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(username)
-        hasher.combine(password)
-        hasher.combine(passwordRevisionDate)
-        hasher.combine(uris)
-        hasher.combine(totp)
-        hasher.combine(autofillOnPageLoad)
-        hasher.combine(fido2Credentials)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5132,7 +3630,7 @@ public func FfiConverterTypeLoginView_lower(_ value: LoginView) -> RustBuffer {
 }
 
 
-public struct PasswordHistory {
+public struct PasswordHistory: Equatable, Hashable {
     public let password: EncString
     public let lastUsedDate: DateTime
 
@@ -5142,34 +3640,15 @@ public struct PasswordHistory {
         self.password = password
         self.lastUsedDate = lastUsedDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PasswordHistory: Sendable {}
 #endif
-
-
-
-
-
-extension PasswordHistory: Equatable, Hashable {
-    public static func ==(lhs: PasswordHistory, rhs: PasswordHistory) -> Bool {
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.lastUsedDate != rhs.lastUsedDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(password)
-        hasher.combine(lastUsedDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5205,7 +3684,7 @@ public func FfiConverterTypePasswordHistory_lower(_ value: PasswordHistory) -> R
 }
 
 
-public struct PasswordHistoryView {
+public struct PasswordHistoryView: Equatable, Hashable {
     public let password: String
     public let lastUsedDate: DateTime
 
@@ -5215,34 +3694,15 @@ public struct PasswordHistoryView {
         self.password = password
         self.lastUsedDate = lastUsedDate
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PasswordHistoryView: Sendable {}
 #endif
-
-
-
-
-
-extension PasswordHistoryView: Equatable, Hashable {
-    public static func ==(lhs: PasswordHistoryView, rhs: PasswordHistoryView) -> Bool {
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.lastUsedDate != rhs.lastUsedDate {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(password)
-        hasher.combine(lastUsedDate)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5281,7 +3741,7 @@ public func FfiConverterTypePasswordHistoryView_lower(_ value: PasswordHistoryVi
 /**
  * Password reuse map wrapper for WASM compatibility.
  */
-public struct PasswordReuseMap {
+public struct PasswordReuseMap: Equatable, Hashable {
     /**
      * Map of passwords to their occurrence count.
      */
@@ -5295,30 +3755,15 @@ public struct PasswordReuseMap {
          */map: [String: UInt32]) {
         self.map = map
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PasswordReuseMap: Sendable {}
 #endif
-
-
-
-
-
-extension PasswordReuseMap: Equatable, Hashable {
-    public static func ==(lhs: PasswordReuseMap, rhs: PasswordReuseMap) -> Bool {
-        if lhs.map != rhs.map {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(map)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5352,7 +3797,7 @@ public func FfiConverterTypePasswordReuseMap_lower(_ value: PasswordReuseMap) ->
 }
 
 
-public struct SecureNote {
+public struct SecureNote: Equatable, Hashable {
     public let type: SecureNoteType
 
     // Default memberwise initializers are never public by default, so we
@@ -5360,30 +3805,15 @@ public struct SecureNote {
     public init(type: SecureNoteType) {
         self.type = type
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SecureNote: Sendable {}
 #endif
-
-
-
-
-
-extension SecureNote: Equatable, Hashable {
-    public static func ==(lhs: SecureNote, rhs: SecureNote) -> Bool {
-        if lhs.type != rhs.type {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(type)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5417,7 +3847,7 @@ public func FfiConverterTypeSecureNote_lower(_ value: SecureNote) -> RustBuffer 
 }
 
 
-public struct SecureNoteView {
+public struct SecureNoteView: Equatable, Hashable {
     public let type: SecureNoteType
 
     // Default memberwise initializers are never public by default, so we
@@ -5425,30 +3855,15 @@ public struct SecureNoteView {
     public init(type: SecureNoteType) {
         self.type = type
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SecureNoteView: Sendable {}
 #endif
-
-
-
-
-
-extension SecureNoteView: Equatable, Hashable {
-    public static func ==(lhs: SecureNoteView, rhs: SecureNoteView) -> Bool {
-        if lhs.type != rhs.type {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(type)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5482,7 +3897,7 @@ public func FfiConverterTypeSecureNoteView_lower(_ value: SecureNoteView) -> Rus
 }
 
 
-public struct SshKey {
+public struct SshKey: Equatable, Hashable {
     /**
      * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
      */
@@ -5512,38 +3927,15 @@ public struct SshKey {
         self.publicKey = publicKey
         self.fingerprint = fingerprint
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SshKey: Sendable {}
 #endif
-
-
-
-
-
-extension SshKey: Equatable, Hashable {
-    public static func ==(lhs: SshKey, rhs: SshKey) -> Bool {
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.fingerprint != rhs.fingerprint {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privateKey)
-        hasher.combine(publicKey)
-        hasher.combine(fingerprint)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5581,7 +3973,7 @@ public func FfiConverterTypeSshKey_lower(_ value: SshKey) -> RustBuffer {
 }
 
 
-public struct SshKeyView {
+public struct SshKeyView: Equatable, Hashable {
     /**
      * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
      */
@@ -5611,38 +4003,15 @@ public struct SshKeyView {
         self.publicKey = publicKey
         self.fingerprint = fingerprint
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SshKeyView: Sendable {}
 #endif
-
-
-
-
-
-extension SshKeyView: Equatable, Hashable {
-    public static func ==(lhs: SshKeyView, rhs: SshKeyView) -> Bool {
-        if lhs.privateKey != rhs.privateKey {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.fingerprint != rhs.fingerprint {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(privateKey)
-        hasher.combine(publicKey)
-        hasher.combine(fingerprint)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5680,7 +4049,7 @@ public func FfiConverterTypeSshKeyView_lower(_ value: SshKeyView) -> RustBuffer 
 }
 
 
-public struct TotpResponse {
+public struct TotpResponse: Equatable, Hashable {
     /**
      * Generated TOTP code
      */
@@ -5702,34 +4071,15 @@ public struct TotpResponse {
         self.code = code
         self.period = period
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension TotpResponse: Sendable {}
 #endif
-
-
-
-
-
-extension TotpResponse: Equatable, Hashable {
-    public static func ==(lhs: TotpResponse, rhs: TotpResponse) -> Bool {
-        if lhs.code != rhs.code {
-            return false
-        }
-        if lhs.period != rhs.period {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(code)
-        hasher.combine(period)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5765,7 +4115,7 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 }
 
 
-public enum CipherDeleteAttachmentError: Swift.Error {
+public enum CipherDeleteAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5777,8 +4127,21 @@ public enum CipherDeleteAttachmentError: Swift.Error {
     
     case VaultParse(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CipherDeleteAttachmentError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5850,22 +4213,7 @@ public func FfiConverterTypeCipherDeleteAttachmentError_lower(_ value: CipherDel
 }
 
 
-extension CipherDeleteAttachmentError: Equatable, Hashable {}
-
-
-
-
-extension CipherDeleteAttachmentError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum CipherError: Swift.Error {
+public enum CipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5889,8 +4237,21 @@ public enum CipherError: Swift.Error {
     
     case Api(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -5997,25 +4358,10 @@ public func FfiConverterTypeCipherError_lower(_ value: CipherError) -> RustBuffe
     return FfiConverterTypeCipherError.lower(value)
 }
 
-
-extension CipherError: Equatable, Hashable {}
-
-
-
-
-extension CipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum CipherListViewType {
+public enum CipherListViewType: Equatable, Hashable {
     
     case login(LoginListView
     )
@@ -6025,7 +4371,12 @@ public enum CipherListViewType {
     case identity
     case sshKey
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CipherListViewType: Sendable {}
 #endif
@@ -6101,26 +4452,20 @@ public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType
 }
 
 
-
-
-extension CipherListViewType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum CipherRepromptType : UInt8 {
+public enum CipherRepromptType: UInt8, Equatable, Hashable {
     
     case none = 0
     case password = 1
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CipherRepromptType: Sendable {}
 #endif
@@ -6175,28 +4520,30 @@ public func FfiConverterTypeCipherRepromptType_lower(_ value: CipherRepromptType
 
 
 
-
-extension CipherRepromptType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
 /**
  * Error type for cipher risk evaluation operations
  */
-public enum CipherRiskError: Swift.Error {
+public enum CipherRiskError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Reqwest(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CipherRiskError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -6249,25 +4596,10 @@ public func FfiConverterTypeCipherRiskError_lower(_ value: CipherRiskError) -> R
     return FfiConverterTypeCipherRiskError.lower(value)
 }
 
-
-extension CipherRiskError: Equatable, Hashable {}
-
-
-
-
-extension CipherRiskError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum CipherType : UInt8 {
+public enum CipherType: UInt8, Equatable, Hashable {
     
     case login = 1
     case secureNote = 2
@@ -6275,7 +4607,12 @@ public enum CipherType : UInt8 {
     case identity = 4
     case sshKey = 5
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CipherType: Sendable {}
 #endif
@@ -6347,24 +4684,13 @@ public func FfiConverterTypeCipherType_lower(_ value: CipherType) -> RustBuffer 
 }
 
 
-
-
-extension CipherType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Represents the inner data of a cipher view.
  */
 
-public enum CipherViewType {
+public enum CipherViewType: Equatable, Hashable {
     
     case login(LoginView
     )
@@ -6377,7 +4703,12 @@ public enum CipherViewType {
     case sshKey(SshKeyView
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CipherViewType: Sendable {}
 #endif
@@ -6459,24 +4790,13 @@ public func FfiConverterTypeCipherViewType_lower(_ value: CipherViewType) -> Rus
 }
 
 
-
-
-extension CipherViewType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Available fields on a cipher and can be copied from a the list view in the UI.
  */
 
-public enum CopyableCipherFields {
+public enum CopyableCipherFields: Equatable, Hashable {
     
     case loginUsername
     case loginPassword
@@ -6490,7 +4810,12 @@ public enum CopyableCipherFields {
     case sshKey
     case secureNotes
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension CopyableCipherFields: Sendable {}
 #endif
@@ -6599,18 +4924,7 @@ public func FfiConverterTypeCopyableCipherFields_lower(_ value: CopyableCipherFi
 
 
 
-
-extension CopyableCipherFields: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum CreateCipherAdminError: Swift.Error {
+public enum CreateCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6624,8 +4938,21 @@ public enum CreateCipherAdminError: Swift.Error {
     
     case NotAuthenticated(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CreateCipherAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -6703,22 +5030,7 @@ public func FfiConverterTypeCreateCipherAdminError_lower(_ value: CreateCipherAd
 }
 
 
-extension CreateCipherAdminError: Equatable, Hashable {}
-
-
-
-
-extension CreateCipherAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum CreateCipherError: Swift.Error {
+public enum CreateCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6734,8 +5046,21 @@ public enum CreateCipherError: Swift.Error {
     
     case Repository(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CreateCipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -6819,22 +5144,7 @@ public func FfiConverterTypeCreateCipherError_lower(_ value: CreateCipherError) 
 }
 
 
-extension CreateCipherError: Equatable, Hashable {}
-
-
-
-
-extension CreateCipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum CreateFolderError: Swift.Error {
+public enum CreateFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6848,8 +5158,21 @@ public enum CreateFolderError: Swift.Error {
     
     case Repository(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CreateFolderError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -6927,32 +5250,30 @@ public func FfiConverterTypeCreateFolderError_lower(_ value: CreateFolderError) 
 }
 
 
-extension CreateFolderError: Equatable, Hashable {}
-
-
-
-
-extension CreateFolderError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for decryption errors
  */
-public enum DecryptError: Swift.Error {
+public enum DecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DecryptError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7006,25 +5327,10 @@ public func FfiConverterTypeDecryptError_lower(_ value: DecryptError) -> RustBuf
 }
 
 
-extension DecryptError: Equatable, Hashable {}
-
-
-
-
-extension DecryptError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for decryption errors
  */
-public enum DecryptFileError: Swift.Error {
+public enum DecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7032,8 +5338,21 @@ public enum DecryptFileError: Swift.Error {
     
     case Io(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DecryptFileError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7093,29 +5412,27 @@ public func FfiConverterTypeDecryptFileError_lower(_ value: DecryptFileError) ->
 }
 
 
-extension DecryptFileError: Equatable, Hashable {}
-
-
-
-
-extension DecryptFileError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum DeleteAttachmentAdminError: Swift.Error {
+public enum DeleteAttachmentAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Api(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DeleteAttachmentAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7169,32 +5486,30 @@ public func FfiConverterTypeDeleteAttachmentAdminError_lower(_ value: DeleteAtta
 }
 
 
-extension DeleteAttachmentAdminError: Equatable, Hashable {}
-
-
-
-
-extension DeleteAttachmentAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Errors that can occur when deleting ciphers as an admin.
  */
-public enum DeleteCipherAdminError: Swift.Error {
+public enum DeleteCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Api(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DeleteCipherAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7248,22 +5563,7 @@ public func FfiConverterTypeDeleteCipherAdminError_lower(_ value: DeleteCipherAd
 }
 
 
-extension DeleteCipherAdminError: Equatable, Hashable {}
-
-
-
-
-extension DeleteCipherAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum DeleteCipherError: Swift.Error {
+public enum DeleteCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7271,8 +5571,21 @@ public enum DeleteCipherError: Swift.Error {
     
     case Repository(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DeleteCipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7332,22 +5645,7 @@ public func FfiConverterTypeDeleteCipherError_lower(_ value: DeleteCipherError) 
 }
 
 
-extension DeleteCipherError: Equatable, Hashable {}
-
-
-
-
-extension DeleteCipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum EditCipherAdminError: Swift.Error {
+public enum EditCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7369,8 +5667,21 @@ public enum EditCipherAdminError: Swift.Error {
     
     case Decrypt(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EditCipherAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7472,22 +5783,7 @@ public func FfiConverterTypeEditCipherAdminError_lower(_ value: EditCipherAdminE
 }
 
 
-extension EditCipherAdminError: Equatable, Hashable {}
-
-
-
-
-extension EditCipherAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum EditCipherError: Swift.Error {
+public enum EditCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7507,8 +5803,21 @@ public enum EditCipherError: Swift.Error {
     
     case Uuid(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EditCipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7604,22 +5913,7 @@ public func FfiConverterTypeEditCipherError_lower(_ value: EditCipherError) -> R
 }
 
 
-extension EditCipherError: Equatable, Hashable {}
-
-
-
-
-extension EditCipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum EditFolderError: Swift.Error {
+public enum EditFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7637,8 +5931,21 @@ public enum EditFolderError: Swift.Error {
     
     case Uuid(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EditFolderError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7728,25 +6035,10 @@ public func FfiConverterTypeEditFolderError_lower(_ value: EditFolderError) -> R
 }
 
 
-extension EditFolderError: Equatable, Hashable {}
-
-
-
-
-extension EditFolderError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for vault encryption errors.
  */
-public enum EncryptError: Swift.Error {
+public enum EncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7754,8 +6046,21 @@ public enum EncryptError: Swift.Error {
     
     case MissingUserId(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EncryptError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7815,25 +6120,10 @@ public func FfiConverterTypeEncryptError_lower(_ value: EncryptError) -> RustBuf
 }
 
 
-extension EncryptError: Equatable, Hashable {}
-
-
-
-
-extension EncryptError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for vault encryption errors.
  */
-public enum EncryptFileError: Swift.Error {
+public enum EncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7841,8 +6131,21 @@ public enum EncryptFileError: Swift.Error {
     
     case Io(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension EncryptFileError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -7901,28 +6204,13 @@ public func FfiConverterTypeEncryptFileError_lower(_ value: EncryptFileError) ->
     return FfiConverterTypeEncryptFileError.lower(value)
 }
 
-
-extension EncryptFileError: Equatable, Hashable {}
-
-
-
-
-extension EncryptFileError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Result of checking password exposure via HIBP API.
  */
 
-public enum ExposedPasswordResult {
+public enum ExposedPasswordResult: Equatable, Hashable {
     
     /**
      * Password exposure check was not performed (check_exposed was false or password was empty)
@@ -7939,7 +6227,12 @@ public enum ExposedPasswordResult {
     case error(String
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension ExposedPasswordResult: Sendable {}
 #endif
@@ -8003,24 +6296,13 @@ public func FfiConverterTypeExposedPasswordResult_lower(_ value: ExposedPassword
 }
 
 
-
-
-extension ExposedPasswordResult: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * Represents the type of a [FieldView].
  */
 
-public enum FieldType : UInt8 {
+public enum FieldType: UInt8, Equatable, Hashable {
     
     /**
      * Text field
@@ -8039,7 +6321,12 @@ public enum FieldType : UInt8 {
      */
     case linked = 3
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension FieldType: Sendable {}
 #endif
@@ -8106,18 +6393,7 @@ public func FfiConverterTypeFieldType_lower(_ value: FieldType) -> RustBuffer {
 
 
 
-
-extension FieldType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum GetCipherError: Swift.Error {
+public enum GetCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8127,8 +6403,21 @@ public enum GetCipherError: Swift.Error {
     
     case Repository(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension GetCipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8194,22 +6483,7 @@ public func FfiConverterTypeGetCipherError_lower(_ value: GetCipherError) -> Rus
 }
 
 
-extension GetCipherError: Equatable, Hashable {}
-
-
-
-
-extension GetCipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum GetFolderError: Swift.Error {
+public enum GetFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8219,8 +6493,21 @@ public enum GetFolderError: Swift.Error {
     
     case Repository(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension GetFolderError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8286,22 +6573,7 @@ public func FfiConverterTypeGetFolderError_lower(_ value: GetFolderError) -> Rus
 }
 
 
-extension GetFolderError: Equatable, Hashable {}
-
-
-
-
-extension GetFolderError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum GetOrganizationCiphersAdminError: Swift.Error {
+public enum GetOrganizationCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8311,8 +6583,21 @@ public enum GetOrganizationCiphersAdminError: Swift.Error {
     
     case Api(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension GetOrganizationCiphersAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8378,22 +6663,7 @@ public func FfiConverterTypeGetOrganizationCiphersAdminError_lower(_ value: GetO
 }
 
 
-extension GetOrganizationCiphersAdminError: Equatable, Hashable {}
-
-
-
-
-extension GetOrganizationCiphersAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum RestoreCipherAdminError: Swift.Error {
+public enum RestoreCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8403,8 +6673,21 @@ public enum RestoreCipherAdminError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension RestoreCipherAdminError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8470,22 +6753,7 @@ public func FfiConverterTypeRestoreCipherAdminError_lower(_ value: RestoreCipher
 }
 
 
-extension RestoreCipherAdminError: Equatable, Hashable {}
-
-
-
-
-extension RestoreCipherAdminError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum RestoreCipherError: Swift.Error {
+public enum RestoreCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8497,8 +6765,21 @@ public enum RestoreCipherError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension RestoreCipherError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8569,29 +6850,19 @@ public func FfiConverterTypeRestoreCipherError_lower(_ value: RestoreCipherError
     return FfiConverterTypeRestoreCipherError.lower(value)
 }
 
-
-extension RestoreCipherError: Equatable, Hashable {}
-
-
-
-
-extension RestoreCipherError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum SecureNoteType : UInt8 {
+public enum SecureNoteType: UInt8, Equatable, Hashable {
     
     case generic = 0
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension SecureNoteType: Sendable {}
 #endif
@@ -8640,18 +6911,7 @@ public func FfiConverterTypeSecureNoteType_lower(_ value: SecureNoteType) -> Rus
 
 
 
-
-extension SecureNoteType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum TotpError: Swift.Error {
+public enum TotpError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8661,8 +6921,21 @@ public enum TotpError: Swift.Error {
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension TotpError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -8727,25 +7000,10 @@ public func FfiConverterTypeTotpError_lower(_ value: TotpError) -> RustBuffer {
     return FfiConverterTypeTotpError.lower(value)
 }
 
-
-extension TotpError: Equatable, Hashable {}
-
-
-
-
-extension TotpError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum UriMatchType : UInt8 {
+public enum UriMatchType: UInt8, Equatable, Hashable {
     
     case domain = 0
     case host = 1
@@ -8754,7 +7012,12 @@ public enum UriMatchType : UInt8 {
     case regularExpression = 4
     case never = 5
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension UriMatchType: Sendable {}
 #endif
@@ -8830,17 +7093,6 @@ public func FfiConverterTypeUriMatchType_lift(_ buf: RustBuffer) throws -> UriMa
 public func FfiConverterTypeUriMatchType_lower(_ value: UriMatchType) -> RustBuffer {
     return FfiConverterTypeUriMatchType.lower(value)
 }
-
-
-
-
-extension UriMatchType: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)

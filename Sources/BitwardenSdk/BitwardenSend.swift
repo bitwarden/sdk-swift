@@ -536,7 +536,7 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
-public struct Send {
+public struct Send: Equatable, Hashable {
     public let id: Uuid?
     public let accessId: String?
     public let name: EncString
@@ -588,98 +588,15 @@ public struct Send {
         self.emails = emails
         self.authType = authType
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Send: Sendable {}
 #endif
-
-
-
-
-
-extension Send: Equatable, Hashable {
-    public static func ==(lhs: Send, rhs: Send) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.accessId != rhs.accessId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        if lhs.password != rhs.password {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.file != rhs.file {
-            return false
-        }
-        if lhs.text != rhs.text {
-            return false
-        }
-        if lhs.maxAccessCount != rhs.maxAccessCount {
-            return false
-        }
-        if lhs.accessCount != rhs.accessCount {
-            return false
-        }
-        if lhs.disabled != rhs.disabled {
-            return false
-        }
-        if lhs.hideEmail != rhs.hideEmail {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.deletionDate != rhs.deletionDate {
-            return false
-        }
-        if lhs.expirationDate != rhs.expirationDate {
-            return false
-        }
-        if lhs.emails != rhs.emails {
-            return false
-        }
-        if lhs.authType != rhs.authType {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(accessId)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(key)
-        hasher.combine(password)
-        hasher.combine(type)
-        hasher.combine(file)
-        hasher.combine(text)
-        hasher.combine(maxAccessCount)
-        hasher.combine(accessCount)
-        hasher.combine(disabled)
-        hasher.combine(hideEmail)
-        hasher.combine(revisionDate)
-        hasher.combine(deletionDate)
-        hasher.combine(expirationDate)
-        hasher.combine(emails)
-        hasher.combine(authType)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -747,7 +664,7 @@ public func FfiConverterTypeSend_lower(_ value: Send) -> RustBuffer {
 }
 
 
-public struct SendFile {
+public struct SendFile: Equatable, Hashable {
     public let id: String?
     public let fileName: EncString
     public let size: String?
@@ -767,42 +684,15 @@ public struct SendFile {
         self.size = size
         self.sizeName = sizeName
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendFile: Sendable {}
 #endif
-
-
-
-
-
-extension SendFile: Equatable, Hashable {
-    public static func ==(lhs: SendFile, rhs: SendFile) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.fileName != rhs.fileName {
-            return false
-        }
-        if lhs.size != rhs.size {
-            return false
-        }
-        if lhs.sizeName != rhs.sizeName {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(fileName)
-        hasher.combine(size)
-        hasher.combine(sizeName)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -842,7 +732,7 @@ public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
 }
 
 
-public struct SendFileView {
+public struct SendFileView: Equatable, Hashable {
     public let id: String?
     public let fileName: String
     public let size: String?
@@ -862,42 +752,15 @@ public struct SendFileView {
         self.size = size
         self.sizeName = sizeName
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendFileView: Sendable {}
 #endif
-
-
-
-
-
-extension SendFileView: Equatable, Hashable {
-    public static func ==(lhs: SendFileView, rhs: SendFileView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.fileName != rhs.fileName {
-            return false
-        }
-        if lhs.size != rhs.size {
-            return false
-        }
-        if lhs.sizeName != rhs.sizeName {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(fileName)
-        hasher.combine(size)
-        hasher.combine(sizeName)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -937,7 +800,7 @@ public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuf
 }
 
 
-public struct SendListView {
+public struct SendListView: Equatable, Hashable {
     public let id: Uuid?
     public let accessId: String?
     public let name: String
@@ -961,62 +824,15 @@ public struct SendListView {
         self.expirationDate = expirationDate
         self.authType = authType
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendListView: Sendable {}
 #endif
-
-
-
-
-
-extension SendListView: Equatable, Hashable {
-    public static func ==(lhs: SendListView, rhs: SendListView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.accessId != rhs.accessId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.disabled != rhs.disabled {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.deletionDate != rhs.deletionDate {
-            return false
-        }
-        if lhs.expirationDate != rhs.expirationDate {
-            return false
-        }
-        if lhs.authType != rhs.authType {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(accessId)
-        hasher.combine(name)
-        hasher.combine(type)
-        hasher.combine(disabled)
-        hasher.combine(revisionDate)
-        hasher.combine(deletionDate)
-        hasher.combine(expirationDate)
-        hasher.combine(authType)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1066,7 +882,7 @@ public func FfiConverterTypeSendListView_lower(_ value: SendListView) -> RustBuf
 }
 
 
-public struct SendText {
+public struct SendText: Equatable, Hashable {
     public let text: EncString?
     public let hidden: Bool
 
@@ -1076,34 +892,15 @@ public struct SendText {
         self.text = text
         self.hidden = hidden
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendText: Sendable {}
 #endif
-
-
-
-
-
-extension SendText: Equatable, Hashable {
-    public static func ==(lhs: SendText, rhs: SendText) -> Bool {
-        if lhs.text != rhs.text {
-            return false
-        }
-        if lhs.hidden != rhs.hidden {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(text)
-        hasher.combine(hidden)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1142,7 +939,7 @@ public func FfiConverterTypeSendText_lower(_ value: SendText) -> RustBuffer {
 /**
  * View model for decrypted SendText
  */
-public struct SendTextView {
+public struct SendTextView: Equatable, Hashable {
     /**
      * The text content of the send
      */
@@ -1164,34 +961,15 @@ public struct SendTextView {
         self.text = text
         self.hidden = hidden
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendTextView: Sendable {}
 #endif
-
-
-
-
-
-extension SendTextView: Equatable, Hashable {
-    public static func ==(lhs: SendTextView, rhs: SendTextView) -> Bool {
-        if lhs.text != rhs.text {
-            return false
-        }
-        if lhs.hidden != rhs.hidden {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(text)
-        hasher.combine(hidden)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1227,7 +1005,7 @@ public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuf
 }
 
 
-public struct SendView {
+public struct SendView: Equatable, Hashable {
     public let id: Uuid?
     public let accessId: String?
     public let name: String
@@ -1305,102 +1083,15 @@ public struct SendView {
         self.emails = emails
         self.authType = authType
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SendView: Sendable {}
 #endif
-
-
-
-
-
-extension SendView: Equatable, Hashable {
-    public static func ==(lhs: SendView, rhs: SendView) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.accessId != rhs.accessId {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        if lhs.notes != rhs.notes {
-            return false
-        }
-        if lhs.key != rhs.key {
-            return false
-        }
-        if lhs.newPassword != rhs.newPassword {
-            return false
-        }
-        if lhs.hasPassword != rhs.hasPassword {
-            return false
-        }
-        if lhs.type != rhs.type {
-            return false
-        }
-        if lhs.file != rhs.file {
-            return false
-        }
-        if lhs.text != rhs.text {
-            return false
-        }
-        if lhs.maxAccessCount != rhs.maxAccessCount {
-            return false
-        }
-        if lhs.accessCount != rhs.accessCount {
-            return false
-        }
-        if lhs.disabled != rhs.disabled {
-            return false
-        }
-        if lhs.hideEmail != rhs.hideEmail {
-            return false
-        }
-        if lhs.revisionDate != rhs.revisionDate {
-            return false
-        }
-        if lhs.deletionDate != rhs.deletionDate {
-            return false
-        }
-        if lhs.expirationDate != rhs.expirationDate {
-            return false
-        }
-        if lhs.emails != rhs.emails {
-            return false
-        }
-        if lhs.authType != rhs.authType {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(accessId)
-        hasher.combine(name)
-        hasher.combine(notes)
-        hasher.combine(key)
-        hasher.combine(newPassword)
-        hasher.combine(hasPassword)
-        hasher.combine(type)
-        hasher.combine(file)
-        hasher.combine(text)
-        hasher.combine(maxAccessCount)
-        hasher.combine(accessCount)
-        hasher.combine(disabled)
-        hasher.combine(hideEmail)
-        hasher.combine(revisionDate)
-        hasher.combine(deletionDate)
-        hasher.combine(expirationDate)
-        hasher.combine(emails)
-        hasher.combine(authType)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1475,7 +1166,7 @@ public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
  * Indicates the authentication strategy to use when accessing a Send
  */
 
-public enum AuthType : UInt8 {
+public enum AuthType: UInt8, Equatable, Hashable {
     
     /**
      * Email-based OTP authentication
@@ -1490,7 +1181,12 @@ public enum AuthType : UInt8 {
      */
     case none = 2
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension AuthType: Sendable {}
 #endif
@@ -1551,28 +1247,30 @@ public func FfiConverterTypeAuthType_lower(_ value: AuthType) -> RustBuffer {
 
 
 
-
-extension AuthType: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
 /**
  * Generic error type for send decryption errors
  */
-public enum SendDecryptError: Swift.Error {
+public enum SendDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SendDecryptError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1626,25 +1324,10 @@ public func FfiConverterTypeSendDecryptError_lower(_ value: SendDecryptError) ->
 }
 
 
-extension SendDecryptError: Equatable, Hashable {}
-
-
-
-
-extension SendDecryptError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for send decryption errors
  */
-public enum SendDecryptFileError: Swift.Error {
+public enum SendDecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1652,8 +1335,21 @@ public enum SendDecryptFileError: Swift.Error {
     
     case Io(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SendDecryptFileError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1713,32 +1409,30 @@ public func FfiConverterTypeSendDecryptFileError_lower(_ value: SendDecryptFileE
 }
 
 
-extension SendDecryptFileError: Equatable, Hashable {}
-
-
-
-
-extension SendDecryptFileError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for send encryption errors.
  */
-public enum SendEncryptError: Swift.Error {
+public enum SendEncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Crypto(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SendEncryptError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1792,25 +1486,10 @@ public func FfiConverterTypeSendEncryptError_lower(_ value: SendEncryptError) ->
 }
 
 
-extension SendEncryptError: Equatable, Hashable {}
-
-
-
-
-extension SendEncryptError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
 /**
  * Generic error type for send encryption errors.
  */
-public enum SendEncryptFileError: Swift.Error {
+public enum SendEncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1818,8 +1497,21 @@ public enum SendEncryptFileError: Swift.Error {
     
     case Io(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SendEncryptFileError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1878,28 +1570,13 @@ public func FfiConverterTypeSendEncryptFileError_lower(_ value: SendEncryptFileE
     return FfiConverterTypeSendEncryptFileError.lower(value)
 }
 
-
-extension SendEncryptFileError: Equatable, Hashable {}
-
-
-
-
-extension SendEncryptFileError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * The type of Send, either text or file
  */
 
-public enum SendType : UInt8 {
+public enum SendType: UInt8, Equatable, Hashable {
     
     /**
      * Text-based send
@@ -1910,7 +1587,12 @@ public enum SendType : UInt8 {
      */
     case file = 1
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension SendType: Sendable {}
 #endif
@@ -1962,17 +1644,6 @@ public func FfiConverterTypeSendType_lift(_ buf: RustBuffer) throws -> SendType 
 public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
     return FfiConverterTypeSendType.lower(value)
 }
-
-
-
-
-extension SendType: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)

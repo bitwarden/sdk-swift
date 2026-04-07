@@ -516,7 +516,7 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
 }
 
 
-public struct AuthenticatorAssertionResponse {
+public struct AuthenticatorAssertionResponse: Equatable, Hashable {
     public let clientDataJson: Data
     public let authenticatorData: Data
     public let signature: Data
@@ -530,42 +530,15 @@ public struct AuthenticatorAssertionResponse {
         self.signature = signature
         self.userHandle = userHandle
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AuthenticatorAssertionResponse: Sendable {}
 #endif
-
-
-
-
-
-extension AuthenticatorAssertionResponse: Equatable, Hashable {
-    public static func ==(lhs: AuthenticatorAssertionResponse, rhs: AuthenticatorAssertionResponse) -> Bool {
-        if lhs.clientDataJson != rhs.clientDataJson {
-            return false
-        }
-        if lhs.authenticatorData != rhs.authenticatorData {
-            return false
-        }
-        if lhs.signature != rhs.signature {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(clientDataJson)
-        hasher.combine(authenticatorData)
-        hasher.combine(signature)
-        hasher.combine(userHandle)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -605,7 +578,7 @@ public func FfiConverterTypeAuthenticatorAssertionResponse_lower(_ value: Authen
 }
 
 
-public struct AuthenticatorAttestationResponse {
+public struct AuthenticatorAttestationResponse: Equatable, Hashable {
     public let clientDataJson: Data
     public let authenticatorData: Data
     public let publicKey: Data?
@@ -623,50 +596,15 @@ public struct AuthenticatorAttestationResponse {
         self.attestationObject = attestationObject
         self.transports = transports
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension AuthenticatorAttestationResponse: Sendable {}
 #endif
-
-
-
-
-
-extension AuthenticatorAttestationResponse: Equatable, Hashable {
-    public static func ==(lhs: AuthenticatorAttestationResponse, rhs: AuthenticatorAttestationResponse) -> Bool {
-        if lhs.clientDataJson != rhs.clientDataJson {
-            return false
-        }
-        if lhs.authenticatorData != rhs.authenticatorData {
-            return false
-        }
-        if lhs.publicKey != rhs.publicKey {
-            return false
-        }
-        if lhs.publicKeyAlgorithm != rhs.publicKeyAlgorithm {
-            return false
-        }
-        if lhs.attestationObject != rhs.attestationObject {
-            return false
-        }
-        if lhs.transports != rhs.transports {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(clientDataJson)
-        hasher.combine(authenticatorData)
-        hasher.combine(publicKey)
-        hasher.combine(publicKeyAlgorithm)
-        hasher.combine(attestationObject)
-        hasher.combine(transports)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -710,7 +648,7 @@ public func FfiConverterTypeAuthenticatorAttestationResponse_lower(_ value: Auth
 }
 
 
-public struct CheckUserOptions {
+public struct CheckUserOptions: Equatable, Hashable {
     public let requirePresence: Bool
     public let requireVerification: Verification
 
@@ -720,34 +658,15 @@ public struct CheckUserOptions {
         self.requirePresence = requirePresence
         self.requireVerification = requireVerification
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CheckUserOptions: Sendable {}
 #endif
-
-
-
-
-
-extension CheckUserOptions: Equatable, Hashable {
-    public static func ==(lhs: CheckUserOptions, rhs: CheckUserOptions) -> Bool {
-        if lhs.requirePresence != rhs.requirePresence {
-            return false
-        }
-        if lhs.requireVerification != rhs.requireVerification {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(requirePresence)
-        hasher.combine(requireVerification)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -783,7 +702,7 @@ public func FfiConverterTypeCheckUserOptions_lower(_ value: CheckUserOptions) ->
 }
 
 
-public struct ClientExtensionResults {
+public struct ClientExtensionResults: Equatable, Hashable {
     public let credProps: CredPropsResult?
 
     // Default memberwise initializers are never public by default, so we
@@ -791,30 +710,15 @@ public struct ClientExtensionResults {
     public init(credProps: CredPropsResult?) {
         self.credProps = credProps
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension ClientExtensionResults: Sendable {}
 #endif
-
-
-
-
-
-extension ClientExtensionResults: Equatable, Hashable {
-    public static func ==(lhs: ClientExtensionResults, rhs: ClientExtensionResults) -> Bool {
-        if lhs.credProps != rhs.credProps {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credProps)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -848,7 +752,7 @@ public func FfiConverterTypeClientExtensionResults_lower(_ value: ClientExtensio
 }
 
 
-public struct CredPropsResult {
+public struct CredPropsResult: Equatable, Hashable {
     public let rk: Bool?
 
     // Default memberwise initializers are never public by default, so we
@@ -856,30 +760,15 @@ public struct CredPropsResult {
     public init(rk: Bool?) {
         self.rk = rk
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension CredPropsResult: Sendable {}
 #endif
-
-
-
-
-
-extension CredPropsResult: Equatable, Hashable {
-    public static func ==(lhs: CredPropsResult, rhs: CredPropsResult) -> Bool {
-        if lhs.rk != rhs.rk {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(rk)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -913,7 +802,7 @@ public func FfiConverterTypeCredPropsResult_lower(_ value: CredPropsResult) -> R
 }
 
 
-public struct Fido2CredentialAutofillView {
+public struct Fido2CredentialAutofillView: Equatable, Hashable {
     public let credentialId: Data
     public let cipherId: Uuid
     public let rpId: String
@@ -941,50 +830,15 @@ public struct Fido2CredentialAutofillView {
         self.userHandle = userHandle
         self.hasCounter = hasCounter
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Fido2CredentialAutofillView: Sendable {}
 #endif
-
-
-
-
-
-extension Fido2CredentialAutofillView: Equatable, Hashable {
-    public static func ==(lhs: Fido2CredentialAutofillView, rhs: Fido2CredentialAutofillView) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.cipherId != rhs.cipherId {
-            return false
-        }
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.userNameForUi != rhs.userNameForUi {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.hasCounter != rhs.hasCounter {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(cipherId)
-        hasher.combine(rpId)
-        hasher.combine(userNameForUi)
-        hasher.combine(userHandle)
-        hasher.combine(hasCounter)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1031,7 +885,7 @@ public func FfiConverterTypeFido2CredentialAutofillView_lower(_ value: Fido2Cred
 /**
  * WebAuthn extension input for WebAuthn authentication extensions.
  */
-public struct GetAssertionExtensionsInput {
+public struct GetAssertionExtensionsInput: Equatable, Hashable {
     /**
      * PRF input for the authentication ceremony.
      */
@@ -1045,30 +899,15 @@ public struct GetAssertionExtensionsInput {
          */prf: GetAssertionPrfInput?) {
         self.prf = prf
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionExtensionsInput: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionExtensionsInput: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionExtensionsInput, rhs: GetAssertionExtensionsInput) -> Bool {
-        if lhs.prf != rhs.prf {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(prf)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1105,7 +944,7 @@ public func FfiConverterTypeGetAssertionExtensionsInput_lower(_ value: GetAssert
 /**
  * WebAuthn extension output of an authentication ceremony.
  */
-public struct GetAssertionExtensionsOutput {
+public struct GetAssertionExtensionsOutput: Equatable, Hashable {
     /**
      * PRF output for an authentication ceremony.
      */
@@ -1119,30 +958,15 @@ public struct GetAssertionExtensionsOutput {
          */prf: GetAssertionPrfOutput?) {
         self.prf = prf
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionExtensionsOutput: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionExtensionsOutput: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionExtensionsOutput, rhs: GetAssertionExtensionsOutput) -> Bool {
-        if lhs.prf != rhs.prf {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(prf)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1179,7 +1003,7 @@ public func FfiConverterTypeGetAssertionExtensionsOutput_lower(_ value: GetAsser
 /**
  * Input for WebAuthn PRF extension during authentication ceremonies.
  */
-public struct GetAssertionPrfInput {
+public struct GetAssertionPrfInput: Equatable, Hashable {
     /**
      * A PRF input to use for authentication. If a map of credential IDs to PRF
      * inputs is specified in [`Self::eval_by_credential`] along with this
@@ -1211,34 +1035,15 @@ public struct GetAssertionPrfInput {
         self.eval = eval
         self.evalByCredential = evalByCredential
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionPrfInput: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionPrfInput: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionPrfInput, rhs: GetAssertionPrfInput) -> Bool {
-        if lhs.eval != rhs.eval {
-            return false
-        }
-        if lhs.evalByCredential != rhs.evalByCredential {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(eval)
-        hasher.combine(evalByCredential)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1277,7 +1082,7 @@ public func FfiConverterTypeGetAssertionPrfInput_lower(_ value: GetAssertionPrfI
 /**
  * WebAuthn PRF extension output during an authentication ceremony.
  */
-public struct GetAssertionPrfOutput {
+public struct GetAssertionPrfOutput: Equatable, Hashable {
     /**
      * The PRF output for the ceremony.
      */
@@ -1291,30 +1096,15 @@ public struct GetAssertionPrfOutput {
          */results: PrfOutputValues) {
         self.results = results
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionPrfOutput: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionPrfOutput: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionPrfOutput, rhs: GetAssertionPrfOutput) -> Bool {
-        if lhs.results != rhs.results {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(results)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1354,7 +1144,7 @@ public func FfiConverterTypeGetAssertionPrfOutput_lower(_ value: GetAssertionPrf
  *
  * [pubkey-cred-request-options]: https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrequestoptions
  */
-public struct GetAssertionRequest {
+public struct GetAssertionRequest: Equatable, Hashable {
     /**
      * The RP ID for the request used to select credentials.
      */
@@ -1398,46 +1188,15 @@ public struct GetAssertionRequest {
         self.options = options
         self.extensions = extensions
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionRequest: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionRequest: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionRequest, rhs: GetAssertionRequest) -> Bool {
-        if lhs.rpId != rhs.rpId {
-            return false
-        }
-        if lhs.clientDataHash != rhs.clientDataHash {
-            return false
-        }
-        if lhs.allowList != rhs.allowList {
-            return false
-        }
-        if lhs.options != rhs.options {
-            return false
-        }
-        if lhs.extensions != rhs.extensions {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(rpId)
-        hasher.combine(clientDataHash)
-        hasher.combine(allowList)
-        hasher.combine(options)
-        hasher.combine(extensions)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1486,7 +1245,7 @@ public func FfiConverterTypeGetAssertionRequest_lower(_ value: GetAssertionReque
  * [pub-key-cred]: https://www.w3.org/TR/webauthn-3/#publickeycredential
  * [authenticator-assertion-response]: https://www.w3.org/TR/webauthn-3/#authenticatorassertionresponse
  */
-public struct GetAssertionResult {
+public struct GetAssertionResult: Equatable, Hashable {
     /**
      * ID for this credential, corresponding to [PublicKeyCredential.rawId][raw-id].
      *
@@ -1546,50 +1305,15 @@ public struct GetAssertionResult {
         self.selectedCredential = selectedCredential
         self.extensions = extensions
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension GetAssertionResult: Sendable {}
 #endif
-
-
-
-
-
-extension GetAssertionResult: Equatable, Hashable {
-    public static func ==(lhs: GetAssertionResult, rhs: GetAssertionResult) -> Bool {
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.authenticatorData != rhs.authenticatorData {
-            return false
-        }
-        if lhs.signature != rhs.signature {
-            return false
-        }
-        if lhs.userHandle != rhs.userHandle {
-            return false
-        }
-        if lhs.selectedCredential != rhs.selectedCredential {
-            return false
-        }
-        if lhs.extensions != rhs.extensions {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(credentialId)
-        hasher.combine(authenticatorData)
-        hasher.combine(signature)
-        hasher.combine(userHandle)
-        hasher.combine(selectedCredential)
-        hasher.combine(extensions)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1636,7 +1360,7 @@ public func FfiConverterTypeGetAssertionResult_lower(_ value: GetAssertionResult
 /**
  * WebAuthn extension input for WebAuthn registration extensions.
  */
-public struct MakeCredentialExtensionsInput {
+public struct MakeCredentialExtensionsInput: Equatable, Hashable {
     /**
      * PRF input for WebAuthn registration request.
      */
@@ -1650,30 +1374,15 @@ public struct MakeCredentialExtensionsInput {
          */prf: MakeCredentialPrfInput?) {
         self.prf = prf
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialExtensionsInput: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialExtensionsInput: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialExtensionsInput, rhs: MakeCredentialExtensionsInput) -> Bool {
-        if lhs.prf != rhs.prf {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(prf)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1710,7 +1419,7 @@ public func FfiConverterTypeMakeCredentialExtensionsInput_lower(_ value: MakeCre
 /**
  * WebAuthn extension output for registration extensions.
  */
-public struct MakeCredentialExtensionsOutput {
+public struct MakeCredentialExtensionsOutput: Equatable, Hashable {
     /**
      * PRF output for registration extensions.
      */
@@ -1724,30 +1433,15 @@ public struct MakeCredentialExtensionsOutput {
          */prf: MakeCredentialPrfOutput?) {
         self.prf = prf
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialExtensionsOutput: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialExtensionsOutput: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialExtensionsOutput, rhs: MakeCredentialExtensionsOutput) -> Bool {
-        if lhs.prf != rhs.prf {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(prf)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1784,7 +1478,7 @@ public func FfiConverterTypeMakeCredentialExtensionsOutput_lower(_ value: MakeCr
 /**
  * WebAuthn PRF extension input for use during registration.
  */
-public struct MakeCredentialPrfInput {
+public struct MakeCredentialPrfInput: Equatable, Hashable {
     /**
      * PRF inputs.
      */
@@ -1798,30 +1492,15 @@ public struct MakeCredentialPrfInput {
          */eval: PrfInputValues?) {
         self.eval = eval
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialPrfInput: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialPrfInput: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialPrfInput, rhs: MakeCredentialPrfInput) -> Bool {
-        if lhs.eval != rhs.eval {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(eval)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1858,7 +1537,7 @@ public func FfiConverterTypeMakeCredentialPrfInput_lower(_ value: MakeCredential
 /**
  * WebAuthn PRF extension output used during registration.
  */
-public struct MakeCredentialPrfOutput {
+public struct MakeCredentialPrfOutput: Equatable, Hashable {
     /**
      * Whether PRF is successfully processed for the newly created credential.
      */
@@ -1880,34 +1559,15 @@ public struct MakeCredentialPrfOutput {
         self.enabled = enabled
         self.results = results
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialPrfOutput: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialPrfOutput: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialPrfOutput, rhs: MakeCredentialPrfOutput) -> Bool {
-        if lhs.enabled != rhs.enabled {
-            return false
-        }
-        if lhs.results != rhs.results {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(enabled)
-        hasher.combine(results)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -1943,7 +1603,7 @@ public func FfiConverterTypeMakeCredentialPrfOutput_lower(_ value: MakeCredentia
 }
 
 
-public struct MakeCredentialRequest {
+public struct MakeCredentialRequest: Equatable, Hashable {
     public let clientDataHash: Data
     public let rp: PublicKeyCredentialRpEntity
     public let user: PublicKeyCredentialUserEntity
@@ -1973,54 +1633,15 @@ public struct MakeCredentialRequest {
         self.options = options
         self.extensions = extensions
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialRequest: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialRequest: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialRequest, rhs: MakeCredentialRequest) -> Bool {
-        if lhs.clientDataHash != rhs.clientDataHash {
-            return false
-        }
-        if lhs.rp != rhs.rp {
-            return false
-        }
-        if lhs.user != rhs.user {
-            return false
-        }
-        if lhs.pubKeyCredParams != rhs.pubKeyCredParams {
-            return false
-        }
-        if lhs.excludeList != rhs.excludeList {
-            return false
-        }
-        if lhs.options != rhs.options {
-            return false
-        }
-        if lhs.extensions != rhs.extensions {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(clientDataHash)
-        hasher.combine(rp)
-        hasher.combine(user)
-        hasher.combine(pubKeyCredParams)
-        hasher.combine(excludeList)
-        hasher.combine(options)
-        hasher.combine(extensions)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2073,7 +1694,7 @@ public func FfiConverterTypeMakeCredentialRequest_lower(_ value: MakeCredentialR
  * [pub-key-cred]: https://www.w3.org/TR/webauthn-3/#publickeycredential
  * [authenticator-attestation-response]: https://www.w3.org/TR/webauthn-3/#authenticatorattestationresponse
  */
-public struct MakeCredentialResult {
+public struct MakeCredentialResult: Equatable, Hashable {
     /**
      * The authenticator data extracted from within the
      * [`attestation_object`][Self::attestation_object].
@@ -2135,42 +1756,15 @@ public struct MakeCredentialResult {
         self.credentialId = credentialId
         self.extensions = extensions
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension MakeCredentialResult: Sendable {}
 #endif
-
-
-
-
-
-extension MakeCredentialResult: Equatable, Hashable {
-    public static func ==(lhs: MakeCredentialResult, rhs: MakeCredentialResult) -> Bool {
-        if lhs.authenticatorData != rhs.authenticatorData {
-            return false
-        }
-        if lhs.attestationObject != rhs.attestationObject {
-            return false
-        }
-        if lhs.credentialId != rhs.credentialId {
-            return false
-        }
-        if lhs.extensions != rhs.extensions {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(authenticatorData)
-        hasher.combine(attestationObject)
-        hasher.combine(credentialId)
-        hasher.combine(extensions)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2210,7 +1804,7 @@ public func FfiConverterTypeMakeCredentialResult_lower(_ value: MakeCredentialRe
 }
 
 
-public struct Options {
+public struct Options: Equatable, Hashable {
     public let rk: Bool
     public let uv: Uv
 
@@ -2220,34 +1814,15 @@ public struct Options {
         self.rk = rk
         self.uv = uv
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Options: Sendable {}
 #endif
-
-
-
-
-
-extension Options: Equatable, Hashable {
-    public static func ==(lhs: Options, rhs: Options) -> Bool {
-        if lhs.rk != rhs.rk {
-            return false
-        }
-        if lhs.uv != rhs.uv {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(rk)
-        hasher.combine(uv)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2286,7 +1861,7 @@ public func FfiConverterTypeOptions_lower(_ value: Options) -> RustBuffer {
 /**
  * Salt inputs for WebAuthn PRF extension.
  */
-public struct PrfInputValues {
+public struct PrfInputValues: Equatable, Hashable {
     /**
      * An input on which to evaluate PRF. Required.
      */
@@ -2308,34 +1883,15 @@ public struct PrfInputValues {
         self.first = first
         self.second = second
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PrfInputValues: Sendable {}
 #endif
-
-
-
-
-
-extension PrfInputValues: Equatable, Hashable {
-    public static func ==(lhs: PrfInputValues, rhs: PrfInputValues) -> Bool {
-        if lhs.first != rhs.first {
-            return false
-        }
-        if lhs.second != rhs.second {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(first)
-        hasher.combine(second)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2374,7 +1930,7 @@ public func FfiConverterTypePrfInputValues_lower(_ value: PrfInputValues) -> Rus
 /**
  * WebAuthn PRF output values.
  */
-public struct PrfOutputValues {
+public struct PrfOutputValues: Equatable, Hashable {
     /**
      * The output of the PRF evaluation of the first PRF input.
      */
@@ -2396,34 +1952,15 @@ public struct PrfOutputValues {
         self.first = first
         self.second = second
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PrfOutputValues: Sendable {}
 #endif
-
-
-
-
-
-extension PrfOutputValues: Equatable, Hashable {
-    public static func ==(lhs: PrfOutputValues, rhs: PrfOutputValues) -> Bool {
-        if lhs.first != rhs.first {
-            return false
-        }
-        if lhs.second != rhs.second {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(first)
-        hasher.combine(second)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2459,7 +1996,7 @@ public func FfiConverterTypePrfOutputValues_lower(_ value: PrfOutputValues) -> R
 }
 
 
-public struct PublicKeyCredentialAuthenticatorAssertionResponse {
+public struct PublicKeyCredentialAuthenticatorAssertionResponse: Equatable, Hashable {
     public let id: String
     public let rawId: Data
     public let ty: String
@@ -2479,54 +2016,15 @@ public struct PublicKeyCredentialAuthenticatorAssertionResponse {
         self.response = response
         self.selectedCredential = selectedCredential
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialAuthenticatorAssertionResponse: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialAuthenticatorAssertionResponse: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialAuthenticatorAssertionResponse, rhs: PublicKeyCredentialAuthenticatorAssertionResponse) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.rawId != rhs.rawId {
-            return false
-        }
-        if lhs.ty != rhs.ty {
-            return false
-        }
-        if lhs.authenticatorAttachment != rhs.authenticatorAttachment {
-            return false
-        }
-        if lhs.clientExtensionResults != rhs.clientExtensionResults {
-            return false
-        }
-        if lhs.response != rhs.response {
-            return false
-        }
-        if lhs.selectedCredential != rhs.selectedCredential {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(rawId)
-        hasher.combine(ty)
-        hasher.combine(authenticatorAttachment)
-        hasher.combine(clientExtensionResults)
-        hasher.combine(response)
-        hasher.combine(selectedCredential)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2572,7 +2070,7 @@ public func FfiConverterTypePublicKeyCredentialAuthenticatorAssertionResponse_lo
 }
 
 
-public struct PublicKeyCredentialAuthenticatorAttestationResponse {
+public struct PublicKeyCredentialAuthenticatorAttestationResponse: Equatable, Hashable {
     public let id: String
     public let rawId: Data
     public let ty: String
@@ -2592,54 +2090,15 @@ public struct PublicKeyCredentialAuthenticatorAttestationResponse {
         self.response = response
         self.selectedCredential = selectedCredential
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialAuthenticatorAttestationResponse: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialAuthenticatorAttestationResponse: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialAuthenticatorAttestationResponse, rhs: PublicKeyCredentialAuthenticatorAttestationResponse) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.rawId != rhs.rawId {
-            return false
-        }
-        if lhs.ty != rhs.ty {
-            return false
-        }
-        if lhs.authenticatorAttachment != rhs.authenticatorAttachment {
-            return false
-        }
-        if lhs.clientExtensionResults != rhs.clientExtensionResults {
-            return false
-        }
-        if lhs.response != rhs.response {
-            return false
-        }
-        if lhs.selectedCredential != rhs.selectedCredential {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(rawId)
-        hasher.combine(ty)
-        hasher.combine(authenticatorAttachment)
-        hasher.combine(clientExtensionResults)
-        hasher.combine(response)
-        hasher.combine(selectedCredential)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2685,7 +2144,7 @@ public func FfiConverterTypePublicKeyCredentialAuthenticatorAttestationResponse_
 }
 
 
-public struct PublicKeyCredentialDescriptor {
+public struct PublicKeyCredentialDescriptor: Equatable, Hashable {
     public let ty: String
     public let id: Data
     public let transports: [String]?
@@ -2697,38 +2156,15 @@ public struct PublicKeyCredentialDescriptor {
         self.id = id
         self.transports = transports
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialDescriptor: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialDescriptor: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialDescriptor, rhs: PublicKeyCredentialDescriptor) -> Bool {
-        if lhs.ty != rhs.ty {
-            return false
-        }
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.transports != rhs.transports {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ty)
-        hasher.combine(id)
-        hasher.combine(transports)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2766,7 +2202,7 @@ public func FfiConverterTypePublicKeyCredentialDescriptor_lower(_ value: PublicK
 }
 
 
-public struct PublicKeyCredentialParameters {
+public struct PublicKeyCredentialParameters: Equatable, Hashable {
     public let ty: String
     public let alg: Int64
 
@@ -2776,34 +2212,15 @@ public struct PublicKeyCredentialParameters {
         self.ty = ty
         self.alg = alg
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialParameters: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialParameters: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialParameters, rhs: PublicKeyCredentialParameters) -> Bool {
-        if lhs.ty != rhs.ty {
-            return false
-        }
-        if lhs.alg != rhs.alg {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ty)
-        hasher.combine(alg)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2839,7 +2256,7 @@ public func FfiConverterTypePublicKeyCredentialParameters_lower(_ value: PublicK
 }
 
 
-public struct PublicKeyCredentialRpEntity {
+public struct PublicKeyCredentialRpEntity: Equatable, Hashable {
     public let id: String
     public let name: String?
 
@@ -2849,34 +2266,15 @@ public struct PublicKeyCredentialRpEntity {
         self.id = id
         self.name = name
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialRpEntity: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialRpEntity: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialRpEntity, rhs: PublicKeyCredentialRpEntity) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(name)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2912,7 +2310,7 @@ public func FfiConverterTypePublicKeyCredentialRpEntity_lower(_ value: PublicKey
 }
 
 
-public struct PublicKeyCredentialUserEntity {
+public struct PublicKeyCredentialUserEntity: Equatable, Hashable {
     public let id: Data
     public let displayName: String
     public let name: String
@@ -2924,38 +2322,15 @@ public struct PublicKeyCredentialUserEntity {
         self.displayName = displayName
         self.name = name
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension PublicKeyCredentialUserEntity: Sendable {}
 #endif
-
-
-
-
-
-extension PublicKeyCredentialUserEntity: Equatable, Hashable {
-    public static func ==(lhs: PublicKeyCredentialUserEntity, rhs: PublicKeyCredentialUserEntity) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.displayName != rhs.displayName {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(displayName)
-        hasher.combine(name)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -2993,7 +2368,7 @@ public func FfiConverterTypePublicKeyCredentialUserEntity_lower(_ value: PublicK
 }
 
 
-public struct SelectedCredential {
+public struct SelectedCredential: Equatable, Hashable {
     public let cipher: CipherView
     public let credential: Fido2CredentialView
 
@@ -3003,34 +2378,15 @@ public struct SelectedCredential {
         self.cipher = cipher
         self.credential = credential
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension SelectedCredential: Sendable {}
 #endif
-
-
-
-
-
-extension SelectedCredential: Equatable, Hashable {
-    public static func ==(lhs: SelectedCredential, rhs: SelectedCredential) -> Bool {
-        if lhs.cipher != rhs.cipher {
-            return false
-        }
-        if lhs.credential != rhs.credential {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(cipher)
-        hasher.combine(credential)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3069,7 +2425,7 @@ public func FfiConverterTypeSelectedCredential_lower(_ value: SelectedCredential
 /**
  * An Unverified asset link.
  */
-public struct UnverifiedAssetLink {
+public struct UnverifiedAssetLink: Equatable, Hashable {
     /**
      * Application package name.
      */
@@ -3109,42 +2465,15 @@ public struct UnverifiedAssetLink {
         self.host = host
         self.assetLinkUrl = assetLinkUrl
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension UnverifiedAssetLink: Sendable {}
 #endif
-
-
-
-
-
-extension UnverifiedAssetLink: Equatable, Hashable {
-    public static func ==(lhs: UnverifiedAssetLink, rhs: UnverifiedAssetLink) -> Bool {
-        if lhs.packageName != rhs.packageName {
-            return false
-        }
-        if lhs.sha256CertFingerprint != rhs.sha256CertFingerprint {
-            return false
-        }
-        if lhs.host != rhs.host {
-            return false
-        }
-        if lhs.assetLinkUrl != rhs.assetLinkUrl {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(packageName)
-        hasher.combine(sha256CertFingerprint)
-        hasher.combine(host)
-        hasher.combine(assetLinkUrl)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3186,14 +2515,19 @@ public func FfiConverterTypeUnverifiedAssetLink_lower(_ value: UnverifiedAssetLi
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum ClientData {
+public enum ClientData: Equatable, Hashable {
     
     case defaultWithExtraData(androidPackageName: String
     )
     case defaultWithCustomHash(hash: Data
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension ClientData: Sendable {}
 #endif
@@ -3252,18 +2586,7 @@ public func FfiConverterTypeClientData_lower(_ value: ClientData) -> RustBuffer 
 
 
 
-
-extension ClientData: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum CredentialsForAutofillError: Swift.Error {
+public enum CredentialsForAutofillError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3275,8 +2598,21 @@ public enum CredentialsForAutofillError: Swift.Error {
     
     case FromCipherView(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension CredentialsForAutofillError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3348,29 +2684,27 @@ public func FfiConverterTypeCredentialsForAutofillError_lower(_ value: Credentia
 }
 
 
-extension CredentialsForAutofillError: Equatable, Hashable {}
-
-
-
-
-extension CredentialsForAutofillError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum DecryptFido2AutofillCredentialsError: Swift.Error {
+public enum DecryptFido2AutofillCredentialsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
     case Fido2CredentialAutofillView(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension DecryptFido2AutofillCredentialsError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3424,22 +2758,7 @@ public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lower(_ value: 
 }
 
 
-extension DecryptFido2AutofillCredentialsError: Equatable, Hashable {}
-
-
-
-
-extension DecryptFido2AutofillCredentialsError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum Fido2ClientError: Swift.Error {
+public enum Fido2ClientError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3451,8 +2770,21 @@ public enum Fido2ClientError: Swift.Error {
     
     case Webauthn(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension Fido2ClientError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3524,22 +2856,7 @@ public func FfiConverterTypeFido2ClientError_lower(_ value: Fido2ClientError) ->
 }
 
 
-extension Fido2ClientError: Equatable, Hashable {}
-
-
-
-
-extension Fido2ClientError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum GetAssertionError: Swift.Error {
+public enum GetAssertionError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3553,8 +2870,21 @@ public enum GetAssertionError: Swift.Error {
     
     case Other(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension GetAssertionError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3632,22 +2962,7 @@ public func FfiConverterTypeGetAssertionError_lower(_ value: GetAssertionError) 
 }
 
 
-extension GetAssertionError: Equatable, Hashable {}
-
-
-
-
-extension GetAssertionError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
-
-public enum MakeCredentialError: Swift.Error {
+public enum MakeCredentialError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3659,8 +2974,21 @@ public enum MakeCredentialError: Swift.Error {
     
     case Other(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension MakeCredentialError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3731,28 +3059,13 @@ public func FfiConverterTypeMakeCredentialError_lower(_ value: MakeCredentialErr
     return FfiConverterTypeMakeCredentialError.lower(value)
 }
 
-
-extension MakeCredentialError: Equatable, Hashable {}
-
-
-
-
-extension MakeCredentialError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
  * The origin of a WebAuthn request.
  */
 
-public enum Origin {
+public enum Origin: Equatable, Hashable {
     
     /**
      * A Url, meant for a request in the web browser.
@@ -3766,7 +3079,12 @@ public enum Origin {
     case android(UnverifiedAssetLink
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension Origin: Sendable {}
 #endif
@@ -3825,18 +3143,7 @@ public func FfiConverterTypeOrigin_lower(_ value: Origin) -> RustBuffer {
 
 
 
-
-extension Origin: Equatable, Hashable {}
-
-
-
-
-
-
-
-
-
-public enum SilentlyDiscoverCredentialsError: Swift.Error {
+public enum SilentlyDiscoverCredentialsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3848,8 +3155,21 @@ public enum SilentlyDiscoverCredentialsError: Swift.Error {
     
     case FromCipherView(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension SilentlyDiscoverCredentialsError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -3920,31 +3240,21 @@ public func FfiConverterTypeSilentlyDiscoverCredentialsError_lower(_ value: Sile
     return FfiConverterTypeSilentlyDiscoverCredentialsError.lower(value)
 }
 
-
-extension SilentlyDiscoverCredentialsError: Equatable, Hashable {}
-
-
-
-
-extension SilentlyDiscoverCredentialsError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum Uv {
+public enum Uv: Equatable, Hashable {
     
     case discouraged
     case preferred
     case required
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension Uv: Sendable {}
 #endif
@@ -4004,27 +3314,21 @@ public func FfiConverterTypeUV_lower(_ value: Uv) -> RustBuffer {
 }
 
 
-
-
-extension Uv: Equatable, Hashable {}
-
-
-
-
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum Verification {
+public enum Verification: Equatable, Hashable {
     
     case discouraged
     case preferred
     case required
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension Verification: Sendable {}
 #endif
@@ -4082,17 +3386,6 @@ public func FfiConverterTypeVerification_lift(_ buf: RustBuffer) throws -> Verif
 public func FfiConverterTypeVerification_lower(_ value: Verification) -> RustBuffer {
     return FfiConverterTypeVerification.lower(value)
 }
-
-
-
-
-extension Verification: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)
@@ -4572,8 +3865,8 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
-    uniffiEnsureBitwardenVaultInitialized()
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
 

@@ -463,7 +463,7 @@ fileprivate struct FfiConverterString: FfiConverter {
  *
  * Eventually the SDK itself should have this state and we get rid of this struct.
  */
-public struct Account {
+public struct Account: Equatable, Hashable {
     public let id: Uuid
     public let email: String
     public let name: String?
@@ -475,38 +475,15 @@ public struct Account {
         self.email = email
         self.name = name
     }
+
+    
+
+    
 }
 
 #if compiler(>=6)
 extension Account: Sendable {}
 #endif
-
-
-
-
-
-extension Account: Equatable, Hashable {
-    public static func ==(lhs: Account, rhs: Account) -> Bool {
-        if lhs.id != rhs.id {
-            return false
-        }
-        if lhs.email != rhs.email {
-            return false
-        }
-        if lhs.name != rhs.name {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(email)
-        hasher.combine(name)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -544,7 +521,7 @@ public func FfiConverterTypeAccount_lower(_ value: Account) -> RustBuffer {
 }
 
 
-public enum ExportError: Swift.Error {
+public enum ExportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -564,8 +541,21 @@ public enum ExportError: Swift.Error {
     
     case Cipher(message: String)
     
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
 }
 
+#if compiler(>=6)
+extension ExportError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -660,32 +650,22 @@ public func FfiConverterTypeExportError_lower(_ value: ExportError) -> RustBuffe
     return FfiConverterTypeExportError.lower(value)
 }
 
-
-extension ExportError: Equatable, Hashable {}
-
-
-
-
-extension ExportError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum ExportFormat {
+public enum ExportFormat: Equatable, Hashable {
     
     case csv
     case json
     case encryptedJson(password: String
     )
 
+
+
+
+
 }
+
 #if compiler(>=6)
 extension ExportFormat: Sendable {}
 #endif
@@ -745,17 +725,6 @@ public func FfiConverterTypeExportFormat_lift(_ buf: RustBuffer) throws -> Expor
 public func FfiConverterTypeExportFormat_lower(_ value: ExportFormat) -> RustBuffer {
     return FfiConverterTypeExportFormat.lower(value)
 }
-
-
-
-
-extension ExportFormat: Equatable, Hashable {}
-
-
-
-
-
-
 
 
 #if swift(>=5.8)
