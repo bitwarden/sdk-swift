@@ -537,7 +537,7 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 
 
 public struct Send: Equatable, Hashable {
-    public let id: Uuid?
+    public let id: SendId?
     public let accessId: String?
     public let name: EncString
     public let notes: EncString?
@@ -554,20 +554,22 @@ public struct Send: Equatable, Hashable {
     public let deletionDate: DateTime
     public let expirationDate: DateTime?
     /**
-     * Email addresses for OTP authentication.
-     * **Note**: Mutually exclusive with `new_password`. If both are set,
-     * only password authentication will be used.
+     * Email addresses for OTP authentication (comma-separated).
+     *
+     * **Note**: Mutually exclusive with `password`. If both `password` and `emails` are
+     * set, password authentication takes precedence and email OTP is ignored.
      */
     public let emails: String?
     public let authType: AuthType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: String?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, 
+    public init(id: SendId?, accessId: String?, name: EncString, notes: EncString?, key: EncString, password: String?, type: SendType, file: SendFile?, text: SendText?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, 
         /**
-         * Email addresses for OTP authentication.
-         * **Note**: Mutually exclusive with `new_password`. If both are set,
-         * only password authentication will be used.
+         * Email addresses for OTP authentication (comma-separated).
+         *
+         * **Note**: Mutually exclusive with `password`. If both `password` and `emails` are
+         * set, password authentication takes precedence and email OTP is ignored.
          */emails: String?, authType: AuthType) {
         self.id = id
         self.accessId = accessId
@@ -605,7 +607,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Send {
         return
             try Send(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeSendId.read(from: &buf), 
                 accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterTypeEncString.read(from: &buf), 
                 notes: FfiConverterOptionTypeEncString.read(from: &buf), 
@@ -627,7 +629,7 @@ public struct FfiConverterTypeSend: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: Send, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeSendId.write(value.id, into: &buf)
         FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionTypeEncString.write(value.notes, into: &buf)
@@ -664,9 +666,21 @@ public func FfiConverterTypeSend_lower(_ value: Send) -> RustBuffer {
 }
 
 
+/**
+ * File-based send content
+ */
 public struct SendFile: Equatable, Hashable {
+    /**
+     * The file's ID
+     */
     public let id: String?
+    /**
+     * The encrypted file name
+     */
     public let fileName: EncString
+    /**
+     * The file size in bytes as a string
+     */
     public let size: String?
     /**
      * Readable size, ex: "4.2 KB" or "1.43 GB"
@@ -675,7 +689,16 @@ public struct SendFile: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String?, fileName: EncString, size: String?, 
+    public init(
+        /**
+         * The file's ID
+         */id: String?, 
+        /**
+         * The encrypted file name
+         */fileName: EncString, 
+        /**
+         * The file size in bytes as a string
+         */size: String?, 
         /**
          * Readable size, ex: "4.2 KB" or "1.43 GB"
          */sizeName: String?) {
@@ -732,9 +755,21 @@ public func FfiConverterTypeSendFile_lower(_ value: SendFile) -> RustBuffer {
 }
 
 
+/**
+ * View model for decrypted SendFile
+ */
 public struct SendFileView: Equatable, Hashable {
+    /**
+     * The file's ID
+     */
     public let id: String?
+    /**
+     * The file name
+     */
     public let fileName: String
+    /**
+     * The file size in bytes as a string
+     */
     public let size: String?
     /**
      * Readable size, ex: "4.2 KB" or "1.43 GB"
@@ -743,7 +778,16 @@ public struct SendFileView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String?, fileName: String, size: String?, 
+    public init(
+        /**
+         * The file's ID
+         */id: String?, 
+        /**
+         * The file name
+         */fileName: String, 
+        /**
+         * The file size in bytes as a string
+         */size: String?, 
         /**
          * Readable size, ex: "4.2 KB" or "1.43 GB"
          */sizeName: String?) {
@@ -801,7 +845,7 @@ public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuf
 
 
 public struct SendListView: Equatable, Hashable {
-    public let id: Uuid?
+    public let id: SendId?
     public let accessId: String?
     public let name: String
     public let type: SendType
@@ -813,7 +857,7 @@ public struct SendListView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: String, type: SendType, disabled: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, authType: AuthType) {
+    public init(id: SendId?, accessId: String?, name: String, type: SendType, disabled: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, authType: AuthType) {
         self.id = id
         self.accessId = accessId
         self.name = name
@@ -841,7 +885,7 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendListView {
         return
             try SendListView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeSendId.read(from: &buf), 
                 accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeSendType.read(from: &buf), 
@@ -854,7 +898,7 @@ public struct FfiConverterTypeSendListView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SendListView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeSendId.write(value.id, into: &buf)
         FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterTypeSendType.write(value.type, into: &buf)
@@ -882,6 +926,9 @@ public func FfiConverterTypeSendListView_lower(_ value: SendListView) -> RustBuf
 }
 
 
+/**
+ * Text-based send content
+ */
 public struct SendText: Equatable, Hashable {
     public let text: EncString?
     public let hidden: Bool
@@ -1006,7 +1053,7 @@ public func FfiConverterTypeSendTextView_lower(_ value: SendTextView) -> RustBuf
 
 
 public struct SendView: Equatable, Hashable {
-    public let id: Uuid?
+    public let id: SendId?
     public let accessId: String?
     public let name: String
     public let notes: String?
@@ -1037,15 +1084,16 @@ public struct SendView: Equatable, Hashable {
     public let expirationDate: DateTime?
     /**
      * Email addresses for OTP authentication.
-     * **Note**: Mutually exclusive with `new_password`. If both are set,
-     * only password authentication will be used.
+     * **Note**: Mutually exclusive with `new_password`. If both are set, only password
+     * authentication will be used. When creating or editing sends, use [crate::SendAuthType]
+     * to ensure mutual exclusivity at the type level.
      */
     public let emails: [String]
     public let authType: AuthType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid?, accessId: String?, name: String, notes: String?, 
+    public init(id: SendId?, accessId: String?, name: String, notes: String?, 
         /**
          * Base64 encoded key
          */key: String?, 
@@ -1060,8 +1108,9 @@ public struct SendView: Equatable, Hashable {
          */hasPassword: Bool, type: SendType, file: SendFileView?, text: SendTextView?, maxAccessCount: UInt32?, accessCount: UInt32, disabled: Bool, hideEmail: Bool, revisionDate: DateTime, deletionDate: DateTime, expirationDate: DateTime?, 
         /**
          * Email addresses for OTP authentication.
-         * **Note**: Mutually exclusive with `new_password`. If both are set,
-         * only password authentication will be used.
+         * **Note**: Mutually exclusive with `new_password`. If both are set, only password
+         * authentication will be used. When creating or editing sends, use [crate::SendAuthType]
+         * to ensure mutual exclusivity at the type level.
          */emails: [String], authType: AuthType) {
         self.id = id
         self.accessId = accessId
@@ -1100,7 +1149,7 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendView {
         return
             try SendView(
-                id: FfiConverterOptionTypeUuid.read(from: &buf), 
+                id: FfiConverterOptionTypeSendId.read(from: &buf), 
                 accessId: FfiConverterOptionString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
@@ -1123,7 +1172,7 @@ public struct FfiConverterTypeSendView: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: SendView, into buf: inout [UInt8]) {
-        FfiConverterOptionTypeUuid.write(value.id, into: &buf)
+        FfiConverterOptionTypeSendId.write(value.id, into: &buf)
         FfiConverterOptionString.write(value.accessId, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
@@ -1243,6 +1292,455 @@ public func FfiConverterTypeAuthType_lift(_ buf: RustBuffer) throws -> AuthType 
 #endif
 public func FfiConverterTypeAuthType_lower(_ value: AuthType) -> RustBuffer {
     return FfiConverterTypeAuthType.lower(value)
+}
+
+
+
+public enum CreateSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Crypto(message: String)
+    
+    case EmptyEmailList(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+    case SendParse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CreateSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateSendError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .EmptyEmailList(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .SendParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .EmptyEmailList(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .SendParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateSendError_lift(_ buf: RustBuffer) throws -> CreateSendError {
+    return try FfiConverterTypeCreateSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateSendError_lower(_ value: CreateSendError) -> RustBuffer {
+    return FfiConverterTypeCreateSendError.lower(value)
+}
+
+
+public enum EditSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case Api(message: String)
+    
+    case EmptyEmailList(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+    case Uuid(message: String)
+    
+    case SendParse(message: String)
+    
+    case IdMismatch(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension EditSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEditSendError: FfiConverterRustBuffer {
+    typealias SwiftType = EditSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EditSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .EmptyEmailList(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .Uuid(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .SendParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .IdMismatch(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: EditSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .EmptyEmailList(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .Uuid(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .SendParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .IdMismatch(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditSendError_lift(_ buf: RustBuffer) throws -> EditSendError {
+    return try FfiConverterTypeEditSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEditSendError_lower(_ value: EditSendError) -> RustBuffer {
+    return FfiConverterTypeEditSendError.lower(value)
+}
+
+
+public enum GetSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case ItemNotFound(message: String)
+    
+    case Crypto(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension GetSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetSendError: FfiConverterRustBuffer {
+    typealias SwiftType = GetSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .ItemNotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .ItemNotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetSendError_lift(_ buf: RustBuffer) throws -> GetSendError {
+    return try FfiConverterTypeGetSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetSendError_lower(_ value: GetSendError) -> RustBuffer {
+    return FfiConverterTypeGetSendError.lower(value)
+}
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Type-safe authentication method for a Send, including the authentication data.
+ * This ensures that password and email authentication are mutually exclusive.
+ */
+
+public enum SendAuthType: Equatable, Hashable {
+    
+    /**
+     * No authentication required
+     */
+    case none
+    /**
+     * Password-based authentication
+     */
+    case password(
+        /**
+         * The password required to access the Send
+         */password: String
+    )
+    /**
+     * Email-based OTP authentication
+     */
+    case emails(
+        /**
+         * List of email addresses that will receive OTP codes
+         */emails: [String]
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SendAuthType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendAuthType: FfiConverterRustBuffer {
+    typealias SwiftType = SendAuthType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendAuthType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .none
+        
+        case 2: return .password(password: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .emails(emails: try FfiConverterSequenceString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendAuthType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .none:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .password(password):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(password, into: &buf)
+            
+        
+        case let .emails(emails):
+            writeInt(&buf, Int32(3))
+            FfiConverterSequenceString.write(emails, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAuthType_lift(_ buf: RustBuffer) throws -> SendAuthType {
+    return try FfiConverterTypeSendAuthType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAuthType_lower(_ value: SendAuthType) -> RustBuffer {
+    return FfiConverterTypeSendAuthType.lower(value)
 }
 
 
@@ -1817,30 +2315,6 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
-    typealias SwiftType = Uuid?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeUuid.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeUuid.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     typealias SwiftType = EncString?
 
@@ -1857,6 +2331,30 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeSendId: FfiConverterRustBuffer {
+    typealias SwiftType = SendId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -1886,6 +2384,50 @@ fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
         return seq
     }
 }
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias SendId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: SendId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> SendId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: SendId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendId_lift(_ value: RustBuffer) throws -> SendId {
+    return try FfiConverterTypeSendId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendId_lower(_ value: SendId) -> RustBuffer {
+    return FfiConverterTypeSendId.lower(value)
+}
+
 
 private enum InitializationResult {
     case ok
