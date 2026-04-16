@@ -1935,6 +1935,78 @@ public func FfiConverterTypeMasterPasswordUnlockData_lower(_ value: MasterPasswo
 }
 
 
+/**
+ * A persisted organization encryption key.
+ *
+ * Stored in a Repository keyed by [`OrganizationId`].
+ * The `org_id` is included in the struct so it can be recovered from `Repository::list()`.
+ */
+public struct OrganizationSharedKey: Equatable, Hashable {
+    /**
+     * The organization this key belongs to.
+     */
+    public let orgId: OrganizationId
+    /**
+     * The organization's shared encryption key.
+     */
+    public let key: UnsignedSharedKey
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The organization this key belongs to.
+         */orgId: OrganizationId, 
+        /**
+         * The organization's shared encryption key.
+         */key: UnsignedSharedKey) {
+        self.orgId = orgId
+        self.key = key
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension OrganizationSharedKey: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeOrganizationSharedKey: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OrganizationSharedKey {
+        return
+            try OrganizationSharedKey(
+                orgId: FfiConverterTypeOrganizationId.read(from: &buf), 
+                key: FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: OrganizationSharedKey, into buf: inout [UInt8]) {
+        FfiConverterTypeOrganizationId.write(value.orgId, into: &buf)
+        FfiConverterTypeUnsignedSharedKey.write(value.key, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationSharedKey_lift(_ buf: RustBuffer) throws -> OrganizationSharedKey {
+    return try FfiConverterTypeOrganizationSharedKey.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationSharedKey_lower(_ value: OrganizationSharedKey) -> RustBuffer {
+    return FfiConverterTypeOrganizationSharedKey.lower(value)
+}
+
+
 public struct RegisterKeyResponse: Equatable, Hashable {
     public let masterPasswordHash: B64
     public let encryptedUserKey: EncString
