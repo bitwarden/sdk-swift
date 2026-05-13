@@ -1133,9 +1133,16 @@ public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
 public enum SignatureAlgorithm: Equatable, Hashable {
     
     /**
-     * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves.
+     * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves,
+     * safe under the assumption that an attacker does not have access to a large-scale quantum
+     * computer.
      */
     case ed25519
+    /**
+     * ML-DSA-44 is the NIST post-quantum digital signature standard (FIPS 204), security category
+     * 2.
+     */
+    case mlDsa44
 
 
 
@@ -1159,6 +1166,8 @@ public struct FfiConverterTypeSignatureAlgorithm: FfiConverterRustBuffer {
         
         case 1: return .ed25519
         
+        case 2: return .mlDsa44
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -1169,6 +1178,10 @@ public struct FfiConverterTypeSignatureAlgorithm: FfiConverterRustBuffer {
         
         case .ed25519:
             writeInt(&buf, Int32(1))
+        
+        
+        case .mlDsa44:
+            writeInt(&buf, Int32(2))
         
         }
     }
@@ -1451,6 +1464,50 @@ public func FfiConverterTypeSignedPublicKey_lift(_ value: RustBuffer) throws -> 
 #endif
 public func FfiConverterTypeSignedPublicKey_lower(_ value: SignedPublicKey) -> RustBuffer {
     return FfiConverterTypeSignedPublicKey.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias SymmetricCryptoKey = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSymmetricCryptoKey: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SymmetricCryptoKey {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: SymmetricCryptoKey, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> SymmetricCryptoKey {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: SymmetricCryptoKey) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSymmetricCryptoKey_lift(_ value: RustBuffer) throws -> SymmetricCryptoKey {
+    return try FfiConverterTypeSymmetricCryptoKey.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSymmetricCryptoKey_lower(_ value: SymmetricCryptoKey) -> RustBuffer {
+    return FfiConverterTypeSymmetricCryptoKey.lower(value)
 }
 
 

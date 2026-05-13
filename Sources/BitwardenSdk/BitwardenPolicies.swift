@@ -419,6 +419,22 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
+    typealias FfiType = UInt8
+    typealias SwiftType = UInt8
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterInt32: FfiConverterPrimitive {
     typealias FfiType = Int32
     typealias SwiftType = Int32
@@ -624,6 +640,81 @@ public func FfiConverterTypeMasterPasswordPolicyResponse_lower(_ value: MasterPa
     return FfiConverterTypeMasterPasswordPolicyResponse.lower(value)
 }
 
+
+/**
+ * An organization policy.
+ */
+public struct PolicyView: Equatable, Hashable {
+    public let id: Uuid
+    public let organizationId: Uuid
+    public let type: PolicyType
+    /**
+     * The policy's raw configuration data as a JSON string, if any.
+     */
+    public let data: String?
+    public let enabled: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Uuid, organizationId: Uuid, type: PolicyType, 
+        /**
+         * The policy's raw configuration data as a JSON string, if any.
+         */data: String?, enabled: Bool) {
+        self.id = id
+        self.organizationId = organizationId
+        self.type = type
+        self.data = data
+        self.enabled = enabled
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PolicyView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyView {
+        return
+            try PolicyView(
+                id: FfiConverterTypeUuid.read(from: &buf), 
+                organizationId: FfiConverterTypeUuid.read(from: &buf), 
+                type: FfiConverterTypePolicyType.read(from: &buf), 
+                data: FfiConverterOptionString.read(from: &buf), 
+                enabled: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PolicyView, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterTypeUuid.write(value.organizationId, into: &buf)
+        FfiConverterTypePolicyType.write(value.type, into: &buf)
+        FfiConverterOptionString.write(value.data, into: &buf)
+        FfiConverterBool.write(value.enabled, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyView_lift(_ buf: RustBuffer) throws -> PolicyView {
+    return try FfiConverterTypePolicyView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyView_lower(_ value: PolicyView) -> RustBuffer {
+    return FfiConverterTypePolicyView.lower(value)
+}
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -672,6 +763,74 @@ fileprivate struct FfiConverterOptionBool: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
+    typealias SwiftType = String?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias PolicyType = UInt8
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyType: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyType {
+        return try FfiConverterUInt8.read(from: &buf)
+    }
+
+    public static func write(_ value: PolicyType, into buf: inout [UInt8]) {
+        return FfiConverterUInt8.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: UInt8) throws -> PolicyType {
+        return try FfiConverterUInt8.lift(value)
+    }
+
+    public static func lower(_ value: PolicyType) -> UInt8 {
+        return FfiConverterUInt8.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyType_lift(_ value: UInt8) throws -> PolicyType {
+    return try FfiConverterTypePolicyType.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyType_lower(_ value: PolicyType) -> UInt8 {
+    return FfiConverterTypePolicyType.lower(value)
+}
+
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -688,6 +847,7 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 

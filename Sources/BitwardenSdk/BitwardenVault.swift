@@ -820,6 +820,178 @@ public func FfiConverterTypeAttachmentView_lower(_ value: AttachmentView) -> Rus
 }
 
 
+public struct BankAccount: Equatable, Hashable {
+    public let bankName: EncString?
+    public let nameOnAccount: EncString?
+    public let accountType: EncString?
+    public let accountNumber: EncString?
+    public let routingNumber: EncString?
+    public let branchNumber: EncString?
+    public let pin: EncString?
+    public let swiftCode: EncString?
+    public let iban: EncString?
+    public let bankContactPhone: EncString?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(bankName: EncString?, nameOnAccount: EncString?, accountType: EncString?, accountNumber: EncString?, routingNumber: EncString?, branchNumber: EncString?, pin: EncString?, swiftCode: EncString?, iban: EncString?, bankContactPhone: EncString?) {
+        self.bankName = bankName
+        self.nameOnAccount = nameOnAccount
+        self.accountType = accountType
+        self.accountNumber = accountNumber
+        self.routingNumber = routingNumber
+        self.branchNumber = branchNumber
+        self.pin = pin
+        self.swiftCode = swiftCode
+        self.iban = iban
+        self.bankContactPhone = bankContactPhone
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension BankAccount: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBankAccount: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BankAccount {
+        return
+            try BankAccount(
+                bankName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                nameOnAccount: FfiConverterOptionTypeEncString.read(from: &buf), 
+                accountType: FfiConverterOptionTypeEncString.read(from: &buf), 
+                accountNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                routingNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                branchNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                pin: FfiConverterOptionTypeEncString.read(from: &buf), 
+                swiftCode: FfiConverterOptionTypeEncString.read(from: &buf), 
+                iban: FfiConverterOptionTypeEncString.read(from: &buf), 
+                bankContactPhone: FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BankAccount, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeEncString.write(value.bankName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.nameOnAccount, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.accountType, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.accountNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.routingNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.branchNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.pin, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.swiftCode, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.iban, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.bankContactPhone, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccount_lift(_ buf: RustBuffer) throws -> BankAccount {
+    return try FfiConverterTypeBankAccount.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccount_lower(_ value: BankAccount) -> RustBuffer {
+    return FfiConverterTypeBankAccount.lower(value)
+}
+
+
+public struct BankAccountView: Equatable, Hashable {
+    public let bankName: String?
+    public let nameOnAccount: String?
+    public let accountType: String?
+    public let accountNumber: String?
+    public let routingNumber: String?
+    public let branchNumber: String?
+    public let pin: String?
+    public let swiftCode: String?
+    public let iban: String?
+    public let bankContactPhone: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(bankName: String?, nameOnAccount: String?, accountType: String?, accountNumber: String?, routingNumber: String?, branchNumber: String?, pin: String?, swiftCode: String?, iban: String?, bankContactPhone: String?) {
+        self.bankName = bankName
+        self.nameOnAccount = nameOnAccount
+        self.accountType = accountType
+        self.accountNumber = accountNumber
+        self.routingNumber = routingNumber
+        self.branchNumber = branchNumber
+        self.pin = pin
+        self.swiftCode = swiftCode
+        self.iban = iban
+        self.bankContactPhone = bankContactPhone
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension BankAccountView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBankAccountView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BankAccountView {
+        return
+            try BankAccountView(
+                bankName: FfiConverterOptionString.read(from: &buf), 
+                nameOnAccount: FfiConverterOptionString.read(from: &buf), 
+                accountType: FfiConverterOptionString.read(from: &buf), 
+                accountNumber: FfiConverterOptionString.read(from: &buf), 
+                routingNumber: FfiConverterOptionString.read(from: &buf), 
+                branchNumber: FfiConverterOptionString.read(from: &buf), 
+                pin: FfiConverterOptionString.read(from: &buf), 
+                swiftCode: FfiConverterOptionString.read(from: &buf), 
+                iban: FfiConverterOptionString.read(from: &buf), 
+                bankContactPhone: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BankAccountView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.bankName, into: &buf)
+        FfiConverterOptionString.write(value.nameOnAccount, into: &buf)
+        FfiConverterOptionString.write(value.accountType, into: &buf)
+        FfiConverterOptionString.write(value.accountNumber, into: &buf)
+        FfiConverterOptionString.write(value.routingNumber, into: &buf)
+        FfiConverterOptionString.write(value.branchNumber, into: &buf)
+        FfiConverterOptionString.write(value.pin, into: &buf)
+        FfiConverterOptionString.write(value.swiftCode, into: &buf)
+        FfiConverterOptionString.write(value.iban, into: &buf)
+        FfiConverterOptionString.write(value.bankContactPhone, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccountView_lift(_ buf: RustBuffer) throws -> BankAccountView {
+    return try FfiConverterTypeBankAccountView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccountView_lower(_ value: BankAccountView) -> RustBuffer {
+    return FfiConverterTypeBankAccountView.lower(value)
+}
+
+
 public struct Card: Equatable, Hashable {
     public let cardholderName: EncString?
     public let expMonth: EncString?
@@ -1037,6 +1209,9 @@ public struct Cipher: Equatable, Hashable {
     public let card: Card?
     public let secureNote: SecureNote?
     public let sshKey: SshKey?
+    public let bankAccount: BankAccount?
+    public let driversLicense: DriversLicense?
+    public let passport: Passport?
     public let favorite: Bool
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
@@ -1059,7 +1234,7 @@ public struct Cipher: Equatable, Hashable {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
+         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1073,6 +1248,9 @@ public struct Cipher: Equatable, Hashable {
         self.card = card
         self.secureNote = secureNote
         self.sshKey = sshKey
+        self.bankAccount = bankAccount
+        self.driversLicense = driversLicense
+        self.passport = passport
         self.favorite = favorite
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
@@ -1119,6 +1297,9 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 card: FfiConverterOptionTypeCard.read(from: &buf), 
                 secureNote: FfiConverterOptionTypeSecureNote.read(from: &buf), 
                 sshKey: FfiConverterOptionTypeSshKey.read(from: &buf), 
+                bankAccount: FfiConverterOptionTypeBankAccount.read(from: &buf), 
+                driversLicense: FfiConverterOptionTypeDriversLicense.read(from: &buf), 
+                passport: FfiConverterOptionTypePassport.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
@@ -1151,6 +1332,9 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeCard.write(value.card, into: &buf)
         FfiConverterOptionTypeSecureNote.write(value.secureNote, into: &buf)
         FfiConverterOptionTypeSshKey.write(value.sshKey, into: &buf)
+        FfiConverterOptionTypeBankAccount.write(value.bankAccount, into: &buf)
+        FfiConverterOptionTypeDriversLicense.write(value.driversLicense, into: &buf)
+        FfiConverterOptionTypePassport.write(value.passport, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
@@ -1863,6 +2047,9 @@ public struct CipherView: Equatable, Hashable {
     public let card: CardView?
     public let secureNote: SecureNoteView?
     public let sshKey: SshKeyView?
+    public let bankAccount: BankAccountView?
+    public let driversLicense: DriversLicenseView?
+    public let passport: PassportView?
     public let favorite: Bool
     public let reprompt: CipherRepromptType
     public let organizationUseTotp: Bool
@@ -1887,7 +2074,7 @@ public struct CipherView: Equatable, Hashable {
     public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
          * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
+         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, bankAccount: BankAccountView?, driversLicense: DriversLicenseView?, passport: PassportView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
         /**
          * Attachments that failed to decrypt. Only present when there are decryption failures.
          */attachmentDecryptionFailures: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
@@ -1904,6 +2091,9 @@ public struct CipherView: Equatable, Hashable {
         self.card = card
         self.secureNote = secureNote
         self.sshKey = sshKey
+        self.bankAccount = bankAccount
+        self.driversLicense = driversLicense
+        self.passport = passport
         self.favorite = favorite
         self.reprompt = reprompt
         self.organizationUseTotp = organizationUseTotp
@@ -1950,6 +2140,9 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 card: FfiConverterOptionTypeCardView.read(from: &buf), 
                 secureNote: FfiConverterOptionTypeSecureNoteView.read(from: &buf), 
                 sshKey: FfiConverterOptionTypeSshKeyView.read(from: &buf), 
+                bankAccount: FfiConverterOptionTypeBankAccountView.read(from: &buf), 
+                driversLicense: FfiConverterOptionTypeDriversLicenseView.read(from: &buf), 
+                passport: FfiConverterOptionTypePassportView.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 organizationUseTotp: FfiConverterBool.read(from: &buf), 
@@ -1982,6 +2175,9 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeCardView.write(value.card, into: &buf)
         FfiConverterOptionTypeSecureNoteView.write(value.secureNote, into: &buf)
         FfiConverterOptionTypeSshKeyView.write(value.sshKey, into: &buf)
+        FfiConverterOptionTypeBankAccountView.write(value.bankAccount, into: &buf)
+        FfiConverterOptionTypeDriversLicenseView.write(value.driversLicense, into: &buf)
+        FfiConverterOptionTypePassportView.write(value.passport, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterBool.write(value.organizationUseTotp, into: &buf)
@@ -2159,6 +2355,186 @@ public func FfiConverterTypeDecryptCipherResult_lift(_ buf: RustBuffer) throws -
 #endif
 public func FfiConverterTypeDecryptCipherResult_lower(_ value: DecryptCipherResult) -> RustBuffer {
     return FfiConverterTypeDecryptCipherResult.lower(value)
+}
+
+
+public struct DriversLicense: Equatable, Hashable {
+    public let firstName: EncString?
+    public let middleName: EncString?
+    public let lastName: EncString?
+    public let dateOfBirth: EncString?
+    public let licenseNumber: EncString?
+    public let issuingCountry: EncString?
+    public let issuingState: EncString?
+    public let issueDate: EncString?
+    public let expirationDate: EncString?
+    public let issuingAuthority: EncString?
+    public let licenseClass: EncString?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(firstName: EncString?, middleName: EncString?, lastName: EncString?, dateOfBirth: EncString?, licenseNumber: EncString?, issuingCountry: EncString?, issuingState: EncString?, issueDate: EncString?, expirationDate: EncString?, issuingAuthority: EncString?, licenseClass: EncString?) {
+        self.firstName = firstName
+        self.middleName = middleName
+        self.lastName = lastName
+        self.dateOfBirth = dateOfBirth
+        self.licenseNumber = licenseNumber
+        self.issuingCountry = issuingCountry
+        self.issuingState = issuingState
+        self.issueDate = issueDate
+        self.expirationDate = expirationDate
+        self.issuingAuthority = issuingAuthority
+        self.licenseClass = licenseClass
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DriversLicense: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDriversLicense: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DriversLicense {
+        return
+            try DriversLicense(
+                firstName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                middleName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                lastName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionTypeEncString.read(from: &buf), 
+                licenseNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issuingCountry: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issuingState: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issueDate: FfiConverterOptionTypeEncString.read(from: &buf), 
+                expirationDate: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issuingAuthority: FfiConverterOptionTypeEncString.read(from: &buf), 
+                licenseClass: FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DriversLicense, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeEncString.write(value.firstName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.middleName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.lastName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.licenseNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issuingCountry, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issuingState, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issueDate, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.expirationDate, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issuingAuthority, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.licenseClass, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDriversLicense_lift(_ buf: RustBuffer) throws -> DriversLicense {
+    return try FfiConverterTypeDriversLicense.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDriversLicense_lower(_ value: DriversLicense) -> RustBuffer {
+    return FfiConverterTypeDriversLicense.lower(value)
+}
+
+
+public struct DriversLicenseView: Equatable, Hashable {
+    public let firstName: String?
+    public let middleName: String?
+    public let lastName: String?
+    public let dateOfBirth: String?
+    public let licenseNumber: String?
+    public let issuingCountry: String?
+    public let issuingState: String?
+    public let issueDate: String?
+    public let expirationDate: String?
+    public let issuingAuthority: String?
+    public let licenseClass: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(firstName: String?, middleName: String?, lastName: String?, dateOfBirth: String?, licenseNumber: String?, issuingCountry: String?, issuingState: String?, issueDate: String?, expirationDate: String?, issuingAuthority: String?, licenseClass: String?) {
+        self.firstName = firstName
+        self.middleName = middleName
+        self.lastName = lastName
+        self.dateOfBirth = dateOfBirth
+        self.licenseNumber = licenseNumber
+        self.issuingCountry = issuingCountry
+        self.issuingState = issuingState
+        self.issueDate = issueDate
+        self.expirationDate = expirationDate
+        self.issuingAuthority = issuingAuthority
+        self.licenseClass = licenseClass
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DriversLicenseView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDriversLicenseView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DriversLicenseView {
+        return
+            try DriversLicenseView(
+                firstName: FfiConverterOptionString.read(from: &buf), 
+                middleName: FfiConverterOptionString.read(from: &buf), 
+                lastName: FfiConverterOptionString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionString.read(from: &buf), 
+                licenseNumber: FfiConverterOptionString.read(from: &buf), 
+                issuingCountry: FfiConverterOptionString.read(from: &buf), 
+                issuingState: FfiConverterOptionString.read(from: &buf), 
+                issueDate: FfiConverterOptionString.read(from: &buf), 
+                expirationDate: FfiConverterOptionString.read(from: &buf), 
+                issuingAuthority: FfiConverterOptionString.read(from: &buf), 
+                licenseClass: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DriversLicenseView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.firstName, into: &buf)
+        FfiConverterOptionString.write(value.middleName, into: &buf)
+        FfiConverterOptionString.write(value.lastName, into: &buf)
+        FfiConverterOptionString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionString.write(value.licenseNumber, into: &buf)
+        FfiConverterOptionString.write(value.issuingCountry, into: &buf)
+        FfiConverterOptionString.write(value.issuingState, into: &buf)
+        FfiConverterOptionString.write(value.issueDate, into: &buf)
+        FfiConverterOptionString.write(value.expirationDate, into: &buf)
+        FfiConverterOptionString.write(value.issuingAuthority, into: &buf)
+        FfiConverterOptionString.write(value.licenseClass, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDriversLicenseView_lift(_ buf: RustBuffer) throws -> DriversLicenseView {
+    return try FfiConverterTypeDriversLicenseView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDriversLicenseView_lower(_ value: DriversLicenseView) -> RustBuffer {
+    return FfiConverterTypeDriversLicenseView.lower(value)
 }
 
 
@@ -3630,6 +4006,202 @@ public func FfiConverterTypeLoginView_lower(_ value: LoginView) -> RustBuffer {
 }
 
 
+public struct Passport: Equatable, Hashable {
+    public let surname: EncString?
+    public let givenName: EncString?
+    public let dateOfBirth: EncString?
+    public let sex: EncString?
+    public let birthPlace: EncString?
+    public let nationality: EncString?
+    public let issuingCountry: EncString?
+    public let passportNumber: EncString?
+    public let passportType: EncString?
+    public let nationalIdentificationNumber: EncString?
+    public let issuingAuthority: EncString?
+    public let issueDate: EncString?
+    public let expirationDate: EncString?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(surname: EncString?, givenName: EncString?, dateOfBirth: EncString?, sex: EncString?, birthPlace: EncString?, nationality: EncString?, issuingCountry: EncString?, passportNumber: EncString?, passportType: EncString?, nationalIdentificationNumber: EncString?, issuingAuthority: EncString?, issueDate: EncString?, expirationDate: EncString?) {
+        self.surname = surname
+        self.givenName = givenName
+        self.dateOfBirth = dateOfBirth
+        self.sex = sex
+        self.birthPlace = birthPlace
+        self.nationality = nationality
+        self.issuingCountry = issuingCountry
+        self.passportNumber = passportNumber
+        self.passportType = passportType
+        self.nationalIdentificationNumber = nationalIdentificationNumber
+        self.issuingAuthority = issuingAuthority
+        self.issueDate = issueDate
+        self.expirationDate = expirationDate
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension Passport: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePassport: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Passport {
+        return
+            try Passport(
+                surname: FfiConverterOptionTypeEncString.read(from: &buf), 
+                givenName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionTypeEncString.read(from: &buf), 
+                sex: FfiConverterOptionTypeEncString.read(from: &buf), 
+                birthPlace: FfiConverterOptionTypeEncString.read(from: &buf), 
+                nationality: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issuingCountry: FfiConverterOptionTypeEncString.read(from: &buf), 
+                passportNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                passportType: FfiConverterOptionTypeEncString.read(from: &buf), 
+                nationalIdentificationNumber: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issuingAuthority: FfiConverterOptionTypeEncString.read(from: &buf), 
+                issueDate: FfiConverterOptionTypeEncString.read(from: &buf), 
+                expirationDate: FfiConverterOptionTypeEncString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Passport, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeEncString.write(value.surname, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.givenName, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.sex, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.birthPlace, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.nationality, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issuingCountry, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.passportNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.passportType, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.nationalIdentificationNumber, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issuingAuthority, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.issueDate, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.expirationDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassport_lift(_ buf: RustBuffer) throws -> Passport {
+    return try FfiConverterTypePassport.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassport_lower(_ value: Passport) -> RustBuffer {
+    return FfiConverterTypePassport.lower(value)
+}
+
+
+public struct PassportView: Equatable, Hashable {
+    public let surname: String?
+    public let givenName: String?
+    public let dateOfBirth: String?
+    public let sex: String?
+    public let birthPlace: String?
+    public let nationality: String?
+    public let issuingCountry: String?
+    public let passportNumber: String?
+    public let passportType: String?
+    public let nationalIdentificationNumber: String?
+    public let issuingAuthority: String?
+    public let issueDate: String?
+    public let expirationDate: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(surname: String?, givenName: String?, dateOfBirth: String?, sex: String?, birthPlace: String?, nationality: String?, issuingCountry: String?, passportNumber: String?, passportType: String?, nationalIdentificationNumber: String?, issuingAuthority: String?, issueDate: String?, expirationDate: String?) {
+        self.surname = surname
+        self.givenName = givenName
+        self.dateOfBirth = dateOfBirth
+        self.sex = sex
+        self.birthPlace = birthPlace
+        self.nationality = nationality
+        self.issuingCountry = issuingCountry
+        self.passportNumber = passportNumber
+        self.passportType = passportType
+        self.nationalIdentificationNumber = nationalIdentificationNumber
+        self.issuingAuthority = issuingAuthority
+        self.issueDate = issueDate
+        self.expirationDate = expirationDate
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PassportView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePassportView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PassportView {
+        return
+            try PassportView(
+                surname: FfiConverterOptionString.read(from: &buf), 
+                givenName: FfiConverterOptionString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionString.read(from: &buf), 
+                sex: FfiConverterOptionString.read(from: &buf), 
+                birthPlace: FfiConverterOptionString.read(from: &buf), 
+                nationality: FfiConverterOptionString.read(from: &buf), 
+                issuingCountry: FfiConverterOptionString.read(from: &buf), 
+                passportNumber: FfiConverterOptionString.read(from: &buf), 
+                passportType: FfiConverterOptionString.read(from: &buf), 
+                nationalIdentificationNumber: FfiConverterOptionString.read(from: &buf), 
+                issuingAuthority: FfiConverterOptionString.read(from: &buf), 
+                issueDate: FfiConverterOptionString.read(from: &buf), 
+                expirationDate: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PassportView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.surname, into: &buf)
+        FfiConverterOptionString.write(value.givenName, into: &buf)
+        FfiConverterOptionString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionString.write(value.sex, into: &buf)
+        FfiConverterOptionString.write(value.birthPlace, into: &buf)
+        FfiConverterOptionString.write(value.nationality, into: &buf)
+        FfiConverterOptionString.write(value.issuingCountry, into: &buf)
+        FfiConverterOptionString.write(value.passportNumber, into: &buf)
+        FfiConverterOptionString.write(value.passportType, into: &buf)
+        FfiConverterOptionString.write(value.nationalIdentificationNumber, into: &buf)
+        FfiConverterOptionString.write(value.issuingAuthority, into: &buf)
+        FfiConverterOptionString.write(value.issueDate, into: &buf)
+        FfiConverterOptionString.write(value.expirationDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassportView_lift(_ buf: RustBuffer) throws -> PassportView {
+    return try FfiConverterTypePassportView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePassportView_lower(_ value: PassportView) -> RustBuffer {
+    return FfiConverterTypePassportView.lower(value)
+}
+
+
 public struct PasswordHistory: Equatable, Hashable {
     public let password: EncString
     public let lastUsedDate: DateTime
@@ -4115,6 +4687,88 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 }
 
 
+public enum BulkUpdateCollectionsCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension BulkUpdateCollectionsCipherError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBulkUpdateCollectionsCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = BulkUpdateCollectionsCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BulkUpdateCollectionsCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: BulkUpdateCollectionsCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBulkUpdateCollectionsCipherError_lift(_ buf: RustBuffer) throws -> BulkUpdateCollectionsCipherError {
+    return try FfiConverterTypeBulkUpdateCollectionsCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBulkUpdateCollectionsCipherError_lower(_ value: BulkUpdateCollectionsCipherError) -> RustBuffer {
+    return FfiConverterTypeBulkUpdateCollectionsCipherError.lower(value)
+}
+
+
 public enum CipherDeleteAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
@@ -4370,6 +5024,9 @@ public enum CipherListViewType: Equatable, Hashable {
     )
     case identity
     case sshKey
+    case bankAccount
+    case passport
+    case driversLicense
 
 
 
@@ -4403,6 +5060,12 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         
         case 5: return .sshKey
         
+        case 6: return .bankAccount
+        
+        case 7: return .passport
+        
+        case 8: return .driversLicense
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -4431,6 +5094,18 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         
         case .sshKey:
             writeInt(&buf, Int32(5))
+        
+        
+        case .bankAccount:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .passport:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .driversLicense:
+            writeInt(&buf, Int32(8))
         
         }
     }
@@ -4606,6 +5281,9 @@ public enum CipherType: UInt8, Equatable, Hashable {
     case card = 3
     case identity = 4
     case sshKey = 5
+    case bankAccount = 6
+    case driversLicense = 7
+    case passport = 8
 
 
 
@@ -4637,6 +5315,12 @@ public struct FfiConverterTypeCipherType: FfiConverterRustBuffer {
         
         case 5: return .sshKey
         
+        case 6: return .bankAccount
+        
+        case 7: return .driversLicense
+        
+        case 8: return .passport
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -4663,6 +5347,18 @@ public struct FfiConverterTypeCipherType: FfiConverterRustBuffer {
         
         case .sshKey:
             writeInt(&buf, Int32(5))
+        
+        
+        case .bankAccount:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .driversLicense:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .passport:
+            writeInt(&buf, Int32(8))
         
         }
     }
@@ -4702,6 +5398,12 @@ public enum CipherViewType: Equatable, Hashable {
     )
     case sshKey(SshKeyView
     )
+    case bankAccount(BankAccountView
+    )
+    case passport(PassportView
+    )
+    case driversLicense(DriversLicenseView
+    )
 
 
 
@@ -4738,6 +5440,15 @@ public struct FfiConverterTypeCipherViewType: FfiConverterRustBuffer {
         case 5: return .sshKey(try FfiConverterTypeSshKeyView.read(from: &buf)
         )
         
+        case 6: return .bankAccount(try FfiConverterTypeBankAccountView.read(from: &buf)
+        )
+        
+        case 7: return .passport(try FfiConverterTypePassportView.read(from: &buf)
+        )
+        
+        case 8: return .driversLicense(try FfiConverterTypeDriversLicenseView.read(from: &buf)
+        )
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -4769,6 +5480,21 @@ public struct FfiConverterTypeCipherViewType: FfiConverterRustBuffer {
         case let .sshKey(v1):
             writeInt(&buf, Int32(5))
             FfiConverterTypeSshKeyView.write(v1, into: &buf)
+            
+        
+        case let .bankAccount(v1):
+            writeInt(&buf, Int32(6))
+            FfiConverterTypeBankAccountView.write(v1, into: &buf)
+            
+        
+        case let .passport(v1):
+            writeInt(&buf, Int32(7))
+            FfiConverterTypePassportView.write(v1, into: &buf)
+            
+        
+        case let .driversLicense(v1):
+            writeInt(&buf, Int32(8))
+            FfiConverterTypeDriversLicenseView.write(v1, into: &buf)
             
         }
     }
@@ -4809,6 +5535,12 @@ public enum CopyableCipherFields: Equatable, Hashable {
     case identityAddress
     case sshKey
     case secureNotes
+    case bankAccountAccountNumber
+    case bankAccountRoutingNumber
+    case bankAccountPin
+    case bankAccountIban
+    case passportPassportNumber
+    case driversLicenseLicenseNumber
 
 
 
@@ -4851,6 +5583,18 @@ public struct FfiConverterTypeCopyableCipherFields: FfiConverterRustBuffer {
         case 10: return .sshKey
         
         case 11: return .secureNotes
+        
+        case 12: return .bankAccountAccountNumber
+        
+        case 13: return .bankAccountRoutingNumber
+        
+        case 14: return .bankAccountPin
+        
+        case 15: return .bankAccountIban
+        
+        case 16: return .passportPassportNumber
+        
+        case 17: return .driversLicenseLicenseNumber
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4902,6 +5646,30 @@ public struct FfiConverterTypeCopyableCipherFields: FfiConverterRustBuffer {
         
         case .secureNotes:
             writeInt(&buf, Int32(11))
+        
+        
+        case .bankAccountAccountNumber:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .bankAccountRoutingNumber:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .bankAccountPin:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .bankAccountIban:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .passportPassportNumber:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .driversLicenseLicenseNumber:
+            writeInt(&buf, Int32(17))
         
         }
     }
@@ -5418,6 +6186,10 @@ public enum DeleteAttachmentAdminError: Swift.Error, Equatable, Hashable, Founda
     
     case Api(message: String)
     
+    case MissingField(message: String)
+    
+    case VaultParse(message: String)
+    
 
     
 
@@ -5451,6 +6223,14 @@ public struct FfiConverterTypeDeleteAttachmentAdminError: FfiConverterRustBuffer
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -5464,6 +6244,10 @@ public struct FfiConverterTypeDeleteAttachmentAdminError: FfiConverterRustBuffer
         
         case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
 
         
         }
@@ -6393,6 +7177,88 @@ public func FfiConverterTypeFieldType_lower(_ value: FieldType) -> RustBuffer {
 
 
 
+public enum GetAssignedOrgCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case VaultParse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension GetAssignedOrgCiphersAdminError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetAssignedOrgCiphersAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = GetAssignedOrgCiphersAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetAssignedOrgCiphersAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetAssignedOrgCiphersAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssignedOrgCiphersAdminError_lift(_ buf: RustBuffer) throws -> GetAssignedOrgCiphersAdminError {
+    return try FfiConverterTypeGetAssignedOrgCiphersAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetAssignedOrgCiphersAdminError_lower(_ value: GetAssignedOrgCiphersAdminError) -> RustBuffer {
+    return FfiConverterTypeGetAssignedOrgCiphersAdminError.lower(value)
+}
+
+
 public enum GetCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
@@ -6577,8 +7443,6 @@ public enum GetOrganizationCiphersAdminError: Swift.Error, Equatable, Hashable, 
 
     
     
-    case Crypto(message: String)
-    
     case VaultParse(message: String)
     
     case Api(message: String)
@@ -6612,15 +7476,11 @@ public struct FfiConverterTypeGetOrganizationCiphersAdminError: FfiConverterRust
         
 
         
-        case 1: return .Crypto(
+        case 1: return .VaultParse(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .VaultParse(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 3: return .Api(
+        case 2: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -6635,12 +7495,10 @@ public struct FfiConverterTypeGetOrganizationCiphersAdminError: FfiConverterRust
         
 
         
-        case .Crypto(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
         case .VaultParse(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
+            writeInt(&buf, Int32(1))
         case .Api(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(2))
 
         
         }
@@ -6660,6 +7518,88 @@ public func FfiConverterTypeGetOrganizationCiphersAdminError_lift(_ buf: RustBuf
 #endif
 public func FfiConverterTypeGetOrganizationCiphersAdminError_lower(_ value: GetOrganizationCiphersAdminError) -> RustBuffer {
     return FfiConverterTypeGetOrganizationCiphersAdminError.lower(value)
+}
+
+
+public enum MoveCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension MoveCipherError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMoveCipherError: FfiConverterRustBuffer {
+    typealias SwiftType = MoveCipherError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MoveCipherError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MoveCipherError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMoveCipherError_lift(_ buf: RustBuffer) throws -> MoveCipherError {
+    return try FfiConverterTypeMoveCipherError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMoveCipherError_lower(_ value: MoveCipherError) -> RustBuffer {
+    return FfiConverterTypeMoveCipherError.lower(value)
 }
 
 
@@ -7170,6 +8110,54 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeBankAccount: FfiConverterRustBuffer {
+    typealias SwiftType = BankAccount?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeBankAccount.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeBankAccount.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeBankAccountView: FfiConverterRustBuffer {
+    typealias SwiftType = BankAccountView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeBankAccountView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeBankAccountView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeCard: FfiConverterRustBuffer {
     typealias SwiftType = Card?
 
@@ -7234,6 +8222,54 @@ fileprivate struct FfiConverterOptionTypeCipherPermissions: FfiConverterRustBuff
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeCipherPermissions.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeDriversLicense: FfiConverterRustBuffer {
+    typealias SwiftType = DriversLicense?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDriversLicense.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDriversLicense.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeDriversLicenseView: FfiConverterRustBuffer {
+    typealias SwiftType = DriversLicenseView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDriversLicenseView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDriversLicenseView.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -7378,6 +8414,54 @@ fileprivate struct FfiConverterOptionTypeLoginView: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeLoginView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePassport: FfiConverterRustBuffer {
+    typealias SwiftType = Passport?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePassport.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePassport.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePassportView: FfiConverterRustBuffer {
+    typealias SwiftType = PassportView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePassportView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePassportView.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }

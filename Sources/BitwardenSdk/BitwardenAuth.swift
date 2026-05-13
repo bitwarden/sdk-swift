@@ -1848,6 +1848,254 @@ public func FfiConverterTypeUserDecryptionOptionsResponse_lower(_ value: UserDec
 
 
 /**
+ * Request parameters for master password registration
+ */
+public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
+    /**
+     * Email for the account being initialized
+     */
+    public let email: String
+    /**
+     * Salt for master password hashing
+     */
+    public let salt: String
+    /**
+     * Master password for the account
+     */
+    public let masterPassword: String
+    /**
+     * Optional hint for the master password
+     */
+    public let masterPasswordHint: String?
+    /**
+     * Optional token for email verification
+     */
+    public let emailVerificationToken: String?
+    /**
+     * Optional organization user ID for organization invitations
+     */
+    public let organizationUserId: OrganizationId?
+    /**
+     * Optional organization invite token for joining an organization
+     */
+    public let orgInviteToken: String?
+    /**
+     * Optional token for sponsored free family plan
+     */
+    public let orgSponsoredFreeFamilyPlanToken: String?
+    /**
+     * Optional token for accepting emergency access invitation
+     */
+    public let acceptEmergencyAccessInviteToken: String?
+    /**
+     * Optional emergency access ID for accepting emergency access invitation
+     */
+    public let acceptEmergencyAccessId: UserId?
+    /**
+     * Optional provider invite token for joining as a provider
+     */
+    public let providerInviteToken: String?
+    /**
+     * Optional provider user ID for provider invitations
+     */
+    public let providerUserId: UserId?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Email for the account being initialized
+         */email: String, 
+        /**
+         * Salt for master password hashing
+         */salt: String, 
+        /**
+         * Master password for the account
+         */masterPassword: String, 
+        /**
+         * Optional hint for the master password
+         */masterPasswordHint: String?, 
+        /**
+         * Optional token for email verification
+         */emailVerificationToken: String?, 
+        /**
+         * Optional organization user ID for organization invitations
+         */organizationUserId: OrganizationId?, 
+        /**
+         * Optional organization invite token for joining an organization
+         */orgInviteToken: String?, 
+        /**
+         * Optional token for sponsored free family plan
+         */orgSponsoredFreeFamilyPlanToken: String?, 
+        /**
+         * Optional token for accepting emergency access invitation
+         */acceptEmergencyAccessInviteToken: String?, 
+        /**
+         * Optional emergency access ID for accepting emergency access invitation
+         */acceptEmergencyAccessId: UserId?, 
+        /**
+         * Optional provider invite token for joining as a provider
+         */providerInviteToken: String?, 
+        /**
+         * Optional provider user ID for provider invitations
+         */providerUserId: UserId?) {
+        self.email = email
+        self.salt = salt
+        self.masterPassword = masterPassword
+        self.masterPasswordHint = masterPasswordHint
+        self.emailVerificationToken = emailVerificationToken
+        self.organizationUserId = organizationUserId
+        self.orgInviteToken = orgInviteToken
+        self.orgSponsoredFreeFamilyPlanToken = orgSponsoredFreeFamilyPlanToken
+        self.acceptEmergencyAccessInviteToken = acceptEmergencyAccessInviteToken
+        self.acceptEmergencyAccessId = acceptEmergencyAccessId
+        self.providerInviteToken = providerInviteToken
+        self.providerUserId = providerUserId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension UserMasterPasswordRegistrationRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUserMasterPasswordRegistrationRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserMasterPasswordRegistrationRequest {
+        return
+            try UserMasterPasswordRegistrationRequest(
+                email: FfiConverterString.read(from: &buf), 
+                salt: FfiConverterString.read(from: &buf), 
+                masterPassword: FfiConverterString.read(from: &buf), 
+                masterPasswordHint: FfiConverterOptionString.read(from: &buf), 
+                emailVerificationToken: FfiConverterOptionString.read(from: &buf), 
+                organizationUserId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
+                orgInviteToken: FfiConverterOptionString.read(from: &buf), 
+                orgSponsoredFreeFamilyPlanToken: FfiConverterOptionString.read(from: &buf), 
+                acceptEmergencyAccessInviteToken: FfiConverterOptionString.read(from: &buf), 
+                acceptEmergencyAccessId: FfiConverterOptionTypeUserId.read(from: &buf), 
+                providerInviteToken: FfiConverterOptionString.read(from: &buf), 
+                providerUserId: FfiConverterOptionTypeUserId.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UserMasterPasswordRegistrationRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.email, into: &buf)
+        FfiConverterString.write(value.salt, into: &buf)
+        FfiConverterString.write(value.masterPassword, into: &buf)
+        FfiConverterOptionString.write(value.masterPasswordHint, into: &buf)
+        FfiConverterOptionString.write(value.emailVerificationToken, into: &buf)
+        FfiConverterOptionTypeOrganizationId.write(value.organizationUserId, into: &buf)
+        FfiConverterOptionString.write(value.orgInviteToken, into: &buf)
+        FfiConverterOptionString.write(value.orgSponsoredFreeFamilyPlanToken, into: &buf)
+        FfiConverterOptionString.write(value.acceptEmergencyAccessInviteToken, into: &buf)
+        FfiConverterOptionTypeUserId.write(value.acceptEmergencyAccessId, into: &buf)
+        FfiConverterOptionString.write(value.providerInviteToken, into: &buf)
+        FfiConverterOptionTypeUserId.write(value.providerUserId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserMasterPasswordRegistrationRequest_lift(_ buf: RustBuffer) throws -> UserMasterPasswordRegistrationRequest {
+    return try FfiConverterTypeUserMasterPasswordRegistrationRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserMasterPasswordRegistrationRequest_lower(_ value: UserMasterPasswordRegistrationRequest) -> RustBuffer {
+    return FfiConverterTypeUserMasterPasswordRegistrationRequest.lower(value)
+}
+
+
+/**
+ * Result of user master password registration process.
+ */
+public struct UserMasterPasswordRegistrationResponse: Equatable, Hashable {
+    /**
+     * The account cryptographic state of the user
+     */
+    public let accountCryptographicState: WrappedAccountCryptographicState
+    /**
+     * The master password unlock data
+     */
+    public let masterPasswordUnlock: MasterPasswordUnlockData
+    /**
+     * The decrypted user key. This can be used to get the consuming client to an unlocked state.
+     */
+    public let userKey: B64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account cryptographic state of the user
+         */accountCryptographicState: WrappedAccountCryptographicState, 
+        /**
+         * The master password unlock data
+         */masterPasswordUnlock: MasterPasswordUnlockData, 
+        /**
+         * The decrypted user key. This can be used to get the consuming client to an unlocked state.
+         */userKey: B64) {
+        self.accountCryptographicState = accountCryptographicState
+        self.masterPasswordUnlock = masterPasswordUnlock
+        self.userKey = userKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension UserMasterPasswordRegistrationResponse: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUserMasterPasswordRegistrationResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserMasterPasswordRegistrationResponse {
+        return
+            try UserMasterPasswordRegistrationResponse(
+                accountCryptographicState: FfiConverterTypeWrappedAccountCryptographicState.read(from: &buf), 
+                masterPasswordUnlock: FfiConverterTypeMasterPasswordUnlockData.read(from: &buf), 
+                userKey: FfiConverterTypeB64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UserMasterPasswordRegistrationResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeWrappedAccountCryptographicState.write(value.accountCryptographicState, into: &buf)
+        FfiConverterTypeMasterPasswordUnlockData.write(value.masterPasswordUnlock, into: &buf)
+        FfiConverterTypeB64.write(value.userKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserMasterPasswordRegistrationResponse_lift(_ buf: RustBuffer) throws -> UserMasterPasswordRegistrationResponse {
+    return try FfiConverterTypeUserMasterPasswordRegistrationResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUserMasterPasswordRegistrationResponse_lower(_ value: UserMasterPasswordRegistrationResponse) -> RustBuffer {
+    return FfiConverterTypeUserMasterPasswordRegistrationResponse.lower(value)
+}
+
+
+/**
  * SDK domain model for WebAuthn PRF user decryption option.
  */
 public struct WebAuthnPrfUserDecryptionOption: Equatable, Hashable {
@@ -3048,6 +3296,54 @@ fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterSequenceString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeOrganizationId: FfiConverterRustBuffer {
+    typealias SwiftType = OrganizationId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeOrganizationId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeOrganizationId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
+    typealias SwiftType = UserId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeUserId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeUserId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }

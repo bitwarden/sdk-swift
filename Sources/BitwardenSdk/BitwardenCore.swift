@@ -782,6 +782,120 @@ public func FfiConverterTypeClientManagedTokens_lower(_ value: ClientManagedToke
 
 
 
+
+
+/**
+ * Client for interacting with the key-management state bridge. This is used to read and write
+ * state held by the clients
+ */
+public protocol StateBridgeClientProtocol: AnyObject, Sendable {
+    
+}
+/**
+ * Client for interacting with the key-management state bridge. This is used to read and write
+ * state held by the clients
+ */
+open class StateBridgeClient: StateBridgeClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_core_fn_clone_statebridgeclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_core_fn_free_statebridgeclient(handle, $0) }
+    }
+
+    
+
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeStateBridgeClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = StateBridgeClient
+
+    public static func lift(_ handle: UInt64) throws -> StateBridgeClient {
+        return StateBridgeClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: StateBridgeClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> StateBridgeClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: StateBridgeClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStateBridgeClient_lift(_ handle: UInt64) throws -> StateBridgeClient {
+    return try FfiConverterTypeStateBridgeClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeStateBridgeClient_lower(_ value: StateBridgeClient) -> UInt64 {
+    return FfiConverterTypeStateBridgeClient.lower(value)
+}
+
+
+
+
 /**
  * Response for `new_auth_request`.
  */
@@ -2124,6 +2238,73 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lift(_ buf: RustBuffer) throw
 #endif
 public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKeyResponse) -> RustBuffer {
     return FfiConverterTypeRegisterTdeKeyResponse.lower(value)
+}
+
+
+/**
+ * The security state is a signed object attesting to the security state of a user.
+ *
+ * It contains a version, which can only ever increment. Based on the version, old formats and
+ * features are blocked. This prevents a server from downgrading a user's account features, because
+ * only the user can create this signed object.
+ */
+public struct SecurityState: Equatable, Hashable {
+    /**
+     * The version of the security state gates feature availability. It can only ever be
+     * incremented. Components can use it to gate format support of specific formats (like
+     * item url hashes).
+     */
+    public let version: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The version of the security state gates feature availability. It can only ever be
+         * incremented. Components can use it to gate format support of specific formats (like
+         * item url hashes).
+         */version: UInt64) {
+        self.version = version
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityState: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityState: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityState {
+        return
+            try SecurityState(
+                version: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityState, into buf: inout [UInt8]) {
+        FfiConverterUInt64.write(value.version, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityState_lift(_ buf: RustBuffer) throws -> SecurityState {
+    return try FfiConverterTypeSecurityState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityState_lower(_ value: SecurityState) -> RustBuffer {
+    return FfiConverterTypeSecurityState.lower(value)
 }
 
 
@@ -4056,6 +4237,14 @@ public enum InitUserCryptoMethod: Equatable, Hashable {
          */pinProtectedUserKey: EncString
     )
     /**
+     * PIN state, where the PIN envelope is stored in persistent client-managed state
+     */
+    case pinState(
+        /**
+         * The user's PIN
+         */pin: String
+    )
+    /**
      * PIN Envelope
      */
     case pinEnvelope(
@@ -4143,19 +4332,22 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
         case 3: return .pin(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 4: return .pinEnvelope(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKeyEnvelope: try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
+        case 4: return .pinState(pin: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
+        case 5: return .pinEnvelope(pin: try FfiConverterString.read(from: &buf), pinProtectedUserKeyEnvelope: try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
         )
         
-        case 6: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
+        case 6: return .authRequest(requestPrivateKey: try FfiConverterTypeB64.read(from: &buf), method: try FfiConverterTypeAuthRequestMethod.read(from: &buf)
         )
         
-        case 7: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 7: return .deviceKey(deviceKey: try FfiConverterString.read(from: &buf), protectedDevicePrivateKey: try FfiConverterTypeEncString.read(from: &buf), deviceProtectedUserKey: try FfiConverterTypeUnsignedSharedKey.read(from: &buf)
         )
         
-        case 8: return .keyConnectorUrl(url: try FfiConverterString.read(from: &buf), keyConnectorKeyWrappedUserKey: try FfiConverterTypeEncString.read(from: &buf)
+        case 8: return .keyConnector(masterKey: try FfiConverterTypeB64.read(from: &buf), userKey: try FfiConverterTypeEncString.read(from: &buf)
+        )
+        
+        case 9: return .keyConnectorUrl(url: try FfiConverterString.read(from: &buf), keyConnectorKeyWrappedUserKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -4183,33 +4375,38 @@ public struct FfiConverterTypeInitUserCryptoMethod: FfiConverterRustBuffer {
             FfiConverterTypeEncString.write(pinProtectedUserKey, into: &buf)
             
         
-        case let .pinEnvelope(pin,pinProtectedUserKeyEnvelope):
+        case let .pinState(pin):
             writeInt(&buf, Int32(4))
+            FfiConverterString.write(pin, into: &buf)
+            
+        
+        case let .pinEnvelope(pin,pinProtectedUserKeyEnvelope):
+            writeInt(&buf, Int32(5))
             FfiConverterString.write(pin, into: &buf)
             FfiConverterTypePasswordProtectedKeyEnvelope.write(pinProtectedUserKeyEnvelope, into: &buf)
             
         
         case let .authRequest(requestPrivateKey,method):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(6))
             FfiConverterTypeB64.write(requestPrivateKey, into: &buf)
             FfiConverterTypeAuthRequestMethod.write(method, into: &buf)
             
         
         case let .deviceKey(deviceKey,protectedDevicePrivateKey,deviceProtectedUserKey):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(7))
             FfiConverterString.write(deviceKey, into: &buf)
             FfiConverterTypeEncString.write(protectedDevicePrivateKey, into: &buf)
             FfiConverterTypeUnsignedSharedKey.write(deviceProtectedUserKey, into: &buf)
             
         
         case let .keyConnector(masterKey,userKey):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(8))
             FfiConverterTypeB64.write(masterKey, into: &buf)
             FfiConverterTypeEncString.write(userKey, into: &buf)
             
         
         case let .keyConnectorUrl(url,keyConnectorKeyWrappedUserKey):
-            writeInt(&buf, Int32(8))
+            writeInt(&buf, Int32(9))
             FfiConverterString.write(url, into: &buf)
             FfiConverterTypeEncString.write(keyConnectorKeyWrappedUserKey, into: &buf)
             
@@ -4480,6 +4677,173 @@ public func FfiConverterTypeMasterPasswordError_lift(_ buf: RustBuffer) throws -
 public func FfiConverterTypeMasterPasswordError_lower(_ value: MasterPasswordError) -> RustBuffer {
     return FfiConverterTypeMasterPasswordError.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Pin unlock can be configured to use one of two modes. Before-first-unlock and
+ * after-first-unlock. In AFU mode, the PIN is available only after unlocking once with the master
+ * password or another unlock method. In BFU mode, PIN unlock is available right after app start.
+ * For this, the PIN-encrypted vault key is stored on disk.
+ */
+
+public enum PinLockType: Equatable, Hashable {
+    
+    /**
+     * Pin unlock is available after app start
+     */
+    case beforeFirstUnlock
+    /**
+     * Pin unlock is available after unlocking with another method at least once during the app
+     * session
+     */
+    case afterFirstUnlock
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PinLockType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePinLockType: FfiConverterRustBuffer {
+    typealias SwiftType = PinLockType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PinLockType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .beforeFirstUnlock
+        
+        case 2: return .afterFirstUnlock
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PinLockType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .beforeFirstUnlock:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .afterFirstUnlock:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePinLockType_lift(_ buf: RustBuffer) throws -> PinLockType {
+    return try FfiConverterTypePinLockType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePinLockType_lower(_ value: PinLockType) -> RustBuffer {
+    return FfiConverterTypePinLockType.lower(value)
+}
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Current availability state for PIN-based unlock.
+ */
+
+public enum PinUnlockStatus: Equatable, Hashable {
+    
+    /**
+     * A PIN is configured and the PIN envelope is available for decryption, so PIN-based unlock
+     * can be attempted.
+     */
+    case available
+    /**
+     * A PIN is configured, but the vault must be unlocked using another method first.
+     */
+    case needsUnlock
+    /**
+     * No PIN is configured.
+     */
+    case notSet
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PinUnlockStatus: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePinUnlockStatus: FfiConverterRustBuffer {
+    typealias SwiftType = PinUnlockStatus
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PinUnlockStatus {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .available
+        
+        case 2: return .needsUnlock
+        
+        case 3: return .notSet
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PinUnlockStatus, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .available:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .needsUnlock:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .notSet:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePinUnlockStatus_lift(_ buf: RustBuffer) throws -> PinUnlockStatus {
+    return try FfiConverterTypePinUnlockStatus.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePinUnlockStatus_lower(_ value: PinUnlockStatus) -> RustBuffer {
+    return FfiConverterTypePinUnlockStatus.lower(value)
+}
+
 
 
 /**

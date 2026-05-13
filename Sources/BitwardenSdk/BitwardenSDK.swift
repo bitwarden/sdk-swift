@@ -2110,6 +2110,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func platform()  -> PlatformClient
     
     /**
+     * Policy operations
+     */
+    func policies()  -> PoliciesClient
+    
+    /**
      * Sends operations
      */
     func sends()  -> SendClient
@@ -2269,6 +2274,17 @@ open func httpGet(url: String)async throws  -> String  {
 open func platform() -> PlatformClient  {
     return try!  FfiConverterTypePlatformClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_platform(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Policy operations
+     */
+open func policies() -> PoliciesClient  {
+    return try!  FfiConverterTypePoliciesClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_policies(
             self.uniffiCloneHandle(),$0
     )
 })
@@ -3120,6 +3136,16 @@ public protocol CollectionsClientProtocol: AnyObject, Sendable {
     func decryptList(collections: [Collection]) throws  -> [CollectionView]
     
     /**
+     * Encrypt collection
+     */
+    func encrypt(collectionView: CollectionView) throws  -> Collection
+    
+    /**
+     * Encrypt collection list
+     */
+    func encryptList(collectionViews: [CollectionView]) throws  -> [Collection]
+    
+    /**
      *
      * Returns the vector of CollectionView objects in a tree structure based on its implemented
      * path().
@@ -3200,6 +3226,30 @@ open func decryptList(collections: [Collection])throws  -> [CollectionView]  {
     uniffi_bitwarden_uniffi_fn_method_collectionsclient_decrypt_list(
             self.uniffiCloneHandle(),
         FfiConverterSequenceTypeCollection.lower(collections),$0
+    )
+})
+}
+    
+    /**
+     * Encrypt collection
+     */
+open func encrypt(collectionView: CollectionView)throws  -> Collection  {
+    return try  FfiConverterTypeCollection_lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_collectionsclient_encrypt(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeCollectionView_lower(collectionView),$0
+    )
+})
+}
+    
+    /**
+     * Encrypt collection list
+     */
+open func encryptList(collectionViews: [CollectionView])throws  -> [Collection]  {
+    return try  FfiConverterSequenceTypeCollection.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+    uniffi_bitwarden_uniffi_fn_method_collectionsclient_encrypt_list(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceTypeCollectionView.lower(collectionViews),$0
     )
 })
 }
@@ -8036,6 +8086,143 @@ public func FfiConverterTypePlatformClient_lower(_ value: PlatformClient) -> UIn
 
 
 
+/**
+ * Client for policy domain operations.
+ */
+public protocol PoliciesClientProtocol: AnyObject, Sendable {
+    
+    /**
+     * Filter policies of the given type for the current user.
+     *
+     * Returns the subset of `policies` that should be enforced against the user,
+     * based on their organization memberships and roles.
+     */
+    func filterByType(policies: [PolicyView], organizations: [ProfileOrganization], policyType: PolicyType)  -> [PolicyView]
+    
+}
+/**
+ * Client for policy domain operations.
+ */
+open class PoliciesClient: PoliciesClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_policiesclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_policiesclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Filter policies of the given type for the current user.
+     *
+     * Returns the subset of `policies` that should be enforced against the user,
+     * based on their organization memberships and roles.
+     */
+open func filterByType(policies: [PolicyView], organizations: [ProfileOrganization], policyType: PolicyType) -> [PolicyView]  {
+    return try!  FfiConverterSequenceTypePolicyView.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_policiesclient_filter_by_type(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceTypePolicyView.lower(policies),
+        FfiConverterSequenceTypeProfileOrganization.lower(organizations),
+        FfiConverterTypePolicyType_lower(policyType),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePoliciesClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = PoliciesClient
+
+    public static func lift(_ handle: UInt64) throws -> PoliciesClient {
+        return PoliciesClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: PoliciesClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PoliciesClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: PoliciesClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePoliciesClient_lift(_ handle: UInt64) throws -> PoliciesClient {
+    return try FfiConverterTypePoliciesClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePoliciesClient_lower(_ value: PoliciesClient) -> UInt64 {
+    return FfiConverterTypePoliciesClient.lower(value)
+}
+
+
+
+
+
+
 public protocol RegistrationClientProtocol: AnyObject, Sendable {
     
     /**
@@ -8055,6 +8242,12 @@ public protocol RegistrationClientProtocol: AnyObject, Sendable {
      * admin password reset and finally enrolls the user to TDE unlock.
      */
     func postKeysForTdeRegistration(request: TdeRegistrationRequest) async throws  -> TdeRegistrationResponse
+    
+    /**
+     * Initializes new password-based cryptographic state for a user
+     * and posts the state to the server
+     */
+    func postKeysForUserPasswordRegistration(request: UserMasterPasswordRegistrationRequest) async throws  -> UserMasterPasswordRegistrationResponse
     
 }
 open class RegistrationClient: RegistrationClientProtocol, @unchecked Sendable {
@@ -8169,6 +8362,27 @@ open func postKeysForTdeRegistration(request: TdeRegistrationRequest)async throw
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeTdeRegistrationResponse_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Initializes new password-based cryptographic state for a user
+     * and posts the state to the server
+     */
+open func postKeysForUserPasswordRegistration(request: UserMasterPasswordRegistrationRequest)async throws  -> UserMasterPasswordRegistrationResponse  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_registrationclient_post_keys_for_user_password_registration(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeUserMasterPasswordRegistrationRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeUserMasterPasswordRegistrationResponse_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -8460,31 +8674,42 @@ public protocol ServerCommunicationConfigClientProtocol: AnyObject, Sendable {
     /**
      * Acquires a cookie from the platform and saves it to the repository
      */
-    func acquireCookie(hostname: String) async throws 
+    func acquireCookie(domain: String) async throws 
     
     /**
      * Returns all cookies that should be included in requests to this server
      */
-    func cookies(hostname: String) async  -> [AcquiredCookie]
+    func cookies(domain: String) async  -> [AcquiredCookie]
     
     /**
-     * Retrieves the server communication configuration for a hostname
+     * Retrieves the server communication configuration for a domain
      */
-    func getConfig(hostname: String) async throws  -> ServerCommunicationConfig
+    func getConfig(domain: String) async throws  -> ServerCommunicationConfig
+    
+    func getCookies(domain: String) async throws  -> [AcquiredCookie]
     
     /**
-     * Determines if cookie bootstrapping is needed for this hostname
+     * Determines if cookie bootstrapping is needed for this domain
      */
-    func needsBootstrap(hostname: String) async  -> Bool
+    func needsBootstrap(domain: String) async  -> Bool
     
     /**
-     * Sets the server communication configuration for a hostname
+     * Sets the server communication configuration for a domain
      *
      * This method saves the provided communication configuration to the repository.
      * Typically called when receiving the `/api/config` response from the server.
      * Previously acquired cookies are preserved automatically.
      */
-    func setCommunicationType(hostname: String, request: SetCommunicationTypeRequest) async throws 
+    func setCommunicationType(domain: String, request: SetCommunicationTypeRequest) async throws 
+    
+    /**
+     * Sets the server communication configuration using the domain from the config
+     *
+     * Extracts the `cookie_domain` from the `SsoCookieVendor` config and uses it as the
+     * storage key. If the config is `Direct` or `cookie_domain` is not set, the call
+     * is silently ignored.
+     */
+    func setCommunicationTypeV2(request: SetCommunicationTypeRequest) async throws 
     
 }
 /**
@@ -8546,13 +8771,13 @@ open class ServerCommunicationConfigClient: ServerCommunicationConfigClientProto
     /**
      * Acquires a cookie from the platform and saves it to the repository
      */
-open func acquireCookie(hostname: String)async throws   {
+open func acquireCookie(domain: String)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_acquire_cookie(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(domain)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -8566,13 +8791,13 @@ open func acquireCookie(hostname: String)async throws   {
     /**
      * Returns all cookies that should be included in requests to this server
      */
-open func cookies(hostname: String)async  -> [AcquiredCookie]  {
+open func cookies(domain: String)async  -> [AcquiredCookie]  {
     return
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_cookies(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(domain)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -8585,15 +8810,15 @@ open func cookies(hostname: String)async  -> [AcquiredCookie]  {
 }
     
     /**
-     * Retrieves the server communication configuration for a hostname
+     * Retrieves the server communication configuration for a domain
      */
-open func getConfig(hostname: String)async throws  -> ServerCommunicationConfig  {
+open func getConfig(domain: String)async throws  -> ServerCommunicationConfig  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_get_config(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(domain)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -8604,16 +8829,33 @@ open func getConfig(hostname: String)async throws  -> ServerCommunicationConfig 
         )
 }
     
+open func getCookies(domain: String)async throws  -> [AcquiredCookie]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_get_cookies(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAcquiredCookie.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
     /**
-     * Determines if cookie bootstrapping is needed for this hostname
+     * Determines if cookie bootstrapping is needed for this domain
      */
-open func needsBootstrap(hostname: String)async  -> Bool  {
+open func needsBootstrap(domain: String)async  -> Bool  {
     return
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_needs_bootstrap(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(domain)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
@@ -8626,19 +8868,43 @@ open func needsBootstrap(hostname: String)async  -> Bool  {
 }
     
     /**
-     * Sets the server communication configuration for a hostname
+     * Sets the server communication configuration for a domain
      *
      * This method saves the provided communication configuration to the repository.
      * Typically called when receiving the `/api/config` response from the server.
      * Previously acquired cookies are preserved automatically.
      */
-open func setCommunicationType(hostname: String, request: SetCommunicationTypeRequest)async throws   {
+open func setCommunicationType(domain: String, request: SetCommunicationTypeRequest)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_set_communication_type(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname),FfiConverterTypeSetCommunicationTypeRequest_lower(request)
+                    FfiConverterString.lower(domain),FfiConverterTypeSetCommunicationTypeRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Sets the server communication configuration using the domain from the config
+     *
+     * Extracts the `cookie_domain` from the `SsoCookieVendor` config and uses it as the
+     * storage key. If the config is `Direct` or `cookie_domain` is not set, the call
+     * is silently ignored.
+     */
+open func setCommunicationTypeV2(request: SetCommunicationTypeRequest)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigclient_set_communication_type_v2(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeSetCommunicationTypeRequest_lower(request)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -8705,14 +8971,14 @@ public func FfiConverterTypeServerCommunicationConfigClient_lower(_ value: Serve
 public protocol ServerCommunicationConfigRepository: AnyObject, Sendable {
     
     /**
-     * Get configuration for a hostname
+     * Get configuration for a domain
      */
-    func get(hostname: String) async throws  -> ServerCommunicationConfig?
+    func get(domain: String) async throws  -> ServerCommunicationConfig?
     
     /**
-     * Save configuration for a hostname
+     * Save configuration for a domain
      */
-    func save(hostname: String, config: ServerCommunicationConfig) async throws 
+    func save(domain: String, config: ServerCommunicationConfig) async throws 
     
 }
 /**
@@ -8772,15 +9038,15 @@ open class ServerCommunicationConfigRepositoryImpl: ServerCommunicationConfigRep
 
     
     /**
-     * Get configuration for a hostname
+     * Get configuration for a domain
      */
-open func get(hostname: String)async throws  -> ServerCommunicationConfig?  {
+open func get(domain: String)async throws  -> ServerCommunicationConfig?  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepository_get(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname)
+                    FfiConverterString.lower(domain)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -8792,15 +9058,15 @@ open func get(hostname: String)async throws  -> ServerCommunicationConfig?  {
 }
     
     /**
-     * Save configuration for a hostname
+     * Save configuration for a domain
      */
-open func save(hostname: String, config: ServerCommunicationConfig)async throws   {
+open func save(domain: String, config: ServerCommunicationConfig)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_servercommunicationconfigrepository_save(
                     self.uniffiCloneHandle(),
-                    FfiConverterString.lower(hostname),FfiConverterTypeServerCommunicationConfig_lower(config)
+                    FfiConverterString.lower(domain),FfiConverterTypeServerCommunicationConfig_lower(config)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
@@ -8842,7 +9108,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepository {
         },
         get: { (
             uniffiHandle: UInt64,
-            hostname: RustBuffer,
+            domain: RustBuffer,
             uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
             uniffiCallbackData: UInt64,
             uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
@@ -8853,7 +9119,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepository {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try await uniffiObj.get(
-                     hostname: try FfiConverterString.lift(hostname)
+                     domain: try FfiConverterString.lift(domain)
                 )
             }
 
@@ -8885,7 +9151,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepository {
         },
         save: { (
             uniffiHandle: UInt64,
-            hostname: RustBuffer,
+            domain: RustBuffer,
             config: RustBuffer,
             uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
             uniffiCallbackData: UInt64,
@@ -8897,7 +9163,7 @@ fileprivate struct UniffiCallbackInterfaceServerCommunicationConfigRepository {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try await uniffiObj.save(
-                     hostname: try FfiConverterString.lift(hostname),
+                     domain: try FfiConverterString.lift(domain),
                      config: try FfiConverterTypeServerCommunicationConfig_lift(config)
                 )
             }
@@ -10418,7 +10684,7 @@ public enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.Localiz
     )
     case AcquireCookie(AcquireCookieError
     )
-    case CallbackError
+    case Callback
     case Conversion(String
     )
 
@@ -10558,7 +10824,7 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 36: return .AcquireCookie(
             try FfiConverterTypeAcquireCookieError.read(from: &buf)
             )
-        case 37: return .CallbackError
+        case 37: return .Callback
         case 38: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
@@ -10754,7 +11020,7 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeAcquireCookieError.write(v1, into: &buf)
             
         
-        case .CallbackError:
+        case .Callback:
             writeInt(&buf, Int32(37))
         
         
@@ -10866,6 +11132,112 @@ public func FfiConverterTypeFido2CallbackError_lift(_ buf: RustBuffer) throws ->
 public func FfiConverterTypeFido2CallbackError_lower(_ value: Fido2CallbackError) -> RustBuffer {
     return FfiConverterTypeFido2CallbackError.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Log level for SDK logging
+ */
+
+public enum LogLevel: Equatable, Hashable {
+    
+    /**
+     * Most verbose: all trace, debug, info, warn, and error messages
+     */
+    case trace
+    /**
+     * Verbose: debug, info, warn, and error messages
+     */
+    case debug
+    /**
+     * Default: info, warn, and error messages
+     */
+    case info
+    /**
+     * Only warn and error messages
+     */
+    case warn
+    /**
+     * Only error messages
+     */
+    case error
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension LogLevel: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLogLevel: FfiConverterRustBuffer {
+    typealias SwiftType = LogLevel
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LogLevel {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .trace
+        
+        case 2: return .debug
+        
+        case 3: return .info
+        
+        case 4: return .warn
+        
+        case 5: return .error
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: LogLevel, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .trace:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .debug:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .info:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .warn:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .error:
+            writeInt(&buf, Int32(5))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogLevel_lift(_ buf: RustBuffer) throws -> LogLevel {
+    return try FfiConverterTypeLogLevel.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogLevel_lower(_ value: LogLevel) -> RustBuffer {
+    return FfiConverterTypeLogLevel.lower(value)
+}
+
 
 
 public enum RepositoryError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
@@ -11515,6 +11887,30 @@ fileprivate struct FfiConverterOptionTypeFolder: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeLogLevel: FfiConverterRustBuffer {
+    typealias SwiftType = LogLevel?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLogLevel.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLogLevel.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceData: FfiConverterRustBuffer {
     typealias SwiftType = [Data]?
 
@@ -11805,6 +12201,56 @@ fileprivate struct FfiConverterSequenceTypeFido2CredentialAutofillView: FfiConve
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2CredentialAutofillView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeProfileOrganization: FfiConverterRustBuffer {
+    typealias SwiftType = [ProfileOrganization]
+
+    public static func write(_ value: [ProfileOrganization], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeProfileOrganization.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ProfileOrganization] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ProfileOrganization]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeProfileOrganization.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePolicyView: FfiConverterRustBuffer {
+    typealias SwiftType = [PolicyView]
+
+    public static func write(_ value: [PolicyView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePolicyView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PolicyView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PolicyView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePolicyView.read(from: &buf))
         }
         return seq
     }
@@ -12464,11 +12910,13 @@ public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
  * # Parameters
  * - `callback`: Optional callback to receive SDK log events. Pass `None` to use only platform
  * loggers (oslog on iOS, logcat on Android).
+ * - `level`: Optional log level. Defaults to `Info` if not specified. Can be overridden by
+ * `RUST_LOG` environment variable at runtime or compile time.
  *
  * # Example
  * ```kotlin
- * // Initialize with callback before creating clients
- * initLogger(FlightRecorderCallback())
+ * // Initialize with callback and trace-level logging before creating clients
+ * initLogger(FlightRecorderCallback(), LogLevel.TRACE)
  * val client = Client(tokenProvider, settings)
  * ```
  *
@@ -12477,9 +12925,10 @@ public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
  * - If not called explicitly, logging is auto-initialized when first client is created
  * - Platform loggers (oslog/logcat) are always enabled regardless of callback
  */
-public func initLogger(callback: LogCallback?)  {try! rustCall() {
+public func initLogger(callback: LogCallback?, level: LogLevel?)  {try! rustCall() {
     uniffi_bitwarden_uniffi_fn_func_init_logger(
-        FfiConverterOptionTypeLogCallback.lower(callback),$0
+        FfiConverterOptionTypeLogCallback.lower(callback),
+        FfiConverterOptionTypeLogLevel.lower(level),$0
     )
 }
 }
@@ -12499,7 +12948,7 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 52582) {
+    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 10593) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 21774) {
@@ -12521,6 +12970,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 22973) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_policies() != 32874) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 15997) {
@@ -12574,13 +13026,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_validate_pin_protected_user_key_envelope() != 39253) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_jit_password_registration() != 55761) {
+    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_jit_password_registration() != 19346) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_key_connector_registration() != 18347) {
+    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_key_connector_registration() != 38850) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_tde_registration() != 13660) {
+    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_tde_registration() != 13830) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_user_password_registration() != 49579) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_derive_key_connector() != 12365) {
@@ -12841,25 +13296,34 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_is_verification_enabled() != 47338) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 64906) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 43709) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_cookies() != 25228) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_cookies() != 3489) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_config() != 830) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_config() != 29640) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 51186) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_get_cookies() != 8959) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 32839) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_needs_bootstrap() != 2622) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 49845) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type() != 63922) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 62307) {
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_set_communication_type_v2() != 32836) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_get() != 45400) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 39032) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 62118) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 47547) {
@@ -12991,6 +13455,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt_list() != 34291) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_encrypt() != 30999) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_encrypt_list() != 38733) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_get_collection_tree() != 55321) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -13031,6 +13501,8 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenOrganizationsInitialized()
+    uniffiEnsureBitwardenPoliciesInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
     uniffiEnsureBitwardenSshInitialized()

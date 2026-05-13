@@ -940,18 +940,18 @@ public struct SsoCookieVendorConfig: Equatable, Hashable {
     /**
      * Cookie name (base name, without shard suffix)
      */
-    public let cookieName: String?
+    public let cookieName: String
     /**
      * Cookie domain for validation
      */
-    public let cookieDomain: String?
+    public let cookieDomain: String
     /**
      * Vault URL for cookie acquisition redirect
      *
      * This is the full vault URL (scheme + host + port) where the browser
      * should be redirected for SSO cookie acquisition.
      */
-    public let vaultUrl: String?
+    public let vaultUrl: String
     /**
      * Acquired cookies
      *
@@ -969,16 +969,16 @@ public struct SsoCookieVendorConfig: Equatable, Hashable {
          */idpLoginUrl: String?, 
         /**
          * Cookie name (base name, without shard suffix)
-         */cookieName: String?, 
+         */cookieName: String, 
         /**
          * Cookie domain for validation
-         */cookieDomain: String?, 
+         */cookieDomain: String, 
         /**
          * Vault URL for cookie acquisition redirect
          *
          * This is the full vault URL (scheme + host + port) where the browser
          * should be redirected for SSO cookie acquisition.
-         */vaultUrl: String?, 
+         */vaultUrl: String, 
         /**
          * Acquired cookies
          *
@@ -1010,18 +1010,18 @@ public struct FfiConverterTypeSsoCookieVendorConfig: FfiConverterRustBuffer {
         return
             try SsoCookieVendorConfig(
                 idpLoginUrl: FfiConverterOptionString.read(from: &buf), 
-                cookieName: FfiConverterOptionString.read(from: &buf), 
-                cookieDomain: FfiConverterOptionString.read(from: &buf), 
-                vaultUrl: FfiConverterOptionString.read(from: &buf), 
+                cookieName: FfiConverterString.read(from: &buf), 
+                cookieDomain: FfiConverterString.read(from: &buf), 
+                vaultUrl: FfiConverterString.read(from: &buf), 
                 cookieValue: FfiConverterOptionSequenceTypeAcquiredCookie.read(from: &buf)
         )
     }
 
     public static func write(_ value: SsoCookieVendorConfig, into buf: inout [UInt8]) {
         FfiConverterOptionString.write(value.idpLoginUrl, into: &buf)
-        FfiConverterOptionString.write(value.cookieName, into: &buf)
-        FfiConverterOptionString.write(value.cookieDomain, into: &buf)
-        FfiConverterOptionString.write(value.vaultUrl, into: &buf)
+        FfiConverterString.write(value.cookieName, into: &buf)
+        FfiConverterString.write(value.cookieDomain, into: &buf)
+        FfiConverterString.write(value.vaultUrl, into: &buf)
         FfiConverterOptionSequenceTypeAcquiredCookie.write(value.cookieValue, into: &buf)
     }
 }
@@ -1055,18 +1055,18 @@ public struct SsoCookieVendorConfigRequest: Equatable, Hashable {
     /**
      * Cookie name (base name, without shard suffix)
      */
-    public let cookieName: String?
+    public let cookieName: String
     /**
      * Cookie domain for validation
      */
-    public let cookieDomain: String?
+    public let cookieDomain: String
     /**
      * Vault URL for cookie acquisition redirect
      *
      * This is the full vault URL (scheme + host + port) where the browser
      * should be redirected for SSO cookie acquisition.
      */
-    public let vaultUrl: String?
+    public let vaultUrl: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1076,16 +1076,16 @@ public struct SsoCookieVendorConfigRequest: Equatable, Hashable {
          */idpLoginUrl: String?, 
         /**
          * Cookie name (base name, without shard suffix)
-         */cookieName: String?, 
+         */cookieName: String, 
         /**
          * Cookie domain for validation
-         */cookieDomain: String?, 
+         */cookieDomain: String, 
         /**
          * Vault URL for cookie acquisition redirect
          *
          * This is the full vault URL (scheme + host + port) where the browser
          * should be redirected for SSO cookie acquisition.
-         */vaultUrl: String?) {
+         */vaultUrl: String) {
         self.idpLoginUrl = idpLoginUrl
         self.cookieName = cookieName
         self.cookieDomain = cookieDomain
@@ -1109,17 +1109,17 @@ public struct FfiConverterTypeSsoCookieVendorConfigRequest: FfiConverterRustBuff
         return
             try SsoCookieVendorConfigRequest(
                 idpLoginUrl: FfiConverterOptionString.read(from: &buf), 
-                cookieName: FfiConverterOptionString.read(from: &buf), 
-                cookieDomain: FfiConverterOptionString.read(from: &buf), 
-                vaultUrl: FfiConverterOptionString.read(from: &buf)
+                cookieName: FfiConverterString.read(from: &buf), 
+                cookieDomain: FfiConverterString.read(from: &buf), 
+                vaultUrl: FfiConverterString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SsoCookieVendorConfigRequest, into buf: inout [UInt8]) {
         FfiConverterOptionString.write(value.idpLoginUrl, into: &buf)
-        FfiConverterOptionString.write(value.cookieName, into: &buf)
-        FfiConverterOptionString.write(value.cookieDomain, into: &buf)
-        FfiConverterOptionString.write(value.vaultUrl, into: &buf)
+        FfiConverterString.write(value.cookieName, into: &buf)
+        FfiConverterString.write(value.cookieDomain, into: &buf)
+        FfiConverterString.write(value.vaultUrl, into: &buf)
     }
 }
 
@@ -1164,12 +1164,12 @@ public enum AcquireCookieError: Swift.Error, Equatable, Hashable, Foundation.Loc
     /**
      * Failed to retrieve server configuration from repository
      */
-    case RepositoryGetError(message: String)
+    case RepositoryGet(message: String)
     
     /**
      * Failed to save updated configuration to repository
      */
-    case RepositorySaveError(message: String)
+    case RepositorySave(message: String)
     
 
     
@@ -1212,11 +1212,11 @@ public struct FfiConverterTypeAcquireCookieError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .RepositoryGetError(
+        case 4: return .RepositoryGet(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .RepositorySaveError(
+        case 5: return .RepositorySave(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1237,9 +1237,9 @@ public struct FfiConverterTypeAcquireCookieError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         case .CookieNameMismatch(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
-        case .RepositoryGetError(_ /* message is ignored*/):
+        case .RepositoryGet(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .RepositorySaveError(_ /* message is ignored*/):
+        case .RepositorySave(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
 
         
@@ -1431,12 +1431,12 @@ public enum ServerCommunicationConfigRepositoryError: Swift.Error, Equatable, Ha
     /**
      * Error occurred while retrieving configuration
      */
-    case GetError(message: String)
+    case Get(message: String)
     
     /**
      * Error occurred while saving configuration
      */
-    case SaveError(message: String)
+    case Save(message: String)
     
 
     
@@ -1467,11 +1467,11 @@ public struct FfiConverterTypeServerCommunicationConfigRepositoryError: FfiConve
         
 
         
-        case 1: return .GetError(
+        case 1: return .Get(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .SaveError(
+        case 2: return .Save(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1486,9 +1486,9 @@ public struct FfiConverterTypeServerCommunicationConfigRepositoryError: FfiConve
         
 
         
-        case .GetError(_ /* message is ignored*/):
+        case .Get(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .SaveError(_ /* message is ignored*/):
+        case .Save(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
 
         
