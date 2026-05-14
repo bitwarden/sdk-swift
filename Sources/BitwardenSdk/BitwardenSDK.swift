@@ -2373,6 +2373,197 @@ public func FfiConverterTypeClient_lower(_ value: Client) -> UInt64 {
 
 
 
+public protocol ClientDeviceAuthKeyAuthenticatorProtocol: AnyObject, Sendable {
+    
+    /**
+     * Uses a device auth key to respond to the provided WebAuthn assertion request.
+     * Satisfy the given FIDO assertion `request` using the device auth key.
+     * The device auth key will be looked up from the
+     * [ClientDeviceAuthKeyAuthenticator::store] provided in the initializer.
+     */
+    func assertDeviceAuthKey(request: GetAssertionRequest) async throws  -> DeviceAuthKeyGetAssertionResult
+    
+    /**
+     * Create a device auth key by registering an unlock passkey and PRF keyset with the server.
+     * The passkey private key and metadata will be stored on the device using the provided trait
+     * implementation.
+     */
+    func createDeviceAuthKey(clientName: String, webVaultUrl: String, email: String, secretVerificationRequest: SecretVerificationRequest, kdf: Kdf) async throws 
+    
+    /**
+     * Deletes a device auth key and unregisters it from the server.
+     */
+    func unregisterDeviceAuthKey(email: String, secretVerificationRequest: SecretVerificationRequest, kdf: Kdf) async throws 
+    
+}
+open class ClientDeviceAuthKeyAuthenticator: ClientDeviceAuthKeyAuthenticatorProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_clientdeviceauthkeyauthenticator(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_clientdeviceauthkeyauthenticator(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Uses a device auth key to respond to the provided WebAuthn assertion request.
+     * Satisfy the given FIDO assertion `request` using the device auth key.
+     * The device auth key will be looked up from the
+     * [ClientDeviceAuthKeyAuthenticator::store] provided in the initializer.
+     */
+open func assertDeviceAuthKey(request: GetAssertionRequest)async throws  -> DeviceAuthKeyGetAssertionResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientdeviceauthkeyauthenticator_assert_device_auth_key(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeGetAssertionRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDeviceAuthKeyGetAssertionResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Create a device auth key by registering an unlock passkey and PRF keyset with the server.
+     * The passkey private key and metadata will be stored on the device using the provided trait
+     * implementation.
+     */
+open func createDeviceAuthKey(clientName: String, webVaultUrl: String, email: String, secretVerificationRequest: SecretVerificationRequest, kdf: Kdf)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientdeviceauthkeyauthenticator_create_device_auth_key(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(clientName),FfiConverterString.lower(webVaultUrl),FfiConverterString.lower(email),FfiConverterTypeSecretVerificationRequest_lower(secretVerificationRequest),FfiConverterTypeKdf_lower(kdf)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Deletes a device auth key and unregisters it from the server.
+     */
+open func unregisterDeviceAuthKey(email: String, secretVerificationRequest: SecretVerificationRequest, kdf: Kdf)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_clientdeviceauthkeyauthenticator_unregister_device_auth_key(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(email),FfiConverterTypeSecretVerificationRequest_lower(secretVerificationRequest),FfiConverterTypeKdf_lower(kdf)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeClientDeviceAuthKeyAuthenticator: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ClientDeviceAuthKeyAuthenticator
+
+    public static func lift(_ handle: UInt64) throws -> ClientDeviceAuthKeyAuthenticator {
+        return ClientDeviceAuthKeyAuthenticator(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ClientDeviceAuthKeyAuthenticator) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientDeviceAuthKeyAuthenticator {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ClientDeviceAuthKeyAuthenticator, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientDeviceAuthKeyAuthenticator_lift(_ handle: UInt64) throws -> ClientDeviceAuthKeyAuthenticator {
+    return try FfiConverterTypeClientDeviceAuthKeyAuthenticator.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientDeviceAuthKeyAuthenticator_lower(_ value: ClientDeviceAuthKeyAuthenticator) -> UInt64 {
+    return FfiConverterTypeClientDeviceAuthKeyAuthenticator.lower(value)
+}
+
+
+
+
+
+
 public protocol ClientFido2Protocol: AnyObject, Sendable {
     
     func authenticator(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore)  -> ClientFido2Authenticator
@@ -2380,6 +2571,8 @@ public protocol ClientFido2Protocol: AnyObject, Sendable {
     func client(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore)  -> ClientFido2Client
     
     func decryptFido2AutofillCredentials(cipherView: CipherView) throws  -> [Fido2CredentialAutofillView]
+    
+    func deviceAuthKeyAuthenticator(credentialStore: DeviceAuthKeyStore)  -> ClientDeviceAuthKeyAuthenticator
     
 }
 open class ClientFido2: ClientFido2Protocol, @unchecked Sendable {
@@ -2460,6 +2653,15 @@ open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fid
     uniffi_bitwarden_uniffi_fn_method_clientfido2_decrypt_fido2_autofill_credentials(
             self.uniffiCloneHandle(),
         FfiConverterTypeCipherView_lower(cipherView),$0
+    )
+})
+}
+    
+open func deviceAuthKeyAuthenticator(credentialStore: DeviceAuthKeyStore) -> ClientDeviceAuthKeyAuthenticator  {
+    return try!  FfiConverterTypeClientDeviceAuthKeyAuthenticator_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_clientfido2_device_auth_key_authenticator(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeDeviceAuthKeyStore_lower(credentialStore),$0
     )
 })
 }
@@ -3722,6 +3924,456 @@ public func FfiConverterTypeCryptoClient_lift(_ handle: UInt64) throws -> Crypto
 #endif
 public func FfiConverterTypeCryptoClient_lower(_ value: CryptoClient) -> UInt64 {
     return FfiConverterTypeCryptoClient.lower(value)
+}
+
+
+
+
+
+
+public protocol DeviceAuthKeyStore: AnyObject, Sendable {
+    
+    func createRecord(record: DeviceAuthKeyRecord) async throws 
+    
+    func createMetadata(metadata: DeviceAuthKeyMetadata) async throws 
+    
+    func getMetadata() async throws  -> DeviceAuthKeyMetadata?
+    
+    func getRecord() async throws  -> DeviceAuthKeyRecord?
+    
+    func deleteRecordAndMetadata() async throws 
+    
+}
+open class DeviceAuthKeyStoreImpl: DeviceAuthKeyStore, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_deviceauthkeystore(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_deviceauthkeystore(handle, $0) }
+    }
+
+    
+
+    
+open func createRecord(record: DeviceAuthKeyRecord)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_deviceauthkeystore_create_record(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeDeviceAuthKeyRecord_lower(record)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeDeviceAuthKeyCallbackError_lift
+        )
+}
+    
+open func createMetadata(metadata: DeviceAuthKeyMetadata)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_deviceauthkeystore_create_metadata(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeDeviceAuthKeyMetadata_lower(metadata)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeDeviceAuthKeyCallbackError_lift
+        )
+}
+    
+open func getMetadata()async throws  -> DeviceAuthKeyMetadata?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_deviceauthkeystore_get_metadata(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeDeviceAuthKeyMetadata.lift,
+            errorHandler: FfiConverterTypeDeviceAuthKeyCallbackError_lift
+        )
+}
+    
+open func getRecord()async throws  -> DeviceAuthKeyRecord?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_deviceauthkeystore_get_record(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeDeviceAuthKeyRecord.lift,
+            errorHandler: FfiConverterTypeDeviceAuthKeyCallbackError_lift
+        )
+}
+    
+open func deleteRecordAndMetadata()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_deviceauthkeystore_delete_record_and_metadata(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeDeviceAuthKeyCallbackError_lift
+        )
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceDeviceAuthKeyStore {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceDeviceAuthKeyStore] = [UniffiVTableCallbackInterfaceDeviceAuthKeyStore(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeDeviceAuthKeyStore.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface DeviceAuthKeyStore: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeDeviceAuthKeyStore.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface DeviceAuthKeyStore: handle missing in uniffiClone")
+            }
+        },
+        createRecord: { (
+            uniffiHandle: UInt64,
+            record: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeDeviceAuthKeyStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.createRecord(
+                     record: try FfiConverterTypeDeviceAuthKeyRecord_lift(record)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeDeviceAuthKeyCallbackError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        createMetadata: { (
+            uniffiHandle: UInt64,
+            metadata: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeDeviceAuthKeyStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.createMetadata(
+                     metadata: try FfiConverterTypeDeviceAuthKeyMetadata_lift(metadata)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeDeviceAuthKeyCallbackError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getMetadata: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> DeviceAuthKeyMetadata? in
+                guard let uniffiObj = try? FfiConverterTypeDeviceAuthKeyStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.getMetadata(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: DeviceAuthKeyMetadata?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeDeviceAuthKeyMetadata.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeDeviceAuthKeyCallbackError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getRecord: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> DeviceAuthKeyRecord? in
+                guard let uniffiObj = try? FfiConverterTypeDeviceAuthKeyStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.getRecord(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: DeviceAuthKeyRecord?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeDeviceAuthKeyRecord.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeDeviceAuthKeyCallbackError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        deleteRecordAndMetadata: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeDeviceAuthKeyStore.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.deleteRecordAndMetadata(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeDeviceAuthKeyCallbackError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitDeviceAuthKeyStore() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_deviceauthkeystore(UniffiCallbackInterfaceDeviceAuthKeyStore.vtable)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyStore: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<DeviceAuthKeyStore>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = DeviceAuthKeyStore
+
+    public static func lift(_ handle: UInt64) throws -> DeviceAuthKeyStore {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return DeviceAuthKeyStoreImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: DeviceAuthKeyStore) -> UInt64 {
+         if let rustImpl = value as? DeviceAuthKeyStoreImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyStore {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: DeviceAuthKeyStore, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyStore_lift(_ handle: UInt64) throws -> DeviceAuthKeyStore {
+    return try FfiConverterTypeDeviceAuthKeyStore.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyStore_lower(_ value: DeviceAuthKeyStore) -> UInt64 {
+    return FfiConverterTypeDeviceAuthKeyStore.lower(value)
 }
 
 
@@ -10678,6 +11330,8 @@ public enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.Localiz
     )
     case Fido2Client(Fido2ClientError
     )
+    case DeviceAuthKey(DeviceAuthKeyError
+    )
     case SshGeneration(KeyGenerationError
     )
     case SshImport(SshKeyImportError
@@ -10815,17 +11469,20 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 33: return .Fido2Client(
             try FfiConverterTypeFido2ClientError.read(from: &buf)
             )
-        case 34: return .SshGeneration(
+        case 34: return .DeviceAuthKey(
+            try FfiConverterTypeDeviceAuthKeyError.read(from: &buf)
+            )
+        case 35: return .SshGeneration(
             try FfiConverterTypeKeyGenerationError.read(from: &buf)
             )
-        case 35: return .SshImport(
+        case 36: return .SshImport(
             try FfiConverterTypeSshKeyImportError.read(from: &buf)
             )
-        case 36: return .AcquireCookie(
+        case 37: return .AcquireCookie(
             try FfiConverterTypeAcquireCookieError.read(from: &buf)
             )
-        case 37: return .Callback
-        case 38: return .Conversion(
+        case 38: return .Callback
+        case 39: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
 
@@ -11005,27 +11662,32 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeFido2ClientError.write(v1, into: &buf)
             
         
-        case let .SshGeneration(v1):
+        case let .DeviceAuthKey(v1):
             writeInt(&buf, Int32(34))
+            FfiConverterTypeDeviceAuthKeyError.write(v1, into: &buf)
+            
+        
+        case let .SshGeneration(v1):
+            writeInt(&buf, Int32(35))
             FfiConverterTypeKeyGenerationError.write(v1, into: &buf)
             
         
         case let .SshImport(v1):
-            writeInt(&buf, Int32(35))
+            writeInt(&buf, Int32(36))
             FfiConverterTypeSshKeyImportError.write(v1, into: &buf)
             
         
         case let .AcquireCookie(v1):
-            writeInt(&buf, Int32(36))
+            writeInt(&buf, Int32(37))
             FfiConverterTypeAcquireCookieError.write(v1, into: &buf)
             
         
         case .Callback:
-            writeInt(&buf, Int32(37))
+            writeInt(&buf, Int32(38))
         
         
         case let .Conversion(v1):
-            writeInt(&buf, Int32(38))
+            writeInt(&buf, Int32(39))
             FfiConverterString.write(v1, into: &buf)
             
         }
@@ -11045,6 +11707,251 @@ public func FfiConverterTypeBitwardenError_lift(_ buf: RustBuffer) throws -> Bit
 #endif
 public func FfiConverterTypeBitwardenError_lower(_ value: BitwardenError) -> RustBuffer {
     return FfiConverterTypeBitwardenError.lower(value)
+}
+
+
+/**
+ * Errors related to processing the device auth key.
+ */
+public enum DeviceAuthKeyCallbackError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Authenticator failed to produce a valid response.
+     */
+    case AuthenticatorFailure
+    /**
+     * Failed to convert between Rust types.
+     */
+    case Conversion
+    /**
+     * Credential excluded.
+     */
+    case CredentialExcluded
+    /**
+     * The record identifier stored in metadata is not a valid UUID.
+     */
+    case InvalidRecordIdentifier
+    /**
+     * Invalid Web Vault URL specified.
+     */
+    case InvalidWebVaultUrl
+    /**
+     * No device auth key exists on this device.
+     */
+    case MissingDeviceAuthKey
+    /**
+     * Failed to unregister device auth key from server.
+     */
+    case UnregisterFailure
+    /**
+     * Failed to de-/serialize COSE key data.
+     */
+    case InvalidCoseKey
+    /**
+     * An invalid public key credential descriptor was passed in the allow list.
+     */
+    case InvalidPublicKeyCredentialDescriptor
+    /**
+     * A master password hash could not be generated for the given master password.
+     */
+    case MasterPasswordHash
+    /**
+     * Credential ID was not returned in the response and was not passed in the request.
+     */
+    case MissingCredentialId
+    /**
+     * No HMAC secret was returned with the credential.
+     */
+    case MissingHmacSecret
+    /**
+     * User handle was not returned in the response.
+     */
+    case MissingUserHandle
+    /**
+     * Feature is not yet implemented.
+     */
+    case NotImplemented
+    /**
+     * Failed to retrieve the registration options from the server.
+     */
+    case RetrieveRegistrationOptionsFailure
+    /**
+     * Failed to generate rotateable key set from PRF output.
+     */
+    case PrfFailure
+    /**
+     * Failed to submit registration request to the server.
+     */
+    case SubmitRegistrationFailure
+    /**
+     * User cancelled the operation.
+     */
+    case UserCancelled
+    /**
+     * An unknown error occurred.
+     */
+    case Unknown(
+        /**
+         * Reason for the error.
+         */reason: String
+    )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension DeviceAuthKeyCallbackError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyCallbackError: FfiConverterRustBuffer {
+    typealias SwiftType = DeviceAuthKeyCallbackError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyCallbackError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .AuthenticatorFailure
+        case 2: return .Conversion
+        case 3: return .CredentialExcluded
+        case 4: return .InvalidRecordIdentifier
+        case 5: return .InvalidWebVaultUrl
+        case 6: return .MissingDeviceAuthKey
+        case 7: return .UnregisterFailure
+        case 8: return .InvalidCoseKey
+        case 9: return .InvalidPublicKeyCredentialDescriptor
+        case 10: return .MasterPasswordHash
+        case 11: return .MissingCredentialId
+        case 12: return .MissingHmacSecret
+        case 13: return .MissingUserHandle
+        case 14: return .NotImplemented
+        case 15: return .RetrieveRegistrationOptionsFailure
+        case 16: return .PrfFailure
+        case 17: return .SubmitRegistrationFailure
+        case 18: return .UserCancelled
+        case 19: return .Unknown(
+            reason: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeviceAuthKeyCallbackError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case .AuthenticatorFailure:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .Conversion:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .CredentialExcluded:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .InvalidRecordIdentifier:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .InvalidWebVaultUrl:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .MissingDeviceAuthKey:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .UnregisterFailure:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .InvalidCoseKey:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .InvalidPublicKeyCredentialDescriptor:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .MasterPasswordHash:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .MissingCredentialId:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .MissingHmacSecret:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .MissingUserHandle:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .NotImplemented:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .RetrieveRegistrationOptionsFailure:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .PrfFailure:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .SubmitRegistrationFailure:
+            writeInt(&buf, Int32(17))
+        
+        
+        case .UserCancelled:
+            writeInt(&buf, Int32(18))
+        
+        
+        case let .Unknown(reason):
+            writeInt(&buf, Int32(19))
+            FfiConverterString.write(reason, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyCallbackError_lift(_ buf: RustBuffer) throws -> DeviceAuthKeyCallbackError {
+    return try FfiConverterTypeDeviceAuthKeyCallbackError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyCallbackError_lower(_ value: DeviceAuthKeyCallbackError) -> RustBuffer {
+    return FfiConverterTypeDeviceAuthKeyCallbackError.lower(value)
 }
 
 
@@ -11807,6 +12714,54 @@ fileprivate struct FfiConverterOptionTypeV2UpgradeToken: FfiConverterRustBuffer 
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeV2UpgradeToken.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeDeviceAuthKeyMetadata: FfiConverterRustBuffer {
+    typealias SwiftType = DeviceAuthKeyMetadata?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDeviceAuthKeyMetadata.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDeviceAuthKeyMetadata.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeDeviceAuthKeyRecord: FfiConverterRustBuffer {
+    typealias SwiftType = DeviceAuthKeyRecord?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDeviceAuthKeyRecord.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDeviceAuthKeyRecord.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -13257,6 +14212,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_decrypt_fido2_autofill_credentials() != 7120) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_device_auth_key_authenticator() != 60974) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_credentials_for_autofill() != 6328) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -13294,6 +14252,30 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_fido2userinterface_is_verification_enabled() != 47338) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientdeviceauthkeyauthenticator_assert_device_auth_key() != 43150) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientdeviceauthkeyauthenticator_create_device_auth_key() != 39250) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_clientdeviceauthkeyauthenticator_unregister_device_auth_key() != 54329) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_deviceauthkeystore_create_record() != 30274) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_deviceauthkeystore_create_metadata() != 22878) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_deviceauthkeystore_get_metadata() != 32250) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_deviceauthkeystore_get_record() != 39032) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_deviceauthkeystore_delete_record_and_metadata() != 2556) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigclient_acquire_cookie() != 43709) {
@@ -13484,6 +14466,7 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiCallbackInitCipherRepository()
+    uniffiCallbackInitDeviceAuthKeyStore()
     uniffiCallbackInitEphemeralPinEnvelopeStateRepository()
     uniffiCallbackInitFido2CredentialStore()
     uniffiCallbackInitFido2UserInterface()

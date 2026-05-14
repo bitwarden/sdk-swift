@@ -2242,6 +2242,81 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKey
 
 
 /**
+ * Request to verify a user's secret.
+ */
+public struct SecretVerificationRequest: Equatable, Hashable {
+    /**
+     * The user's master password to use for user verification. If supplied, this will be used for
+     * verification purposes.
+     */
+    public let masterPassword: String?
+    /**
+     * Alternate user verification method through OTP. This is provided for users who have no
+     * master password due to use of Customer Managed Encryption. Must be present and valid if
+     * master_password is absent.
+     */
+    public let otp: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The user's master password to use for user verification. If supplied, this will be used for
+         * verification purposes.
+         */masterPassword: String?, 
+        /**
+         * Alternate user verification method through OTP. This is provided for users who have no
+         * master password due to use of Customer Managed Encryption. Must be present and valid if
+         * master_password is absent.
+         */otp: String?) {
+        self.masterPassword = masterPassword
+        self.otp = otp
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecretVerificationRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecretVerificationRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecretVerificationRequest {
+        return
+            try SecretVerificationRequest(
+                masterPassword: FfiConverterOptionString.read(from: &buf), 
+                otp: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecretVerificationRequest, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.masterPassword, into: &buf)
+        FfiConverterOptionString.write(value.otp, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecretVerificationRequest_lift(_ buf: RustBuffer) throws -> SecretVerificationRequest {
+    return try FfiConverterTypeSecretVerificationRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecretVerificationRequest_lower(_ value: SecretVerificationRequest) -> RustBuffer {
+    return FfiConverterTypeSecretVerificationRequest.lower(value)
+}
+
+
+/**
  * The security state is a signed object attesting to the security state of a user.
  *
  * It contains a version, which can only ever increment. Based on the version, old formats and

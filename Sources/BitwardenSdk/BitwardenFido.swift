@@ -419,6 +419,22 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterInt64: FfiConverterPrimitive {
     typealias FfiType = Int64
     typealias SwiftType = Int64
@@ -512,6 +528,44 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
         let len = Int32(value.count)
         writeInt(&buf, len)
         writeBytes(&buf, value)
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
+        let seconds: Int64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        }
+    }
+
+    public static func write(_ value: Date, into buf: inout [UInt8]) {
+        var delta = value.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
+            sign = -1
+            delta = -delta
+        }
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        writeInt(&buf, sign * seconds)
+        writeInt(&buf, nanoseconds)
     }
 }
 
@@ -799,6 +853,368 @@ public func FfiConverterTypeCredPropsResult_lift(_ buf: RustBuffer) throws -> Cr
 #endif
 public func FfiConverterTypeCredPropsResult_lower(_ value: CredPropsResult) -> RustBuffer {
     return FfiConverterTypeCredPropsResult.lower(value)
+}
+
+
+/**
+ * Fields corresponding to a WebAuthn [PublicKeyCredential][pub-key-cred]
+ * with an [AuthenticatorAssertionResponse][authenticator-assertion-response].
+ *
+ * Similar to [GetAssertionResult][crate::GetAssertionResult], but without the reference to the
+ * vault cipher.
+ *
+ * [pub-key-cred]: https://www.w3.org/TR/webauthn-3/#publickeycredential
+ * [authenticator-assertion-response]: https://www.w3.org/TR/webauthn-3/#authenticatorassertionresponse
+ */
+public struct DeviceAuthKeyGetAssertionResult: Equatable, Hashable {
+    /**
+     * ID for this credential, corresponding to [`PublicKeyCredential.rawId`][raw-id].
+     *
+     * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+     */
+    public let credentialId: Data
+    /**
+     * The authenticator data from the authenticator response.
+     */
+    public let authenticatorData: Data
+    /**
+     * Signature over the authenticator data.
+     */
+    public let signature: Data
+    /**
+     * The user handle returned from the authenticator.
+     */
+    public let userHandle: Data
+    /**
+     * Mix of CTAP unsigned extension output and WebAuthn client extension output.
+     * Signed extensions can be retrieved from authenticator data.
+     */
+    public let extensions: GetAssertionExtensionsOutput
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * ID for this credential, corresponding to [`PublicKeyCredential.rawId`][raw-id].
+         *
+         * [raw-id]: https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid
+         */credentialId: Data, 
+        /**
+         * The authenticator data from the authenticator response.
+         */authenticatorData: Data, 
+        /**
+         * Signature over the authenticator data.
+         */signature: Data, 
+        /**
+         * The user handle returned from the authenticator.
+         */userHandle: Data, 
+        /**
+         * Mix of CTAP unsigned extension output and WebAuthn client extension output.
+         * Signed extensions can be retrieved from authenticator data.
+         */extensions: GetAssertionExtensionsOutput) {
+        self.credentialId = credentialId
+        self.authenticatorData = authenticatorData
+        self.signature = signature
+        self.userHandle = userHandle
+        self.extensions = extensions
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DeviceAuthKeyGetAssertionResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyGetAssertionResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyGetAssertionResult {
+        return
+            try DeviceAuthKeyGetAssertionResult(
+                credentialId: FfiConverterData.read(from: &buf), 
+                authenticatorData: FfiConverterData.read(from: &buf), 
+                signature: FfiConverterData.read(from: &buf), 
+                userHandle: FfiConverterData.read(from: &buf), 
+                extensions: FfiConverterTypeGetAssertionExtensionsOutput.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DeviceAuthKeyGetAssertionResult, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterData.write(value.authenticatorData, into: &buf)
+        FfiConverterData.write(value.signature, into: &buf)
+        FfiConverterData.write(value.userHandle, into: &buf)
+        FfiConverterTypeGetAssertionExtensionsOutput.write(value.extensions, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyGetAssertionResult_lift(_ buf: RustBuffer) throws -> DeviceAuthKeyGetAssertionResult {
+    return try FfiConverterTypeDeviceAuthKeyGetAssertionResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyGetAssertionResult_lower(_ value: DeviceAuthKeyGetAssertionResult) -> RustBuffer {
+    return FfiConverterTypeDeviceAuthKeyGetAssertionResult.lower(value)
+}
+
+
+/**
+ * The metadata for the device auth key useful for looking up whether the
+ * authenticator can satisfy a given request before invoking user-verifying
+ * access control.
+ */
+public struct DeviceAuthKeyMetadata: Equatable, Hashable {
+    /**
+     * A unique identifier for the device auth key passkey.
+     * This can be used as a unique identifier in OS autofill stores.
+     */
+    public let recordIdentifier: String
+    /**
+     * Date the device auth key was created.
+     */
+    public let creationDate: DateTime
+    /**
+     * FIDO credential ID for the device auth key.
+     */
+    public let credentialId: Data
+    /**
+     * WebAuthn RP ID for the device auth key.
+     */
+    public let rpId: String
+    /**
+     * The login or username for user.
+     *
+     * Corresponds to the [user.name] in the original WebAuthn request that created the
+     * credential.
+     */
+    public let userName: String
+    /**
+     * The ID for the user.
+     *
+     * Corresponds to the [user.id] in the original WebAuthn request that created the credential.
+     */
+    public let userHandle: Data
+    /**
+     * The display name for the user
+     *
+     * Corresponds to the [user.displayName] in the original WebAuthn request that created the
+     * credential.
+     */
+    public let userDisplayName: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * A unique identifier for the device auth key passkey.
+         * This can be used as a unique identifier in OS autofill stores.
+         */recordIdentifier: String, 
+        /**
+         * Date the device auth key was created.
+         */creationDate: DateTime, 
+        /**
+         * FIDO credential ID for the device auth key.
+         */credentialId: Data, 
+        /**
+         * WebAuthn RP ID for the device auth key.
+         */rpId: String, 
+        /**
+         * The login or username for user.
+         *
+         * Corresponds to the [user.name] in the original WebAuthn request that created the
+         * credential.
+         */userName: String, 
+        /**
+         * The ID for the user.
+         *
+         * Corresponds to the [user.id] in the original WebAuthn request that created the credential.
+         */userHandle: Data, 
+        /**
+         * The display name for the user
+         *
+         * Corresponds to the [user.displayName] in the original WebAuthn request that created the
+         * credential.
+         */userDisplayName: String) {
+        self.recordIdentifier = recordIdentifier
+        self.creationDate = creationDate
+        self.credentialId = credentialId
+        self.rpId = rpId
+        self.userName = userName
+        self.userHandle = userHandle
+        self.userDisplayName = userDisplayName
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DeviceAuthKeyMetadata: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyMetadata: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyMetadata {
+        return
+            try DeviceAuthKeyMetadata(
+                recordIdentifier: FfiConverterString.read(from: &buf), 
+                creationDate: FfiConverterTypeDateTime.read(from: &buf), 
+                credentialId: FfiConverterData.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userName: FfiConverterString.read(from: &buf), 
+                userHandle: FfiConverterData.read(from: &buf), 
+                userDisplayName: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DeviceAuthKeyMetadata, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.recordIdentifier, into: &buf)
+        FfiConverterTypeDateTime.write(value.creationDate, into: &buf)
+        FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterString.write(value.userName, into: &buf)
+        FfiConverterData.write(value.userHandle, into: &buf)
+        FfiConverterString.write(value.userDisplayName, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyMetadata_lift(_ buf: RustBuffer) throws -> DeviceAuthKeyMetadata {
+    return try FfiConverterTypeDeviceAuthKeyMetadata.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyMetadata_lower(_ value: DeviceAuthKeyMetadata) -> RustBuffer {
+    return FfiConverterTypeDeviceAuthKeyMetadata.lower(value)
+}
+
+
+/**
+ * The private key material for the device auth key.
+ * This should be stored separately from the metadata and gated behind
+ * user-verifying access control.
+ */
+public struct DeviceAuthKeyRecord: Equatable, Hashable {
+    /**
+     * Credential ID for the WebAuthn credential.
+     */
+    public let credentialId: Data
+    /**
+     * Private key material, formatted as a COSE key.
+     */
+    public let key: Data
+    /**
+     * RP ID of the WebAuthn credential.
+     */
+    public let rpId: String
+    /**
+     * User ID for the WebAuthn credential.
+     */
+    public let userId: Data
+    /**
+     * WebAuthn counter for the credential.
+     */
+    public let counter: UInt32?
+    /**
+     * HMAC Secret seed, which can also be used in WebAuthn PRF extension.
+     */
+    public let hmacSecret: Data
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Credential ID for the WebAuthn credential.
+         */credentialId: Data, 
+        /**
+         * Private key material, formatted as a COSE key.
+         */key: Data, 
+        /**
+         * RP ID of the WebAuthn credential.
+         */rpId: String, 
+        /**
+         * User ID for the WebAuthn credential.
+         */userId: Data, 
+        /**
+         * WebAuthn counter for the credential.
+         */counter: UInt32?, 
+        /**
+         * HMAC Secret seed, which can also be used in WebAuthn PRF extension.
+         */hmacSecret: Data) {
+        self.credentialId = credentialId
+        self.key = key
+        self.rpId = rpId
+        self.userId = userId
+        self.counter = counter
+        self.hmacSecret = hmacSecret
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DeviceAuthKeyRecord: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyRecord: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyRecord {
+        return
+            try DeviceAuthKeyRecord(
+                credentialId: FfiConverterData.read(from: &buf), 
+                key: FfiConverterData.read(from: &buf), 
+                rpId: FfiConverterString.read(from: &buf), 
+                userId: FfiConverterData.read(from: &buf), 
+                counter: FfiConverterOptionUInt32.read(from: &buf), 
+                hmacSecret: FfiConverterData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DeviceAuthKeyRecord, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterData.write(value.key, into: &buf)
+        FfiConverterString.write(value.rpId, into: &buf)
+        FfiConverterData.write(value.userId, into: &buf)
+        FfiConverterOptionUInt32.write(value.counter, into: &buf)
+        FfiConverterData.write(value.hmacSecret, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyRecord_lift(_ buf: RustBuffer) throws -> DeviceAuthKeyRecord {
+    return try FfiConverterTypeDeviceAuthKeyRecord.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyRecord_lower(_ value: DeviceAuthKeyRecord) -> RustBuffer {
+    return FfiConverterTypeDeviceAuthKeyRecord.lower(value)
 }
 
 
@@ -2758,6 +3174,284 @@ public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lower(_ value: 
 }
 
 
+/**
+ * Errors related to processing the device auth key.
+ */
+public enum DeviceAuthKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Authenticator failed to produce a valid response.
+     */
+    case AuthenticatorFailure(message: String)
+    
+    /**
+     * Failed to convert between Rust types.
+     */
+    case Conversion(message: String)
+    
+    /**
+     * Credential excluded.
+     */
+    case CredentialExcluded(message: String)
+    
+    /**
+     * The record identifier stored in metadata is not a valid UUID.
+     */
+    case InvalidRecordIdentifier(message: String)
+    
+    /**
+     * Invalid Web Vault URL specified.
+     */
+    case InvalidWebVaultUrl(message: String)
+    
+    /**
+     * No device auth key exists on this device.
+     */
+    case MissingDeviceAuthKey(message: String)
+    
+    /**
+     * Failed to unregister device auth key from server.
+     */
+    case UnregisterFailure(message: String)
+    
+    /**
+     * Failed to de-/serialize COSE key data.
+     */
+    case InvalidCoseKey(message: String)
+    
+    /**
+     * An invalid public key credential descriptor was passed in the allow list.
+     */
+    case InvalidPublicKeyCredentialDescriptor(message: String)
+    
+    /**
+     * A master password hash could not be generated for the given master password.
+     */
+    case MasterPasswordHash(message: String)
+    
+    /**
+     * Credential ID was not returned in the response and was not passed in the request.
+     */
+    case MissingCredentialId(message: String)
+    
+    /**
+     * No HMAC secret was returned with the credential.
+     */
+    case MissingHmacSecret(message: String)
+    
+    /**
+     * User handle was not returned in the response.
+     */
+    case MissingUserHandle(message: String)
+    
+    /**
+     * Feature is not yet implemented.
+     */
+    case NotImplemented(message: String)
+    
+    /**
+     * Failed to retrieve the registration options from the server.
+     */
+    case RetrieveRegistrationOptionsFailure(message: String)
+    
+    /**
+     * Failed to generate rotateable key set from PRF output.
+     */
+    case PrfFailure(message: String)
+    
+    /**
+     * Failed to submit registration request to the server.
+     */
+    case SubmitRegistrationFailure(message: String)
+    
+    /**
+     * User cancelled the operation.
+     */
+    case UserCancelled(message: String)
+    
+    /**
+     * An unknown error occurred.
+     */
+    case Unknown(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension DeviceAuthKeyError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeviceAuthKeyError: FfiConverterRustBuffer {
+    typealias SwiftType = DeviceAuthKeyError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeviceAuthKeyError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .AuthenticatorFailure(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Conversion(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .CredentialExcluded(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .InvalidRecordIdentifier(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .InvalidWebVaultUrl(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .MissingDeviceAuthKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .UnregisterFailure(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .InvalidCoseKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .InvalidPublicKeyCredentialDescriptor(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .MasterPasswordHash(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .MissingCredentialId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 12: return .MissingHmacSecret(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 13: return .MissingUserHandle(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 14: return .NotImplemented(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 15: return .RetrieveRegistrationOptionsFailure(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 16: return .PrfFailure(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 17: return .SubmitRegistrationFailure(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 18: return .UserCancelled(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 19: return .Unknown(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeviceAuthKeyError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .AuthenticatorFailure(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Conversion(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .CredentialExcluded(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .InvalidRecordIdentifier(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .InvalidWebVaultUrl(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .MissingDeviceAuthKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .UnregisterFailure(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .InvalidCoseKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .InvalidPublicKeyCredentialDescriptor(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .MasterPasswordHash(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
+        case .MissingCredentialId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
+        case .MissingHmacSecret(_ /* message is ignored*/):
+            writeInt(&buf, Int32(12))
+        case .MissingUserHandle(_ /* message is ignored*/):
+            writeInt(&buf, Int32(13))
+        case .NotImplemented(_ /* message is ignored*/):
+            writeInt(&buf, Int32(14))
+        case .RetrieveRegistrationOptionsFailure(_ /* message is ignored*/):
+            writeInt(&buf, Int32(15))
+        case .PrfFailure(_ /* message is ignored*/):
+            writeInt(&buf, Int32(16))
+        case .SubmitRegistrationFailure(_ /* message is ignored*/):
+            writeInt(&buf, Int32(17))
+        case .UserCancelled(_ /* message is ignored*/):
+            writeInt(&buf, Int32(18))
+        case .Unknown(_ /* message is ignored*/):
+            writeInt(&buf, Int32(19))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyError_lift(_ buf: RustBuffer) throws -> DeviceAuthKeyError {
+    return try FfiConverterTypeDeviceAuthKeyError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeviceAuthKeyError_lower(_ value: DeviceAuthKeyError) -> RustBuffer {
+    return FfiConverterTypeDeviceAuthKeyError.lower(value)
+}
+
+
 public enum Fido2ClientError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
@@ -3387,6 +4081,30 @@ public func FfiConverterTypeVerification_lower(_ value: Verification) -> RustBuf
     return FfiConverterTypeVerification.lower(value)
 }
 
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = UInt32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
