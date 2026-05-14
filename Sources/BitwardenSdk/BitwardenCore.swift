@@ -3994,6 +3994,11 @@ public enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Foundatio
      */
     case LocalUserDataKeyLoadFailed(message: String)
     
+    /**
+     * The migration (re-wrap) of the local user data key failed after a user key upgrade
+     */
+    case LocalUserDataMigrationFailed(message: String)
+    
 
     
 
@@ -4067,6 +4072,10 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 12: return .LocalUserDataMigrationFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4100,6 +4109,8 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(10))
         case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
+        case .LocalUserDataMigrationFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(12))
 
         
         }
