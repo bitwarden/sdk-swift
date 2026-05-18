@@ -486,7 +486,7 @@ fileprivate struct FfiConverterString: FfiConverter {
  * - Rotation to a `NewDownstreamKey` by knowing the current `DownstreamKey`, without needing
  * access to the `UpstreamKey`
  */
-public struct RotateableKeySet: Equatable, Hashable {
+public struct RotateableKeySet: Equatable, Hashable, Codable {
     /**
      * `DownstreamKey` protected by encapsulation key
      */
@@ -567,7 +567,7 @@ public func FfiConverterTypeRotateableKeySet_lower(_ value: RotateableKeySet) ->
  *
  * Consists of a public key and an encrypted private key.
  */
-public struct RsaKeyPair: Equatable, Hashable {
+public struct RsaKeyPair: Equatable, Hashable, Codable {
     /**
      * Base64 encoded DER representation of the public key
      */
@@ -633,7 +633,7 @@ public func FfiConverterTypeRsaKeyPair_lower(_ value: RsaKeyPair) -> RustBuffer 
 }
 
 
-public struct TrustDeviceResponse: Equatable, Hashable {
+public struct TrustDeviceResponse: Equatable, Hashable, Codable {
     /**
      * Base64 encoded device key
      */
@@ -719,7 +719,7 @@ public func FfiConverterTypeTrustDeviceResponse_lower(_ value: TrustDeviceRespon
 }
 
 
-public enum CryptoError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum CryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -979,7 +979,7 @@ public func FfiConverterTypeCryptoError_lower(_ value: CryptoError) -> RustBuffe
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum HashPurpose: Equatable, Hashable {
+public enum HashPurpose: Equatable, Hashable, Codable {
     
     case serverAuthorization
     case localAuthorization
@@ -1052,7 +1052,7 @@ public func FfiConverterTypeHashPurpose_lower(_ value: HashPurpose) -> RustBuffe
  * Enum represents all the possible KDFs.
  */
 
-public enum Kdf: Equatable, Hashable {
+public enum Kdf: Equatable, Hashable, Codable {
     
     case pbkdf2(iterations: NonZeroU32
     )
@@ -1130,7 +1130,7 @@ public func FfiConverterTypeKdf_lower(_ value: Kdf) -> RustBuffer {
  * The type of key / signature scheme used for signing and verifying.
  */
 
-public enum SignatureAlgorithm: Equatable, Hashable {
+public enum SignatureAlgorithm: Equatable, Hashable, Codable {
     
     /**
      * Ed25519 is the modern, secure recommended option for digital signatures on eliptic curves,

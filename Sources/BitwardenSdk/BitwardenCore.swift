@@ -899,7 +899,7 @@ public func FfiConverterTypeStateBridgeClient_lower(_ value: StateBridgeClient) 
 /**
  * Response for `new_auth_request`.
  */
-public struct AuthRequestResponse: Equatable, Hashable {
+public struct AuthRequestResponse: Equatable, Hashable, Codable {
     /**
      * Base64 encoded private key
      * This key is temporarily passed back and will most likely not be available in the future
@@ -1007,7 +1007,7 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * let default = ClientSettings::default();
  * ```
  */
-public struct ClientSettings: Equatable, Hashable {
+public struct ClientSettings: Equatable, Hashable, Codable {
     /**
      * The identity url of the targeted Bitwarden instance. Defaults to `https://identity.bitwarden.com`
      */
@@ -1128,7 +1128,7 @@ public func FfiConverterTypeClientSettings_lower(_ value: ClientSettings) -> Rus
 /**
  * Request for migrating an account from password to key connector.
  */
-public struct DeriveKeyConnectorRequest: Equatable, Hashable {
+public struct DeriveKeyConnectorRequest: Equatable, Hashable, Codable {
     /**
      * Encrypted user key, used to validate the master key
      */
@@ -1217,7 +1217,7 @@ public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyCo
 /**
  * Request for deriving a pin protected user key
  */
-public struct DerivePinKeyResponse: Equatable, Hashable {
+public struct DerivePinKeyResponse: Equatable, Hashable, Codable {
     /**
      * [UserKey] protected by PIN
      */
@@ -1286,7 +1286,7 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
 /**
  * Request for deriving a pin protected user key
  */
-public struct EnrollPinResponse: Equatable, Hashable {
+public struct EnrollPinResponse: Equatable, Hashable, Codable {
     /**
      * [UserKey] protected by PIN
      */
@@ -1355,7 +1355,7 @@ public func FfiConverterTypeEnrollPinResponse_lower(_ value: EnrollPinResponse) 
 /**
  * Represents the PIN envelope in memory, when ephemeral PIN unlock is used.
  */
-public struct EphemeralPinEnvelopeState: Equatable, Hashable {
+public struct EphemeralPinEnvelopeState: Equatable, Hashable, Codable {
     public let pinEnvelope: PasswordProtectedKeyEnvelope
 
     // Default memberwise initializers are never public by default, so we
@@ -1408,7 +1408,7 @@ public func FfiConverterTypeEphemeralPinEnvelopeState_lower(_ value: EphemeralPi
 /**
  * Request to generate a fingerprint.
  */
-public struct FingerprintRequest: Equatable, Hashable {
+public struct FingerprintRequest: Equatable, Hashable, Codable {
     /**
      * The input material, used in the fingerprint generation process.
      */
@@ -1477,7 +1477,7 @@ public func FfiConverterTypeFingerprintRequest_lower(_ value: FingerprintRequest
 /**
  * Represents the request to initialize the user's organizational cryptographic state.
  */
-public struct InitOrgCryptoRequest: Equatable, Hashable {
+public struct InitOrgCryptoRequest: Equatable, Hashable, Codable {
     /**
      * The encryption keys for all the organizations the user is a part of
      */
@@ -1536,7 +1536,7 @@ public func FfiConverterTypeInitOrgCryptoRequest_lower(_ value: InitOrgCryptoReq
 /**
  * State used for initializing the user cryptographic state.
  */
-public struct InitUserCryptoRequest: Equatable, Hashable {
+public struct InitUserCryptoRequest: Equatable, Hashable, Codable {
     /**
      * The user's ID.
      */
@@ -1644,7 +1644,7 @@ public func FfiConverterTypeInitUserCryptoRequest_lower(_ value: InitUserCryptoR
 }
 
 
-public struct KeyConnectorResponse: Equatable, Hashable {
+public struct KeyConnectorResponse: Equatable, Hashable, Codable {
     public let masterKey: B64
     public let encryptedUserKey: String
     public let keys: RsaKeyPair
@@ -1706,7 +1706,7 @@ public func FfiConverterTypeKeyConnectorResponse_lower(_ value: KeyConnectorResp
  * Represents the local user data key, wrapped by user key.
  * This key is used to encrypt local user data (e.g., password generator history).
  */
-public struct LocalUserDataKeyState: Equatable, Hashable {
+public struct LocalUserDataKeyState: Equatable, Hashable, Codable {
     public let wrappedKey: EncString
 
     // Default memberwise initializers are never public by default, so we
@@ -1759,7 +1759,7 @@ public func FfiConverterTypeLocalUserDataKeyState_lower(_ value: LocalUserDataKe
 /**
  * Response from the `make_key_pair` function
  */
-public struct MakeKeyPairResponse: Equatable, Hashable {
+public struct MakeKeyPairResponse: Equatable, Hashable, Codable {
     /**
      * The user's public key
      */
@@ -1828,7 +1828,7 @@ public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairRespon
 /**
  * Represents the data required to authenticate with the master password.
  */
-public struct MasterPasswordAuthenticationData: Equatable, Hashable {
+public struct MasterPasswordAuthenticationData: Equatable, Hashable, Codable {
     public let kdf: Kdf
     public let salt: String
     public let masterPasswordAuthenticationHash: B64
@@ -1886,7 +1886,7 @@ public func FfiConverterTypeMasterPasswordAuthenticationData_lower(_ value: Mast
 }
 
 
-public struct MasterPasswordPolicyOptions: Equatable, Hashable {
+public struct MasterPasswordPolicyOptions: Equatable, Hashable, Codable {
     public let minComplexity: UInt8
     public let minLength: UInt8
     public let requireUpper: Bool
@@ -1973,7 +1973,7 @@ public func FfiConverterTypeMasterPasswordPolicyOptions_lower(_ value: MasterPas
 /**
  * Represents the data required to unlock with the master password.
  */
-public struct MasterPasswordUnlockData: Equatable, Hashable {
+public struct MasterPasswordUnlockData: Equatable, Hashable, Codable {
     /**
      * The key derivation function used to derive the master key
      */
@@ -2055,7 +2055,7 @@ public func FfiConverterTypeMasterPasswordUnlockData_lower(_ value: MasterPasswo
  * Stored in a Repository keyed by [`OrganizationId`].
  * The `org_id` is included in the struct so it can be recovered from `Repository::list()`.
  */
-public struct OrganizationSharedKey: Equatable, Hashable {
+public struct OrganizationSharedKey: Equatable, Hashable, Codable {
     /**
      * The organization this key belongs to.
      */
@@ -2121,7 +2121,7 @@ public func FfiConverterTypeOrganizationSharedKey_lower(_ value: OrganizationSha
 }
 
 
-public struct RegisterKeyResponse: Equatable, Hashable {
+public struct RegisterKeyResponse: Equatable, Hashable, Codable {
     public let masterPasswordHash: B64
     public let encryptedUserKey: EncString
     public let keys: RsaKeyPair
@@ -2179,7 +2179,7 @@ public func FfiConverterTypeRegisterKeyResponse_lower(_ value: RegisterKeyRespon
 }
 
 
-public struct RegisterTdeKeyResponse: Equatable, Hashable {
+public struct RegisterTdeKeyResponse: Equatable, Hashable, Codable {
     public let privateKey: EncString
     public let publicKey: B64
     public let adminReset: UnsignedSharedKey
@@ -2244,7 +2244,7 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKey
 /**
  * Request to verify a user's secret.
  */
-public struct SecretVerificationRequest: Equatable, Hashable {
+public struct SecretVerificationRequest: Equatable, Hashable, Codable {
     /**
      * The user's master password to use for user verification. If supplied, this will be used for
      * verification purposes.
@@ -2323,7 +2323,7 @@ public func FfiConverterTypeSecretVerificationRequest_lower(_ value: SecretVerif
  * features are blocked. This prevents a server from downgrading a user's account features, because
  * only the user can create this signed object.
  */
-public struct SecurityState: Equatable, Hashable {
+public struct SecurityState: Equatable, Hashable, Codable {
     /**
      * The version of the security state gates feature availability. It can only ever be
      * incremented. Components can use it to gate format support of specific formats (like
@@ -2383,7 +2383,7 @@ public func FfiConverterTypeSecurityState_lower(_ value: SecurityState) -> RustB
 }
 
 
-public struct UniffiConverterDummyRecord: Equatable, Hashable {
+public struct UniffiConverterDummyRecord: Equatable, Hashable, Codable {
     public let uuid: Uuid
     public let date: DateTime
 
@@ -2440,7 +2440,7 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConv
 /**
  * Response from the `update_kdf` function
  */
-public struct UpdateKdfResponse: Equatable, Hashable {
+public struct UpdateKdfResponse: Equatable, Hashable, Codable {
     /**
      * The authentication data for the new KDF setting
      */
@@ -2519,7 +2519,7 @@ public func FfiConverterTypeUpdateKdfResponse_lower(_ value: UpdateKdfResponse) 
 /**
  * Response from the `make_update_password` function
  */
-public struct UpdatePasswordResponse: Equatable, Hashable {
+public struct UpdatePasswordResponse: Equatable, Hashable, Codable {
     /**
      * Hash of the new password
      */
@@ -2588,7 +2588,7 @@ public func FfiConverterTypeUpdatePasswordResponse_lower(_ value: UpdatePassword
 /**
  * Response for the `make_keys_for_user_crypto_v2`, containing a set of keys for a user
  */
-public struct UserCryptoV2KeysResponse: Equatable, Hashable {
+public struct UserCryptoV2KeysResponse: Equatable, Hashable, Codable {
     /**
      * User key
      */
@@ -2718,7 +2718,7 @@ public func FfiConverterTypeUserCryptoV2KeysResponse_lower(_ value: UserCryptoV2
  * Represents the decrypted symmetric user-key of a user. This is held in ephemeral state of the
  * client.
  */
-public struct UserKeyState: Equatable, Hashable {
+public struct UserKeyState: Equatable, Hashable, Codable {
     public let decryptedUserKey: B64
 
     // Default memberwise initializers are never public by default, so we
@@ -2771,7 +2771,7 @@ public func FfiConverterTypeUserKeyState_lower(_ value: UserKeyState) -> RustBuf
 /**
  * Holds both V1 and V2 user keys, each wrapped by the other.
  */
-public struct V2UpgradeToken: Equatable, Hashable {
+public struct V2UpgradeToken: Equatable, Hashable, Codable {
     /**
      * V1 user key encrypted with V2 key (Cose_Encrypt0_B64 format)
      */
@@ -2840,7 +2840,7 @@ public func FfiConverterTypeV2UpgradeToken_lower(_ value: V2UpgradeToken) -> Rus
 /**
  * Request for `verify_asymmetric_keys`.
  */
-public struct VerifyAsymmetricKeysRequest: Equatable, Hashable {
+public struct VerifyAsymmetricKeysRequest: Equatable, Hashable, Codable {
     /**
      * The user's user key
      */
@@ -2919,7 +2919,7 @@ public func FfiConverterTypeVerifyAsymmetricKeysRequest_lower(_ value: VerifyAsy
 /**
  * Response for `verify_asymmetric_keys`.
  */
-public struct VerifyAsymmetricKeysResponse: Equatable, Hashable {
+public struct VerifyAsymmetricKeysResponse: Equatable, Hashable, Codable {
     /**
      * Whether the user's private key was decryptable by the user key.
      */
@@ -2988,7 +2988,7 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAs
 /**
  * Errors that can occur during initialization of the account cryptographic state.
  */
-public enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3126,7 +3126,7 @@ public func FfiConverterTypeAccountCryptographyInitializationError_lower(_ value
 /**
  * Errors from performing network requests.
  */
-public enum ApiError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum ApiError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3232,7 +3232,7 @@ public func FfiConverterTypeApiError_lower(_ value: ApiError) -> RustBuffer {
 }
 
 
-public enum ApproveAuthRequestError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum ApproveAuthRequestError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3311,7 +3311,7 @@ public func FfiConverterTypeApproveAuthRequestError_lower(_ value: ApproveAuthRe
  * Auth requests supports multiple initialization methods.
  */
 
-public enum AuthRequestMethod: Equatable, Hashable {
+public enum AuthRequestMethod: Equatable, Hashable, Codable {
     
     /**
      * User Key
@@ -3401,7 +3401,7 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 /**
  * Error for authentication related operations
  */
-public enum AuthValidateError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum AuthValidateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3502,7 +3502,7 @@ public func FfiConverterTypeAuthValidateError_lower(_ value: AuthValidateError) 
 /**
  * Catch all error for mobile crypto operations.
  */
-public enum CryptoClientError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum CryptoClientError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3632,7 +3632,7 @@ public func FfiConverterTypeCryptoClientError_lower(_ value: CryptoClientError) 
 }
 
 
-public enum DeriveKeyConnectorError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum DeriveKeyConnectorError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -3716,7 +3716,7 @@ public func FfiConverterTypeDeriveKeyConnectorError_lower(_ value: DeriveKeyConn
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum DeviceType: Equatable, Hashable {
+public enum DeviceType: Equatable, Hashable, Codable {
     
     case android
     case iOs
@@ -3956,7 +3956,7 @@ public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer 
 
 
 
-public enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -4133,7 +4133,7 @@ public func FfiConverterTypeEncryptionSettingsError_lower(_ value: EncryptionSet
 }
 
 
-public enum EnrollAdminPasswordResetError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum EnrollAdminPasswordResetError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -4210,7 +4210,7 @@ public func FfiConverterTypeEnrollAdminPasswordResetError_lower(_ value: EnrollA
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum FingerprintError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum FingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -4289,7 +4289,7 @@ public func FfiConverterTypeFingerprintError_lower(_ value: FingerprintError) ->
  * The crypto method used to initialize the user cryptographic state.
  */
 
-public enum InitUserCryptoMethod: Equatable, Hashable {
+public enum InitUserCryptoMethod: Equatable, Hashable, Codable {
     
     /**
      * Master Password Unlock
@@ -4520,7 +4520,7 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 /**
  * Errors that can occur when making keys for account cryptography registration.
  */
-public enum MakeKeysError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum MakeKeysError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -4633,7 +4633,7 @@ public func FfiConverterTypeMakeKeysError_lower(_ value: MakeKeysError) -> RustB
 /**
  * Error for master password related operations.
  */
-public enum MasterPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum MasterPasswordError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -4773,7 +4773,7 @@ public func FfiConverterTypeMasterPasswordError_lower(_ value: MasterPasswordErr
  * For this, the PIN-encrypted vault key is stored on disk.
  */
 
-public enum PinLockType: Equatable, Hashable {
+public enum PinLockType: Equatable, Hashable, Codable {
     
     /**
      * Pin unlock is available after app start
@@ -4850,7 +4850,7 @@ public func FfiConverterTypePinLockType_lower(_ value: PinLockType) -> RustBuffe
  * Current availability state for PIN-based unlock.
  */
 
-public enum PinUnlockStatus: Equatable, Hashable {
+public enum PinUnlockStatus: Equatable, Hashable, Codable {
     
     /**
      * A PIN is configured and the PIN envelope is available for decryption, so PIN-based unlock
@@ -4935,7 +4935,7 @@ public func FfiConverterTypePinUnlockStatus_lower(_ value: PinUnlockStatus) -> R
 /**
  * Errors that can occur during rotation of the account cryptographic state.
  */
-public enum RotateCryptographyStateError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum RotateCryptographyStateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5027,7 +5027,7 @@ public func FfiConverterTypeRotateCryptographyStateError_lower(_ value: RotateCr
  * Signifies that the state is invalid from a cryptographic perspective, such as a required
  * security value missing, or being invalid
  */
-public enum StatefulCryptoError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum StatefulCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5124,7 +5124,7 @@ public func FfiConverterTypeStatefulCryptoError_lower(_ value: StatefulCryptoErr
 }
 
 
-public enum TrustDeviceError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum TrustDeviceError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5201,7 +5201,7 @@ public func FfiConverterTypeTrustDeviceError_lower(_ value: TrustDeviceError) ->
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum UserFingerprintError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public enum UserFingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5289,7 +5289,7 @@ public func FfiConverterTypeUserFingerprintError_lower(_ value: UserFingerprintE
  * Private keys are protected by the user key.
  */
 
-public enum WrappedAccountCryptographicState: Equatable, Hashable {
+public enum WrappedAccountCryptographicState: Equatable, Hashable, Codable {
     
     /**
      * A V1 user has only a private key.
