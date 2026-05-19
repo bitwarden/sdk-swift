@@ -513,6 +513,44 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
+        let seconds: Int64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        }
+    }
+
+    public static func write(_ value: Date, into buf: inout [UInt8]) {
+        var delta = value.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
+            sign = -1
+            delta = -delta
+        }
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        writeInt(&buf, sign * seconds)
+        writeInt(&buf, nanoseconds)
+    }
+}
+
 
 /**
  * SDK domain model for master password policy requirements.
@@ -653,18 +691,20 @@ public struct PolicyView: Equatable, Hashable {
      */
     public let data: String?
     public let enabled: Bool
+    public let revisionDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(id: Uuid, organizationId: Uuid, type: PolicyType, 
         /**
          * The policy's raw configuration data as a JSON string, if any.
-         */data: String?, enabled: Bool) {
+         */data: String?, enabled: Bool, revisionDate: DateTime?) {
         self.id = id
         self.organizationId = organizationId
         self.type = type
         self.data = data
         self.enabled = enabled
+        self.revisionDate = revisionDate
     }
 
     
@@ -687,7 +727,8 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
                 organizationId: FfiConverterTypeUuid.read(from: &buf), 
                 type: FfiConverterTypePolicyType.read(from: &buf), 
                 data: FfiConverterOptionString.read(from: &buf), 
-                enabled: FfiConverterBool.read(from: &buf)
+                enabled: FfiConverterBool.read(from: &buf), 
+                revisionDate: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
@@ -697,6 +738,7 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
         FfiConverterTypePolicyType.write(value.type, into: &buf)
         FfiConverterOptionString.write(value.data, into: &buf)
         FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.revisionDate, into: &buf)
     }
 }
 
@@ -782,6 +824,30 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
+    typealias SwiftType = DateTime?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeDateTime.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeDateTime.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
