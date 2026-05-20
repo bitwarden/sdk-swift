@@ -5535,11 +5535,20 @@ public enum CopyableCipherFields: Equatable, Hashable {
     case identityAddress
     case sshKey
     case secureNotes
+    case bankAccountNameOnAccount
     case bankAccountAccountNumber
     case bankAccountRoutingNumber
+    case bankAccountBranchNumber
     case bankAccountPin
     case bankAccountIban
+    case bankAccountSwift
+    case passportGivenName
+    case passportSurname
     case passportPassportNumber
+    case passportNationalIdentificationNumber
+    case driversLicenseFirstName
+    case driversLicenseMiddleName
+    case driversLicenseLastName
     case driversLicenseLicenseNumber
 
 
@@ -5584,17 +5593,35 @@ public struct FfiConverterTypeCopyableCipherFields: FfiConverterRustBuffer {
         
         case 11: return .secureNotes
         
-        case 12: return .bankAccountAccountNumber
+        case 12: return .bankAccountNameOnAccount
         
-        case 13: return .bankAccountRoutingNumber
+        case 13: return .bankAccountAccountNumber
         
-        case 14: return .bankAccountPin
+        case 14: return .bankAccountRoutingNumber
         
-        case 15: return .bankAccountIban
+        case 15: return .bankAccountBranchNumber
         
-        case 16: return .passportPassportNumber
+        case 16: return .bankAccountPin
         
-        case 17: return .driversLicenseLicenseNumber
+        case 17: return .bankAccountIban
+        
+        case 18: return .bankAccountSwift
+        
+        case 19: return .passportGivenName
+        
+        case 20: return .passportSurname
+        
+        case 21: return .passportPassportNumber
+        
+        case 22: return .passportNationalIdentificationNumber
+        
+        case 23: return .driversLicenseFirstName
+        
+        case 24: return .driversLicenseMiddleName
+        
+        case 25: return .driversLicenseLastName
+        
+        case 26: return .driversLicenseLicenseNumber
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -5648,28 +5675,64 @@ public struct FfiConverterTypeCopyableCipherFields: FfiConverterRustBuffer {
             writeInt(&buf, Int32(11))
         
         
-        case .bankAccountAccountNumber:
+        case .bankAccountNameOnAccount:
             writeInt(&buf, Int32(12))
         
         
-        case .bankAccountRoutingNumber:
+        case .bankAccountAccountNumber:
             writeInt(&buf, Int32(13))
         
         
-        case .bankAccountPin:
+        case .bankAccountRoutingNumber:
             writeInt(&buf, Int32(14))
         
         
-        case .bankAccountIban:
+        case .bankAccountBranchNumber:
             writeInt(&buf, Int32(15))
         
         
-        case .passportPassportNumber:
+        case .bankAccountPin:
             writeInt(&buf, Int32(16))
         
         
-        case .driversLicenseLicenseNumber:
+        case .bankAccountIban:
             writeInt(&buf, Int32(17))
+        
+        
+        case .bankAccountSwift:
+            writeInt(&buf, Int32(18))
+        
+        
+        case .passportGivenName:
+            writeInt(&buf, Int32(19))
+        
+        
+        case .passportSurname:
+            writeInt(&buf, Int32(20))
+        
+        
+        case .passportPassportNumber:
+            writeInt(&buf, Int32(21))
+        
+        
+        case .passportNationalIdentificationNumber:
+            writeInt(&buf, Int32(22))
+        
+        
+        case .driversLicenseFirstName:
+            writeInt(&buf, Int32(23))
+        
+        
+        case .driversLicenseMiddleName:
+            writeInt(&buf, Int32(24))
+        
+        
+        case .driversLicenseLastName:
+            writeInt(&buf, Int32(25))
+        
+        
+        case .driversLicenseLicenseNumber:
+            writeInt(&buf, Int32(26))
         
         }
     }
