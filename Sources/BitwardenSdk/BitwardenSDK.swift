@@ -2107,6 +2107,12 @@ public protocol ClientProtocol: AnyObject, Sendable {
      */
     func httpGet(url: String) async throws  -> String
     
+    /**
+     * Returns the key-management state bridge client used to register a
+     * host-supplied storage implementation.
+     */
+    func kmStateBridge()  -> StateBridgeClient
+    
     func platform()  -> PlatformClient
     
     /**
@@ -2123,6 +2129,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
      * SSH operations
      */
     func ssh()  -> SshClient
+    
+    /**
+     * Returns the user-crypto-management sub-client (PIN settings, key rotation, etc).
+     */
+    func userCryptoManagement()  -> UserCryptoManagementClient
     
     /**
      * Vault item operations
@@ -2271,6 +2282,18 @@ open func httpGet(url: String)async throws  -> String  {
         )
 }
     
+    /**
+     * Returns the key-management state bridge client used to register a
+     * host-supplied storage implementation.
+     */
+open func kmStateBridge() -> StateBridgeClient  {
+    return try!  FfiConverterTypeStateBridgeClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_km_state_bridge(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
 open func platform() -> PlatformClient  {
     return try!  FfiConverterTypePlatformClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_platform(
@@ -2307,6 +2330,17 @@ open func sends() -> SendClient  {
 open func ssh() -> SshClient  {
     return try!  FfiConverterTypeSshClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_ssh(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Returns the user-crypto-management sub-client (PIN settings, key rotation, etc).
+     */
+open func userCryptoManagement() -> UserCryptoManagementClient  {
+    return try!  FfiConverterTypeUserCryptoManagementClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_user_crypto_management(
             self.uniffiCloneHandle(),$0
     )
 })
@@ -13924,6 +13958,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 43705) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_km_state_bridge() != 61296) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_platform() != 22973) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -13934,6 +13971,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 17969) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_user_crypto_management() != 15429) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_vault() != 35701) {
@@ -14490,6 +14530,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
     uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenUserCryptoManagementInitialized()
     uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok
 }()
