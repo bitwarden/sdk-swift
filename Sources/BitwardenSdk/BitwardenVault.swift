@@ -1792,6 +1792,71 @@ public func FfiConverterTypeCipherLoginDetails_lower(_ value: CipherLoginDetails
 }
 
 
+/**
+ * Request to update the subset of cipher fields that a user without edit
+ * permissions is still allowed to change (`folder_id` and `favorite`).
+ *
+ * Backed by the `PUT /ciphers/{id}/partial` server endpoint, which authorizes
+ * based on view (not edit) access.
+ */
+public struct CipherPartialEditRequest: Equatable, Hashable {
+    public let id: CipherId
+    public let folderId: FolderId?
+    public let favorite: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: CipherId, folderId: FolderId?, favorite: Bool) {
+        self.id = id
+        self.folderId = folderId
+        self.favorite = favorite
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CipherPartialEditRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherPartialEditRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherPartialEditRequest {
+        return
+            try CipherPartialEditRequest(
+                id: FfiConverterTypeCipherId.read(from: &buf), 
+                folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
+                favorite: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CipherPartialEditRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.id, into: &buf)
+        FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
+        FfiConverterBool.write(value.favorite, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherPartialEditRequest_lift(_ buf: RustBuffer) throws -> CipherPartialEditRequest {
+    return try FfiConverterTypeCipherPartialEditRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherPartialEditRequest_lower(_ value: CipherPartialEditRequest) -> RustBuffer {
+    return FfiConverterTypeCipherPartialEditRequest.lower(value)
+}
+
+
 public struct CipherPermissions: Equatable, Hashable {
     public let delete: Bool
     public let restore: Bool
