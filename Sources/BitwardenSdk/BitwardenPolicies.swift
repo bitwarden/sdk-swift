@@ -419,22 +419,6 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
-    typealias FfiType = UInt8
-    typealias SwiftType = UInt8
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt8 {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: UInt8, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterInt32: FfiConverterPrimitive {
     typealias FfiType = Int32
     typealias SwiftType = Int32
@@ -757,6 +741,295 @@ public func FfiConverterTypePolicyView_lower(_ value: PolicyView) -> RustBuffer 
     return FfiConverterTypePolicyView.lower(value)
 }
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The type of an organization policy.
+ *
+ * The integer value matches the server's wire format.
+ */
+
+public enum PolicyType: UInt8, Equatable, Hashable {
+    
+    /**
+     * Requires members to have two-step login enabled on their account.
+     */
+    case twoFactorAuthentication = 0
+    /**
+     * Sets minimum requirements for members' master passwords.
+     */
+    case masterPassword = 1
+    /**
+     * Sets minimum requirements for the password generator.
+     */
+    case passwordGenerator = 2
+    /**
+     * Restricts members to being part of a single organization.
+     */
+    case singleOrg = 3
+    /**
+     * Requires members to authenticate with single sign-on.
+     */
+    case requireSso = 4
+    /**
+     * Forces newly added or cloned items to be owned by the organization rather than the
+     * member's personal vault. Also enables My Items functionality.
+     */
+    case organizationDataOwnership = 5
+    /**
+     * Disables the ability to create and edit Bitwarden Sends.
+     *
+     * Superseded by [`SendControls`](Self::SendControls) when the
+     * `pm-31885-send-controls` feature flag is active.
+     */
+    case disableSend = 6
+    /**
+     * Sets restrictions or defaults for Bitwarden Sends.
+     *
+     * Superseded by [`SendControls`](Self::SendControls) when the
+     * `pm-31885-send-controls` feature flag is active.
+     */
+    case sendOptions = 7
+    /**
+     * Allows administrators to recover member accounts.
+     */
+    case resetPassword = 8
+    /**
+     * Sets the maximum allowed vault timeout for members.
+     */
+    case maximumVaultTimeout = 9
+    /**
+     * Disables members' ability to export their personal vault.
+     */
+    case disablePersonalVaultExport = 10
+    /**
+     * Activates autofill on page load in the browser extension.
+     */
+    case activateAutofill = 11
+    /**
+     * Automatically logs members into apps using single sign-on.
+     */
+    case automaticAppLogIn = 12
+    /**
+     * Removes members' access to the free Bitwarden Families sponsorship benefit.
+     */
+    case freeFamiliesSponsorshipPolicy = 13
+    /**
+     * Prevents members from unlocking the app with a PIN.
+     */
+    case removeUnlockWithPin = 14
+    /**
+     * Restricts the item types that members can create.
+     */
+    case restrictedItemTypesPolicy = 15
+    /**
+     * Sets the default URI match detection strategy for autofill.
+     */
+    case uriMatchDefaults = 16
+    /**
+     * Sets the default behavior for the autotype feature.
+     */
+    case autotypeDefaultSetting = 17
+    /**
+     * Automatically confirms invited users into the organization.
+     */
+    case automaticUserConfirmation = 18
+    /**
+     * Blocks account creation for users with email addresses on claimed domains.
+     */
+    case blockClaimedDomainAccountCreation = 19
+    /**
+     * Displays an organization-configured banner message to members in their vault.
+     */
+    case organizationUserNotification = 20
+    /**
+     * Configures Send-related behavior: disabling Sends, email visibility, access controls,
+     * Send types, and deletion.
+     *
+     * Supersedes [`DisableSend`](Self::DisableSend) and [`SendOptions`](Self::SendOptions) when
+     * the `pm-31885-send-controls` feature flag is active on the server.
+     */
+    case sendControls = 21
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PolicyType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
+    typealias SwiftType = PolicyType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .twoFactorAuthentication
+        
+        case 2: return .masterPassword
+        
+        case 3: return .passwordGenerator
+        
+        case 4: return .singleOrg
+        
+        case 5: return .requireSso
+        
+        case 6: return .organizationDataOwnership
+        
+        case 7: return .disableSend
+        
+        case 8: return .sendOptions
+        
+        case 9: return .resetPassword
+        
+        case 10: return .maximumVaultTimeout
+        
+        case 11: return .disablePersonalVaultExport
+        
+        case 12: return .activateAutofill
+        
+        case 13: return .automaticAppLogIn
+        
+        case 14: return .freeFamiliesSponsorshipPolicy
+        
+        case 15: return .removeUnlockWithPin
+        
+        case 16: return .restrictedItemTypesPolicy
+        
+        case 17: return .uriMatchDefaults
+        
+        case 18: return .autotypeDefaultSetting
+        
+        case 19: return .automaticUserConfirmation
+        
+        case 20: return .blockClaimedDomainAccountCreation
+        
+        case 21: return .organizationUserNotification
+        
+        case 22: return .sendControls
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PolicyType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .twoFactorAuthentication:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .masterPassword:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .passwordGenerator:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .singleOrg:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .requireSso:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .organizationDataOwnership:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .disableSend:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .sendOptions:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .resetPassword:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .maximumVaultTimeout:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .disablePersonalVaultExport:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .activateAutofill:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .automaticAppLogIn:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .freeFamiliesSponsorshipPolicy:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .removeUnlockWithPin:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .restrictedItemTypesPolicy:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .uriMatchDefaults:
+            writeInt(&buf, Int32(17))
+        
+        
+        case .autotypeDefaultSetting:
+            writeInt(&buf, Int32(18))
+        
+        
+        case .automaticUserConfirmation:
+            writeInt(&buf, Int32(19))
+        
+        
+        case .blockClaimedDomainAccountCreation:
+            writeInt(&buf, Int32(20))
+        
+        
+        case .organizationUserNotification:
+            writeInt(&buf, Int32(21))
+        
+        
+        case .sendControls:
+            writeInt(&buf, Int32(22))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyType_lift(_ buf: RustBuffer) throws -> PolicyType {
+    return try FfiConverterTypePolicyType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyType_lower(_ value: PolicyType) -> RustBuffer {
+    return FfiConverterTypePolicyType.lower(value)
+}
+
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -852,50 +1125,6 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
         }
     }
 }
-
-
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
-public typealias PolicyType = UInt8
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypePolicyType: FfiConverter {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyType {
-        return try FfiConverterUInt8.read(from: &buf)
-    }
-
-    public static func write(_ value: PolicyType, into buf: inout [UInt8]) {
-        return FfiConverterUInt8.write(value, into: &buf)
-    }
-
-    public static func lift(_ value: UInt8) throws -> PolicyType {
-        return try FfiConverterUInt8.lift(value)
-    }
-
-    public static func lower(_ value: PolicyType) -> UInt8 {
-        return FfiConverterUInt8.lower(value)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypePolicyType_lift(_ value: UInt8) throws -> PolicyType {
-    return try FfiConverterTypePolicyType.lift(value)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypePolicyType_lower(_ value: PolicyType) -> UInt8 {
-    return FfiConverterTypePolicyType.lower(value)
-}
-
 
 private enum InitializationResult {
     case ok

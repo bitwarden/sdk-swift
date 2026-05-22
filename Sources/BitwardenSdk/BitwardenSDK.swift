@@ -14345,7 +14345,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 39032) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 62118) {
+    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 63886) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 47547) {
