@@ -1010,6 +1010,96 @@ public func FfiConverterTypeRotateUserKeysRequest_lower(_ value: RotateUserKeysR
     return FfiConverterTypeRotateUserKeysRequest.lower(value)
 }
 
+
+public enum KeyPairRegenerationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case UserKeyNotAvailable(message: String)
+    
+    case Api(message: String)
+    
+    case Crypto(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension KeyPairRegenerationError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeKeyPairRegenerationError: FfiConverterRustBuffer {
+    typealias SwiftType = KeyPairRegenerationError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyPairRegenerationError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .UserKeyNotAvailable(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: KeyPairRegenerationError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .UserKeyNotAvailable(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyPairRegenerationError_lift(_ buf: RustBuffer) throws -> KeyPairRegenerationError {
+    return try FfiConverterTypeKeyPairRegenerationError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyPairRegenerationError_lower(_ value: KeyPairRegenerationError) -> RustBuffer {
+    return FfiConverterTypeKeyPairRegenerationError.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
