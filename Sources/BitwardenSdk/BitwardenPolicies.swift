@@ -664,25 +664,168 @@ public func FfiConverterTypeMasterPasswordPolicyResponse_lower(_ value: MasterPa
 
 
 /**
+ * A minimal set of data for a user in an organization. This provides
+ * the context needed to evaluate the policies that are applied to the
+ * user by the organization.
+ */
+public struct OrganizationUserPolicyContext: Equatable, Hashable {
+    /**
+     * The organization's unique ID.
+     */
+    public let id: Uuid
+    /**
+     * The user's membership status in the organization.
+     */
+    public let status: OrganizationUserStatusType
+    /**
+     * The user's role within the organization.
+     */
+    public let role: OrganizationUserType
+    /**
+     * Whether the organization is enabled.
+     */
+    public let enabled: Bool
+    /**
+     * Whether the organization's plan supports policies.
+     */
+    public let usePolicies: Bool
+    /**
+     * Whether the user is acting on behalf of a provider
+     * that manages the organization.
+     */
+    public let isProviderUser: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The organization's unique ID.
+         */id: Uuid, 
+        /**
+         * The user's membership status in the organization.
+         */status: OrganizationUserStatusType, 
+        /**
+         * The user's role within the organization.
+         */role: OrganizationUserType, 
+        /**
+         * Whether the organization is enabled.
+         */enabled: Bool, 
+        /**
+         * Whether the organization's plan supports policies.
+         */usePolicies: Bool, 
+        /**
+         * Whether the user is acting on behalf of a provider
+         * that manages the organization.
+         */isProviderUser: Bool) {
+        self.id = id
+        self.status = status
+        self.role = role
+        self.enabled = enabled
+        self.usePolicies = usePolicies
+        self.isProviderUser = isProviderUser
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension OrganizationUserPolicyContext: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeOrganizationUserPolicyContext: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OrganizationUserPolicyContext {
+        return
+            try OrganizationUserPolicyContext(
+                id: FfiConverterTypeUuid.read(from: &buf), 
+                status: FfiConverterTypeOrganizationUserStatusType.read(from: &buf), 
+                role: FfiConverterTypeOrganizationUserType.read(from: &buf), 
+                enabled: FfiConverterBool.read(from: &buf), 
+                usePolicies: FfiConverterBool.read(from: &buf), 
+                isProviderUser: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: OrganizationUserPolicyContext, into buf: inout [UInt8]) {
+        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterTypeOrganizationUserStatusType.write(value.status, into: &buf)
+        FfiConverterTypeOrganizationUserType.write(value.role, into: &buf)
+        FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterBool.write(value.usePolicies, into: &buf)
+        FfiConverterBool.write(value.isProviderUser, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationUserPolicyContext_lift(_ buf: RustBuffer) throws -> OrganizationUserPolicyContext {
+    return try FfiConverterTypeOrganizationUserPolicyContext.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationUserPolicyContext_lower(_ value: OrganizationUserPolicyContext) -> RustBuffer {
+    return FfiConverterTypeOrganizationUserPolicyContext.lower(value)
+}
+
+
+/**
  * An organization policy.
  */
 public struct PolicyView: Equatable, Hashable {
+    /**
+     * The policy's unique ID.
+     */
     public let id: Uuid
+    /**
+     * The organization this policy belongs to.
+     */
     public let organizationId: Uuid
+    /**
+     * The type of policy.
+     */
     public let type: PolicyType
     /**
-     * The policy's raw configuration data as a JSON string, if any.
+     * The policy's additional configuration data as a JSON string, if any.
      */
     public let data: String?
+    /**
+     * Whether the policy is enabled.
+     */
     public let enabled: Bool
+    /**
+     * When the policy was last modified.
+     */
     public let revisionDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: Uuid, organizationId: Uuid, type: PolicyType, 
+    public init(
         /**
-         * The policy's raw configuration data as a JSON string, if any.
-         */data: String?, enabled: Bool, revisionDate: DateTime?) {
+         * The policy's unique ID.
+         */id: Uuid, 
+        /**
+         * The organization this policy belongs to.
+         */organizationId: Uuid, 
+        /**
+         * The type of policy.
+         */type: PolicyType, 
+        /**
+         * The policy's additional configuration data as a JSON string, if any.
+         */data: String?, 
+        /**
+         * Whether the policy is enabled.
+         */enabled: Bool, 
+        /**
+         * When the policy was last modified.
+         */revisionDate: DateTime?) {
         self.id = id
         self.organizationId = organizationId
         self.type = type
@@ -813,7 +956,7 @@ public enum PolicyType: UInt8, Equatable, Hashable {
     /**
      * Removes members' access to the free Bitwarden Families sponsorship benefit.
      */
-    case freeFamiliesSponsorshipPolicy = 13
+    case freeFamiliesSponsorship = 13
     /**
      * Prevents members from unlocking the app with a PIN.
      */
@@ -821,7 +964,7 @@ public enum PolicyType: UInt8, Equatable, Hashable {
     /**
      * Restricts the item types that members can create.
      */
-    case restrictedItemTypesPolicy = 15
+    case restrictedItemTypes = 15
     /**
      * Sets the default URI match detection strategy for autofill.
      */
@@ -897,11 +1040,11 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
         
         case 13: return .automaticAppLogIn
         
-        case 14: return .freeFamiliesSponsorshipPolicy
+        case 14: return .freeFamiliesSponsorship
         
         case 15: return .removeUnlockWithPin
         
-        case 16: return .restrictedItemTypesPolicy
+        case 16: return .restrictedItemTypes
         
         case 17: return .uriMatchDefaults
         
@@ -975,7 +1118,7 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(13))
         
         
-        case .freeFamiliesSponsorshipPolicy:
+        case .freeFamiliesSponsorship:
             writeInt(&buf, Int32(14))
         
         
@@ -983,7 +1126,7 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(15))
         
         
-        case .restrictedItemTypesPolicy:
+        case .restrictedItemTypes:
             writeInt(&buf, Int32(16))
         
         
@@ -1143,6 +1286,7 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenOrganizationsInitialized()
     return InitializationResult.ok
 }()
 

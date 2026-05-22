@@ -8783,7 +8783,7 @@ public protocol PoliciesClientProtocol: AnyObject, Sendable {
      * Returns the subset of `policies` that should be enforced against the user,
      * based on their organization memberships and roles.
      */
-    func filterByType(policies: [PolicyView], organizations: [ProfileOrganization], policyType: PolicyType)  -> [PolicyView]
+    func filterByType(policies: [PolicyView], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType)  -> [PolicyView]
     
 }
 /**
@@ -8848,12 +8848,12 @@ open class PoliciesClient: PoliciesClientProtocol, @unchecked Sendable {
      * Returns the subset of `policies` that should be enforced against the user,
      * based on their organization memberships and roles.
      */
-open func filterByType(policies: [PolicyView], organizations: [ProfileOrganization], policyType: PolicyType) -> [PolicyView]  {
+open func filterByType(policies: [PolicyView], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType) -> [PolicyView]  {
     return try!  FfiConverterSequenceTypePolicyView.lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_policiesclient_filter_by_type(
             self.uniffiCloneHandle(),
         FfiConverterSequenceTypePolicyView.lower(policies),
-        FfiConverterSequenceTypeProfileOrganization.lower(organizations),
+        FfiConverterSequenceTypeOrganizationUserPolicyContext.lower(organizationUserPolicyContexts),
         FfiConverterTypePolicyType_lower(policyType),$0
     )
 })
@@ -13198,23 +13198,23 @@ fileprivate struct FfiConverterSequenceTypeFido2CredentialAutofillView: FfiConve
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypeProfileOrganization: FfiConverterRustBuffer {
-    typealias SwiftType = [ProfileOrganization]
+fileprivate struct FfiConverterSequenceTypeOrganizationUserPolicyContext: FfiConverterRustBuffer {
+    typealias SwiftType = [OrganizationUserPolicyContext]
 
-    public static func write(_ value: [ProfileOrganization], into buf: inout [UInt8]) {
+    public static func write(_ value: [OrganizationUserPolicyContext], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for item in value {
-            FfiConverterTypeProfileOrganization.write(item, into: &buf)
+            FfiConverterTypeOrganizationUserPolicyContext.write(item, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ProfileOrganization] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [OrganizationUserPolicyContext] {
         let len: Int32 = try readInt(&buf)
-        var seq = [ProfileOrganization]()
+        var seq = [OrganizationUserPolicyContext]()
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeProfileOrganization.read(from: &buf))
+            seq.append(try FfiConverterTypeOrganizationUserPolicyContext.read(from: &buf))
         }
         return seq
     }
@@ -14345,7 +14345,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 39032) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 63886) {
+    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 64332) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 47547) {
@@ -14524,7 +14524,6 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
-    uniffiEnsureBitwardenOrganizationsInitialized()
     uniffiEnsureBitwardenPoliciesInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
