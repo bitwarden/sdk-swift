@@ -10076,8 +10076,6 @@ public func FfiConverterTypeSshClient_lower(_ value: SshClient) -> UInt64 {
 
 public protocol StateClientProtocol: AnyObject, Sendable {
     
-    func registerCipherRepository(repository: CipherRepository) 
-    
     func registerClientManagedRepositories(repositories: Repositories) 
     
 }
@@ -10133,14 +10131,6 @@ open class StateClient: StateClientProtocol, @unchecked Sendable {
 
     
 
-    
-open func registerCipherRepository(repository: CipherRepository)  {try! rustCall() {
-    uniffi_bitwarden_uniffi_fn_method_stateclient_register_cipher_repository(
-            self.uniffiCloneHandle(),
-        FfiConverterTypeCipherRepository_lower(repository),$0
-    )
-}
-}
     
 open func registerClientManagedRepositories(repositories: Repositories)  {try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_stateclient_register_client_managed_repositories(
@@ -14211,9 +14201,6 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_platformclient_user_fingerprint() != 36590) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_cipher_repository() != 40885) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_client_managed_repositories() != 15394) {

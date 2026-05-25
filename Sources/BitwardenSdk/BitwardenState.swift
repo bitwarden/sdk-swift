@@ -568,8 +568,6 @@ public enum StateRegistryError: Swift.Error, Equatable, Hashable, Foundation.Loc
 
     
     
-    case DatabaseAlreadyInitialized(message: String)
-    
     case DatabaseNotInitialized(message: String)
     
     case Database(message: String)
@@ -603,15 +601,11 @@ public struct FfiConverterTypeStateRegistryError: FfiConverterRustBuffer {
         
 
         
-        case 1: return .DatabaseAlreadyInitialized(
+        case 1: return .DatabaseNotInitialized(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .DatabaseNotInitialized(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 3: return .Database(
+        case 2: return .Database(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -626,12 +620,10 @@ public struct FfiConverterTypeStateRegistryError: FfiConverterRustBuffer {
         
 
         
-        case .DatabaseAlreadyInitialized(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
         case .DatabaseNotInitialized(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
+            writeInt(&buf, Int32(1))
         case .Database(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(2))
 
         
         }
