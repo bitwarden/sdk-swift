@@ -1117,8 +1117,6 @@ public enum KeyRotationMethod: Equatable, Hashable {
     )
     /**
      * TDE user, key rotation without a password change.
-     * NOTE: This is not yet implemented and will return a
-     * RotateUserKeysError::UnimplementedKeyRotationMethod error if used.
      */
     case tde
 
@@ -1384,8 +1382,6 @@ public enum RotateUserKeysError: Swift.Error, Equatable, Hashable, Foundation.Lo
     
     case UntrustedKey(message: String)
     
-    case UnimplementedKeyRotationMethod(message: String)
-    
     case OldAttachments(message: String)
     
 
@@ -1437,11 +1433,7 @@ public struct FfiConverterTypeRotateUserKeysError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .UnimplementedKeyRotationMethod(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 7: return .OldAttachments(
+        case 6: return .OldAttachments(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1466,10 +1458,8 @@ public struct FfiConverterTypeRotateUserKeysError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .UntrustedKey(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .UnimplementedKeyRotationMethod(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
         case .OldAttachments(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(6))
 
         
         }
