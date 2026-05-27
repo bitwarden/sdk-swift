@@ -953,11 +953,11 @@ public struct RotateUserKeysRequest: Equatable, Hashable {
     public let keyRotationMethod: KeyRotationMethod
     public let trustedEmergencyAccessPublicKeys: [PublicKey]
     public let trustedOrganizationPublicKeys: [PublicKey]
-    public let upgradeTokenAction: UpgradeTokenAction?
+    public let upgradeTokenAction: UpgradeTokenAction
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(keyRotationMethod: KeyRotationMethod, trustedEmergencyAccessPublicKeys: [PublicKey], trustedOrganizationPublicKeys: [PublicKey], upgradeTokenAction: UpgradeTokenAction?) {
+    public init(keyRotationMethod: KeyRotationMethod, trustedEmergencyAccessPublicKeys: [PublicKey], trustedOrganizationPublicKeys: [PublicKey], upgradeTokenAction: UpgradeTokenAction) {
         self.keyRotationMethod = keyRotationMethod
         self.trustedEmergencyAccessPublicKeys = trustedEmergencyAccessPublicKeys
         self.trustedOrganizationPublicKeys = trustedOrganizationPublicKeys
@@ -983,7 +983,7 @@ public struct FfiConverterTypeRotateUserKeysRequest: FfiConverterRustBuffer {
                 keyRotationMethod: FfiConverterTypeKeyRotationMethod.read(from: &buf), 
                 trustedEmergencyAccessPublicKeys: FfiConverterSequenceTypePublicKey.read(from: &buf), 
                 trustedOrganizationPublicKeys: FfiConverterSequenceTypePublicKey.read(from: &buf), 
-                upgradeTokenAction: FfiConverterOptionTypeUpgradeTokenAction.read(from: &buf)
+                upgradeTokenAction: FfiConverterTypeUpgradeTokenAction.read(from: &buf)
         )
     }
 
@@ -991,7 +991,7 @@ public struct FfiConverterTypeRotateUserKeysRequest: FfiConverterRustBuffer {
         FfiConverterTypeKeyRotationMethod.write(value.keyRotationMethod, into: &buf)
         FfiConverterSequenceTypePublicKey.write(value.trustedEmergencyAccessPublicKeys, into: &buf)
         FfiConverterSequenceTypePublicKey.write(value.trustedOrganizationPublicKeys, into: &buf)
-        FfiConverterOptionTypeUpgradeTokenAction.write(value.upgradeTokenAction, into: &buf)
+        FfiConverterTypeUpgradeTokenAction.write(value.upgradeTokenAction, into: &buf)
     }
 }
 
@@ -1569,8 +1569,7 @@ public func FfiConverterTypeSyncError_lower(_ value: SyncError) -> RustBuffer {
 public enum UpgradeTokenAction: Equatable, Hashable {
     
     /**
-     * Skip creating and sending an upgrade token to the server. This will be the default behavior
-     * if the field is omitted.
+     * Skip creating and sending an upgrade token to the server.
      */
     case skip
     /**
@@ -1681,30 +1680,6 @@ fileprivate struct FfiConverterOptionTypePinLockType: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypePinLockType.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterOptionTypeUpgradeTokenAction: FfiConverterRustBuffer {
-    typealias SwiftType = UpgradeTokenAction?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeUpgradeTokenAction.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeUpgradeTokenAction.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
