@@ -1382,10 +1382,11 @@ public struct CipherCreateRequest: Equatable, Hashable {
     public let reprompt: CipherRepromptType
     public let type: CipherViewType
     public let fields: [FieldView]
+    public let archivedDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(organizationId: OrganizationId?, collectionIds: [CollectionId], folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView]) {
+    public init(organizationId: OrganizationId?, collectionIds: [CollectionId], folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView], archivedDate: DateTime?) {
         self.organizationId = organizationId
         self.collectionIds = collectionIds
         self.folderId = folderId
@@ -1395,6 +1396,7 @@ public struct CipherCreateRequest: Equatable, Hashable {
         self.reprompt = reprompt
         self.type = type
         self.fields = fields
+        self.archivedDate = archivedDate
     }
 
     
@@ -1421,7 +1423,8 @@ public struct FfiConverterTypeCipherCreateRequest: FfiConverterRustBuffer {
                 favorite: FfiConverterBool.read(from: &buf), 
                 reprompt: FfiConverterTypeCipherRepromptType.read(from: &buf), 
                 type: FfiConverterTypeCipherViewType.read(from: &buf), 
-                fields: FfiConverterSequenceTypeFieldView.read(from: &buf)
+                fields: FfiConverterSequenceTypeFieldView.read(from: &buf), 
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
@@ -1435,6 +1438,7 @@ public struct FfiConverterTypeCipherCreateRequest: FfiConverterRustBuffer {
         FfiConverterTypeCipherRepromptType.write(value.reprompt, into: &buf)
         FfiConverterTypeCipherViewType.write(value.type, into: &buf)
         FfiConverterSequenceTypeFieldView.write(value.fields, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
     }
 }
 
