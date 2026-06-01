@@ -1209,6 +1209,99 @@ public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
     return FfiConverterTypeSendView.lower(value)
 }
 
+
+/**
+ * Error returned when accessing a send fails.
+ */
+public enum AccessSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * An API or network error occurred.
+     */
+    case Api(message: String)
+    
+    /**
+     * The response body could not be parsed into a [`SendAccessResponse`] — either a
+     * required field was missing, the send type was an unrecognized value, or a date
+     * field was malformed.
+     */
+    case Parse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension AccessSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccessSendError: FfiConverterRustBuffer {
+    typealias SwiftType = AccessSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccessSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Parse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AccessSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Parse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccessSendError_lift(_ buf: RustBuffer) throws -> AccessSendError {
+    return try FfiConverterTypeAccessSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccessSendError_lower(_ value: AccessSendError) -> RustBuffer {
+    return FfiConverterTypeAccessSendError.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -1294,6 +1387,138 @@ public func FfiConverterTypeAuthType_lower(_ value: AuthType) -> RustBuffer {
     return FfiConverterTypeAuthType.lower(value)
 }
 
+
+
+public enum CreateFileSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * An API or network error occurred.
+     */
+    case Api(message: String)
+    
+    /**
+     * A cryptographic error occurred.
+     */
+    case Crypto(message: String)
+    
+    /**
+     * An email list validation error occurred.
+     */
+    case EmptyEmailList(message: String)
+    
+    /**
+     * A required field was missing from the API response.
+     */
+    case MissingField(message: String)
+    
+    /**
+     * A repository error occurred.
+     */
+    case Repository(message: String)
+    
+    /**
+     * A send parse error occurred.
+     */
+    case SendParse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CreateFileSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateFileSendError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateFileSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateFileSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .EmptyEmailList(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .SendParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateFileSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .EmptyEmailList(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .SendParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateFileSendError_lift(_ buf: RustBuffer) throws -> CreateFileSendError {
+    return try FfiConverterTypeCreateFileSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateFileSendError_lower(_ value: CreateFileSendError) -> RustBuffer {
+    return FfiConverterTypeCreateFileSendError.lower(value)
+}
 
 
 public enum CreateSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
@@ -1407,6 +1632,88 @@ public func FfiConverterTypeCreateSendError_lift(_ buf: RustBuffer) throws -> Cr
 #endif
 public func FfiConverterTypeCreateSendError_lower(_ value: CreateSendError) -> RustBuffer {
     return FfiConverterTypeCreateSendError.lower(value)
+}
+
+
+public enum DeleteSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension DeleteSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDeleteSendError: FfiConverterRustBuffer {
+    typealias SwiftType = DeleteSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DeleteSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DeleteSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteSendError_lift(_ buf: RustBuffer) throws -> DeleteSendError {
+    return try FfiConverterTypeDeleteSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDeleteSendError_lower(_ value: DeleteSendError) -> RustBuffer {
+    return FfiConverterTypeDeleteSendError.lower(value)
 }
 
 
@@ -1547,6 +1854,162 @@ public func FfiConverterTypeEditSendError_lower(_ value: EditSendError) -> RustB
     return FfiConverterTypeEditSendError.lower(value)
 }
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Where the client should upload the encrypted file bytes after [`SendClient::create_file_send`].
+ */
+
+public enum FileUploadType: UInt8, Equatable, Hashable {
+    
+    /**
+     * Upload directly to the Bitwarden server via `POST /sends/{id}/file/{file_id}`.
+     */
+    case direct = 0
+    /**
+     * Upload to an Azure Blob Storage pre-signed URL.
+     */
+    case azure = 1
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension FileUploadType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFileUploadType: FfiConverterRustBuffer {
+    typealias SwiftType = FileUploadType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FileUploadType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .direct
+        
+        case 2: return .azure
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: FileUploadType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .direct:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .azure:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFileUploadType_lift(_ buf: RustBuffer) throws -> FileUploadType {
+    return try FfiConverterTypeFileUploadType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFileUploadType_lower(_ value: FileUploadType) -> RustBuffer {
+    return FfiConverterTypeFileUploadType.lower(value)
+}
+
+
+
+/**
+ * Error returned when getting send file download data fails.
+ */
+public enum GetFileDownloadDataError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * An API or network error occurred.
+     */
+    case Api(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension GetFileDownloadDataError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetFileDownloadDataError: FfiConverterRustBuffer {
+    typealias SwiftType = GetFileDownloadDataError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetFileDownloadDataError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetFileDownloadDataError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFileDownloadDataError_lift(_ buf: RustBuffer) throws -> GetFileDownloadDataError {
+    return try FfiConverterTypeGetFileDownloadDataError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFileDownloadDataError_lower(_ value: GetFileDownloadDataError) -> RustBuffer {
+    return FfiConverterTypeGetFileDownloadDataError.lower(value)
+}
+
 
 public enum GetSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -1643,6 +2106,200 @@ public func FfiConverterTypeGetSendError_lift(_ buf: RustBuffer) throws -> GetSe
 #endif
 public func FfiConverterTypeGetSendError_lower(_ value: GetSendError) -> RustBuffer {
     return FfiConverterTypeGetSendError.lower(value)
+}
+
+
+public enum RemoveSendPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Crypto(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+    case SendParse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension RemoveSendPasswordError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRemoveSendPasswordError: FfiConverterRustBuffer {
+    typealias SwiftType = RemoveSendPasswordError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RemoveSendPasswordError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .SendParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: RemoveSendPasswordError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .SendParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRemoveSendPasswordError_lift(_ buf: RustBuffer) throws -> RemoveSendPasswordError {
+    return try FfiConverterTypeRemoveSendPasswordError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRemoveSendPasswordError_lower(_ value: RemoveSendPasswordError) -> RustBuffer {
+    return FfiConverterTypeRemoveSendPasswordError.lower(value)
+}
+
+
+public enum RenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * An API or network error occurred.
+     */
+    case Api(message: String)
+    
+    /**
+     * A required field was missing from the API response.
+     */
+    case MissingField(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension RenewFileUploadUrlError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRenewFileUploadUrlError: FfiConverterRustBuffer {
+    typealias SwiftType = RenewFileUploadUrlError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RenewFileUploadUrlError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: RenewFileUploadUrlError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRenewFileUploadUrlError_lift(_ buf: RustBuffer) throws -> RenewFileUploadUrlError {
+    return try FfiConverterTypeRenewFileUploadUrlError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRenewFileUploadUrlError_lower(_ value: RenewFileUploadUrlError) -> RustBuffer {
+    return FfiConverterTypeRenewFileUploadUrlError.lower(value)
 }
 
 // Note that we don't yet support `indirect` for enums.
@@ -2143,6 +2800,94 @@ public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
     return FfiConverterTypeSendType.lower(value)
 }
 
+
+
+public enum UploadSendFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * An API or network error occurred.
+     */
+    case Api(message: String)
+    
+    /**
+     * A reqwest error occurred when building the multipart form.
+     */
+    case Reqwest(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension UploadSendFileError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUploadSendFileError: FfiConverterRustBuffer {
+    typealias SwiftType = UploadSendFileError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UploadSendFileError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Reqwest(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UploadSendFileError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Reqwest(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUploadSendFileError_lift(_ buf: RustBuffer) throws -> UploadSendFileError {
+    return try FfiConverterTypeUploadSendFileError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUploadSendFileError_lower(_ value: UploadSendFileError) -> RustBuffer {
+    return FfiConverterTypeUploadSendFileError.lower(value)
+}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
