@@ -4692,7 +4692,7 @@ public enum ApiError: Swift.Error, Equatable, Hashable, Codable, Foundation.Loca
     
     case Io(message: String)
     
-    case ResponseContent(message: String)
+    case Response(message: String)
     
 
     
@@ -4739,7 +4739,7 @@ public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .ResponseContent(
+        case 5: return .Response(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -4762,7 +4762,7 @@ public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
         case .Io(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .ResponseContent(_ /* message is ignored*/):
+        case .Response(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
 
         
