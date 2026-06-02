@@ -1109,6 +1109,10 @@ public struct LoginSuccessResponse: Equatable, Hashable {
      * this field contains the requirements of that policy.
      */
     public let masterPasswordPolicy: MasterPasswordPolicyResponse?
+    /**
+     * The user's account cryptographic keys (wrapped with the user key).
+     */
+    public let wrappedAccountCryptoState: WrappedAccountCryptographicState?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1159,7 +1163,10 @@ public struct LoginSuccessResponse: Equatable, Hashable {
         /**
          * If the user is subject to an organization master password policy,
          * this field contains the requirements of that policy.
-         */masterPasswordPolicy: MasterPasswordPolicyResponse?) {
+         */masterPasswordPolicy: MasterPasswordPolicyResponse?, 
+        /**
+         * The user's account cryptographic keys (wrapped with the user key).
+         */wrappedAccountCryptoState: WrappedAccountCryptographicState?) {
         self.accessToken = accessToken
         self.expiresIn = expiresIn
         self.expiresAt = expiresAt
@@ -1172,6 +1179,7 @@ public struct LoginSuccessResponse: Equatable, Hashable {
         self.apiUseKeyConnector = apiUseKeyConnector
         self.userDecryptionOptions = userDecryptionOptions
         self.masterPasswordPolicy = masterPasswordPolicy
+        self.wrappedAccountCryptoState = wrappedAccountCryptoState
     }
 
     
@@ -1201,7 +1209,8 @@ public struct FfiConverterTypeLoginSuccessResponse: FfiConverterRustBuffer {
                 forcePasswordReset: FfiConverterOptionBool.read(from: &buf), 
                 apiUseKeyConnector: FfiConverterOptionBool.read(from: &buf), 
                 userDecryptionOptions: FfiConverterTypeUserDecryptionOptionsResponse.read(from: &buf), 
-                masterPasswordPolicy: FfiConverterOptionTypeMasterPasswordPolicyResponse.read(from: &buf)
+                masterPasswordPolicy: FfiConverterOptionTypeMasterPasswordPolicyResponse.read(from: &buf), 
+                wrappedAccountCryptoState: FfiConverterOptionTypeWrappedAccountCryptographicState.read(from: &buf)
         )
     }
 
@@ -1218,6 +1227,7 @@ public struct FfiConverterTypeLoginSuccessResponse: FfiConverterRustBuffer {
         FfiConverterOptionBool.write(value.apiUseKeyConnector, into: &buf)
         FfiConverterTypeUserDecryptionOptionsResponse.write(value.userDecryptionOptions, into: &buf)
         FfiConverterOptionTypeMasterPasswordPolicyResponse.write(value.masterPasswordPolicy, into: &buf)
+        FfiConverterOptionTypeWrappedAccountCryptographicState.write(value.wrappedAccountCryptoState, into: &buf)
     }
 }
 
@@ -3272,6 +3282,30 @@ fileprivate struct FfiConverterOptionTypeSendAccessTokenInvalidRequestError: Ffi
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeSendAccessTokenInvalidRequestError.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeWrappedAccountCryptographicState: FfiConverterRustBuffer {
+    typealias SwiftType = WrappedAccountCryptographicState?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeWrappedAccountCryptographicState.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeWrappedAccountCryptographicState.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
