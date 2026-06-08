@@ -458,19 +458,43 @@ fileprivate struct FfiConverterString: FfiConverter {
 }
 
 
+/**
+ * Errors that can occur when interacting with the SDK-managed database.
+ */
 public enum DatabaseError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
+    /**
+     * The requested database configuration is not supported on the current platform.
+     */
     case UnsupportedConfiguration(message: String)
     
+    /**
+     * A call dispatched through the thread-bound runner failed.
+     */
     case ThreadBoundRunner(message: String)
     
+    /**
+     * Failed to serialize or deserialize a stored value.
+     */
     case Serialization(message: String)
     
+    /**
+     * A JavaScript error was raised by the IndexedDB backend.
+     */
     case Js(message: String)
     
+    /**
+     * An unexpected internal error occurred in the database backend.
+     */
     case Internal(message: String)
+    
+    /**
+     * The database has been closed (e.g. by [`crate::registry::StateRegistry::wipe`]) and
+     * can no longer service operations.
+     */
+    case Closed(message: String)
     
 
     
@@ -521,6 +545,10 @@ public struct FfiConverterTypeDatabaseError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 6: return .Closed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -542,6 +570,8 @@ public struct FfiConverterTypeDatabaseError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .Internal(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
+        case .Closed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
 
         
         }
