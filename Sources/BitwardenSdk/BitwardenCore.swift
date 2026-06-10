@@ -3796,6 +3796,82 @@ public func FfiConverterTypeRegisterTdeKeyResponse_lower(_ value: RegisterTdeKey
 
 
 /**
+ * State used to re-initialize an unlocked user's cryptographic state after
+ * `accountCryptographicState` and `V2UpgradeToken` are received in a sync.
+ *
+ * This presumes the SDK is already unlocked (has user key in memory).
+ */
+public struct ReinitUserCryptoRequest: Equatable, Hashable, Codable {
+    /**
+     * The user's account cryptographic state, encrypted under the user key
+     */
+    public let accountCryptographicState: WrappedAccountCryptographicState
+    /**
+     * The SDK uses the in-store (V1) user key to extract the V2 user key from the token,
+     * then sets the V2 user key as the active user key before decrypting
+     * `account_cryptographic_state`.
+     */
+    public let upgradeToken: V2UpgradeToken
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The user's account cryptographic state, encrypted under the user key
+         */accountCryptographicState: WrappedAccountCryptographicState, 
+        /**
+         * The SDK uses the in-store (V1) user key to extract the V2 user key from the token,
+         * then sets the V2 user key as the active user key before decrypting
+         * `account_cryptographic_state`.
+         */upgradeToken: V2UpgradeToken) {
+        self.accountCryptographicState = accountCryptographicState
+        self.upgradeToken = upgradeToken
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ReinitUserCryptoRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeReinitUserCryptoRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ReinitUserCryptoRequest {
+        return
+            try ReinitUserCryptoRequest(
+                accountCryptographicState: FfiConverterTypeWrappedAccountCryptographicState.read(from: &buf), 
+                upgradeToken: FfiConverterTypeV2UpgradeToken.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ReinitUserCryptoRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeWrappedAccountCryptographicState.write(value.accountCryptographicState, into: &buf)
+        FfiConverterTypeV2UpgradeToken.write(value.upgradeToken, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeReinitUserCryptoRequest_lift(_ buf: RustBuffer) throws -> ReinitUserCryptoRequest {
+    return try FfiConverterTypeReinitUserCryptoRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeReinitUserCryptoRequest_lower(_ value: ReinitUserCryptoRequest) -> RustBuffer {
+    return FfiConverterTypeReinitUserCryptoRequest.lower(value)
+}
+
+
+/**
  * Request to verify a user's secret.
  */
 public struct SecretVerificationRequest: Equatable, Hashable, Codable {
@@ -4569,12 +4645,6 @@ public enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hash
     case TamperedData(message: String)
     
     /**
-     * The key store is already initialized with account keys. Currently, updating keys is not a
-     * supported operation
-     */
-    case KeyStoreAlreadyInitialized(message: String)
-    
-    /**
      * A generic cryptographic error occurred.
      */
     case GenericCrypto(message: String)
@@ -4624,11 +4694,7 @@ public struct FfiConverterTypeAccountCryptographyInitializationError: FfiConvert
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .KeyStoreAlreadyInitialized(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-        case 6: return .GenericCrypto(
+        case 5: return .GenericCrypto(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -4651,10 +4717,8 @@ public struct FfiConverterTypeAccountCryptographyInitializationError: FfiConvert
             writeInt(&buf, Int32(3))
         case .TamperedData(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .KeyStoreAlreadyInitialized(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
         case .GenericCrypto(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(5))
 
         
         }
@@ -6484,6 +6548,147 @@ public func FfiConverterTypePinUnlockStatus_lower(_ value: PinUnlockStatus) -> R
     return FfiConverterTypePinUnlockStatus.lower(value)
 }
 
+
+
+/**
+ * Errors that can occur when re-initializing user cryptography state.
+ */
+public enum ReinitUserCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The SDK is not in an unlocked state, so it cannot re-initialize user crypto.
+     */
+    case NotUnlocked(message: String)
+    
+    /**
+     * The provided account cryptographic state is not V2. Re-initialization is only supported for
+     * upgrading to V2 encryption.
+     */
+    case InvalidAccountCryptographicState(message: String)
+    
+    /**
+     * The local migrations (pin key and local user data key) that runs as part of the V1->V2
+     * upgrade failed, likely due to missing state or keys that should be present during the
+     * upgrade process. Clients should deconstruct the SDK and initialize a fresh instance to
+     * recover.
+     */
+    case LocalMigrationFailed(message: String)
+    
+    /**
+     * The provided upgrade token was invalid, such as not decrypting properly with the active user
+     * key, or containing unexpected data.
+     */
+    case InvalidUpgradeToken(message: String)
+    
+    /**
+     * An error occurred during the cryptographic operations to re-initialize user crypto.
+     */
+    case CryptoInitialization(message: String)
+    
+    /**
+     * The SDK does not have a state bridge registered, which is required to perform V1->V2 local
+     * data migrations.
+     */
+    case StateBridgeNotRegistered(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ReinitUserCryptoError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeReinitUserCryptoError: FfiConverterRustBuffer {
+    typealias SwiftType = ReinitUserCryptoError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ReinitUserCryptoError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NotUnlocked(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidAccountCryptographicState(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .LocalMigrationFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .InvalidUpgradeToken(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .CryptoInitialization(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .StateBridgeNotRegistered(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ReinitUserCryptoError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .NotUnlocked(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidAccountCryptographicState(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .LocalMigrationFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .InvalidUpgradeToken(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .CryptoInitialization(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .StateBridgeNotRegistered(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeReinitUserCryptoError_lift(_ buf: RustBuffer) throws -> ReinitUserCryptoError {
+    return try FfiConverterTypeReinitUserCryptoError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeReinitUserCryptoError_lower(_ value: ReinitUserCryptoError) -> RustBuffer {
+    return FfiConverterTypeReinitUserCryptoError.lower(value)
+}
 
 
 /**
