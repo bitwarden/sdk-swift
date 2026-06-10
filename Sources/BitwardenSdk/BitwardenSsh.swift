@@ -465,6 +465,9 @@ public enum KeyAlgorithm: Equatable, Hashable {
     case ed25519
     case rsa3072
     case rsa4096
+    case ecdsaP256
+    case ecdsaP384
+    case ecdsaP521
 
 
 
@@ -492,6 +495,12 @@ public struct FfiConverterTypeKeyAlgorithm: FfiConverterRustBuffer {
         
         case 3: return .rsa4096
         
+        case 4: return .ecdsaP256
+        
+        case 5: return .ecdsaP384
+        
+        case 6: return .ecdsaP521
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -510,6 +519,18 @@ public struct FfiConverterTypeKeyAlgorithm: FfiConverterRustBuffer {
         
         case .rsa4096:
             writeInt(&buf, Int32(3))
+        
+        
+        case .ecdsaP256:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .ecdsaP384:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .ecdsaP521:
+            writeInt(&buf, Int32(6))
         
         }
     }
