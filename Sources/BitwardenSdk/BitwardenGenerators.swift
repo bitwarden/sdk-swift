@@ -641,6 +641,32 @@ public struct PasswordGeneratorRequest: Equatable, Hashable {
      * When set, the value must be between 1 and 9. This value is ignored if special is false.
      */
     public let minSpecial: UInt8?
+    /**
+     * Custom characters that must each be available to the generator and from which at least
+     * one character is guaranteed to appear in the output. Each character of the string is
+     * treated as a member of the custom required set. Non-ASCII-printable characters are
+     * silently dropped during validation.
+     *
+     * This is primarily used by the HTML `passwordrules` parser to honor custom required
+     * character classes (e.g. `required: [!#$]`).
+     */
+    public let customRequiredChars: String?
+    /**
+     * Custom characters that are added to the overall pool of allowed characters, but are not
+     * required to appear. Each character of the string is treated as a member of the custom
+     * allowed set. Non-ASCII-printable characters are silently dropped during validation.
+     *
+     * This is primarily used by the HTML `passwordrules` parser to honor custom allowed
+     * character classes (e.g. `allowed: [-_.]`).
+     */
+    public let customAllowedChars: String?
+    /**
+     * The maximum number of consecutive identical characters allowed in the generated password,
+     * as expressed by the HTML `passwordrules` `max-consecutive` property. `None` disables
+     * the check; `Some(0)` is invalid and rejected at request validation. Enforced via
+     * re-shuffle with a single-pass repair fallback for degenerate pool sizes.
+     */
+    public let maxConsecutive: UInt8?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -680,7 +706,30 @@ public struct PasswordGeneratorRequest: Equatable, Hashable {
         /**
          * The minimum number of special characters in the generated password.
          * When set, the value must be between 1 and 9. This value is ignored if special is false.
-         */minSpecial: UInt8?) {
+         */minSpecial: UInt8?, 
+        /**
+         * Custom characters that must each be available to the generator and from which at least
+         * one character is guaranteed to appear in the output. Each character of the string is
+         * treated as a member of the custom required set. Non-ASCII-printable characters are
+         * silently dropped during validation.
+         *
+         * This is primarily used by the HTML `passwordrules` parser to honor custom required
+         * character classes (e.g. `required: [!#$]`).
+         */customRequiredChars: String? = nil, 
+        /**
+         * Custom characters that are added to the overall pool of allowed characters, but are not
+         * required to appear. Each character of the string is treated as a member of the custom
+         * allowed set. Non-ASCII-printable characters are silently dropped during validation.
+         *
+         * This is primarily used by the HTML `passwordrules` parser to honor custom allowed
+         * character classes (e.g. `allowed: [-_.]`).
+         */customAllowedChars: String? = nil, 
+        /**
+         * The maximum number of consecutive identical characters allowed in the generated password,
+         * as expressed by the HTML `passwordrules` `max-consecutive` property. `None` disables
+         * the check; `Some(0)` is invalid and rejected at request validation. Enforced via
+         * re-shuffle with a single-pass repair fallback for degenerate pool sizes.
+         */maxConsecutive: UInt8? = nil) {
         self.lowercase = lowercase
         self.uppercase = uppercase
         self.numbers = numbers
@@ -691,6 +740,9 @@ public struct PasswordGeneratorRequest: Equatable, Hashable {
         self.minUppercase = minUppercase
         self.minNumber = minNumber
         self.minSpecial = minSpecial
+        self.customRequiredChars = customRequiredChars
+        self.customAllowedChars = customAllowedChars
+        self.maxConsecutive = maxConsecutive
     }
 
     
@@ -718,7 +770,10 @@ public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
                 minLowercase: FfiConverterOptionUInt8.read(from: &buf), 
                 minUppercase: FfiConverterOptionUInt8.read(from: &buf), 
                 minNumber: FfiConverterOptionUInt8.read(from: &buf), 
-                minSpecial: FfiConverterOptionUInt8.read(from: &buf)
+                minSpecial: FfiConverterOptionUInt8.read(from: &buf), 
+                customRequiredChars: FfiConverterOptionString.read(from: &buf), 
+                customAllowedChars: FfiConverterOptionString.read(from: &buf), 
+                maxConsecutive: FfiConverterOptionUInt8.read(from: &buf)
         )
     }
 
@@ -733,6 +788,9 @@ public struct FfiConverterTypePasswordGeneratorRequest: FfiConverterRustBuffer {
         FfiConverterOptionUInt8.write(value.minUppercase, into: &buf)
         FfiConverterOptionUInt8.write(value.minNumber, into: &buf)
         FfiConverterOptionUInt8.write(value.minSpecial, into: &buf)
+        FfiConverterOptionString.write(value.customRequiredChars, into: &buf)
+        FfiConverterOptionString.write(value.customAllowedChars, into: &buf)
+        FfiConverterOptionUInt8.write(value.maxConsecutive, into: &buf)
     }
 }
 
@@ -1108,6 +1166,99 @@ public func FfiConverterTypePasswordError_lift(_ buf: RustBuffer) throws -> Pass
 #endif
 public func FfiConverterTypePasswordError_lower(_ value: PasswordError) -> RustBuffer {
     return FfiConverterTypePasswordError.lower(value)
+}
+
+
+/**
+ * Errors that may occur while parsing an HTML `passwordrules` attribute.
+ */
+public enum PasswordRulesError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The input was syntactically invalid (unknown property, malformed rule, bad
+     * custom class, etc.). The wrapped string is a human-readable description of the
+     * failure from the underlying parser.
+     */
+    case Parse(message: String)
+    
+    /**
+     * `minlength` exceeds `maxlength`, or `max_consecutive` does not fit in a `u8`.
+     */
+    case InvalidLength(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension PasswordRulesError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePasswordRulesError: FfiConverterRustBuffer {
+    typealias SwiftType = PasswordRulesError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PasswordRulesError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Parse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidLength(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PasswordRulesError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Parse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidLength(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordRulesError_lift(_ buf: RustBuffer) throws -> PasswordRulesError {
+    return try FfiConverterTypePasswordRulesError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePasswordRulesError_lower(_ value: PasswordRulesError) -> RustBuffer {
+    return FfiConverterTypePasswordRulesError.lower(value)
 }
 
 
