@@ -4838,6 +4838,202 @@ public func FfiConverterTypeBulkUpdateCollectionsCipherError_lower(_ value: Bulk
 }
 
 
+public enum CipherAdminGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotFound(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CipherAdminGetAttachmentDownloadUrlError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherAdminGetAttachmentDownloadUrlError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherAdminGetAttachmentDownloadUrlError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherAdminGetAttachmentDownloadUrlError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .NotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError_lift(_ buf: RustBuffer) throws -> CipherAdminGetAttachmentDownloadUrlError {
+    return try FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError_lower(_ value: CipherAdminGetAttachmentDownloadUrlError) -> RustBuffer {
+    return FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError.lower(value)
+}
+
+
+public enum CipherCreateAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+    case MissingField(message: String)
+    
+    case VaultParse(message: String)
+    
+    case UnsupportedFileUploadType(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CipherCreateAttachmentError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherCreateAttachmentError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherCreateAttachmentError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherCreateAttachmentError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .UnsupportedFileUploadType(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherCreateAttachmentError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .UnsupportedFileUploadType(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherCreateAttachmentError_lift(_ buf: RustBuffer) throws -> CipherCreateAttachmentError {
+    return try FfiConverterTypeCipherCreateAttachmentError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherCreateAttachmentError_lower(_ value: CipherCreateAttachmentError) -> RustBuffer {
+    return FfiConverterTypeCipherCreateAttachmentError.lower(value)
+}
+
+
 public enum CipherDeleteAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
@@ -5081,6 +5277,112 @@ public func FfiConverterTypeCipherError_lower(_ value: CipherError) -> RustBuffe
     return FfiConverterTypeCipherError.lower(value)
 }
 
+
+public enum CipherGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+    case MissingField(message: String)
+    
+    case NotFound(message: String)
+    
+    case InvalidEmergencyAccessId(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CipherGetAttachmentDownloadUrlError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherGetAttachmentDownloadUrlError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherGetAttachmentDownloadUrlError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherGetAttachmentDownloadUrlError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .InvalidEmergencyAccessId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherGetAttachmentDownloadUrlError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .NotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .InvalidEmergencyAccessId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherGetAttachmentDownloadUrlError_lift(_ buf: RustBuffer) throws -> CipherGetAttachmentDownloadUrlError {
+    return try FfiConverterTypeCipherGetAttachmentDownloadUrlError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherGetAttachmentDownloadUrlError_lower(_ value: CipherGetAttachmentDownloadUrlError) -> RustBuffer {
+    return FfiConverterTypeCipherGetAttachmentDownloadUrlError.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
@@ -5195,6 +5497,88 @@ public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType
     return FfiConverterTypeCipherListViewType.lower(value)
 }
 
+
+
+public enum CipherRenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case MissingField(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CipherRenewFileUploadUrlError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherRenewFileUploadUrlError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherRenewFileUploadUrlError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherRenewFileUploadUrlError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherRenewFileUploadUrlError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRenewFileUploadUrlError_lift(_ buf: RustBuffer) throws -> CipherRenewFileUploadUrlError {
+    return try FfiConverterTypeCipherRenewFileUploadUrlError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherRenewFileUploadUrlError_lower(_ value: CipherRenewFileUploadUrlError) -> RustBuffer {
+    return FfiConverterTypeCipherRenewFileUploadUrlError.lower(value)
+}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
@@ -5448,6 +5832,200 @@ public func FfiConverterTypeCipherType_lower(_ value: CipherType) -> RustBuffer 
     return FfiConverterTypeCipherType.lower(value)
 }
 
+
+
+public enum CipherUpgradeAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case Repository(message: String)
+    
+    case MissingField(message: String)
+    
+    case VaultParse(message: String)
+    
+    case Decrypt(message: String)
+    
+    case Encrypt(message: String)
+    
+    case Cipher(message: String)
+    
+    case GetDownloadUrl(message: String)
+    
+    case CreateAttachment(message: String)
+    
+    case DeleteAttachment(message: String)
+    
+    case Crypto(message: String)
+    
+    case Io(message: String)
+    
+    case NotFound(message: String)
+    
+    case AlreadyUpgraded(message: String)
+    
+    case Download(message: String)
+    
+    case Upload(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CipherUpgradeAttachmentError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCipherUpgradeAttachmentError: FfiConverterRustBuffer {
+    typealias SwiftType = CipherUpgradeAttachmentError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CipherUpgradeAttachmentError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Decrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 6: return .Encrypt(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .Cipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 8: return .GetDownloadUrl(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .CreateAttachment(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .DeleteAttachment(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 12: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 13: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 14: return .AlreadyUpgraded(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 15: return .Download(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 16: return .Upload(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CipherUpgradeAttachmentError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Decrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+        case .Encrypt(_ /* message is ignored*/):
+            writeInt(&buf, Int32(6))
+        case .Cipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
+        case .GetDownloadUrl(_ /* message is ignored*/):
+            writeInt(&buf, Int32(8))
+        case .CreateAttachment(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .DeleteAttachment(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(12))
+        case .NotFound(_ /* message is ignored*/):
+            writeInt(&buf, Int32(13))
+        case .AlreadyUpgraded(_ /* message is ignored*/):
+            writeInt(&buf, Int32(14))
+        case .Download(_ /* message is ignored*/):
+            writeInt(&buf, Int32(15))
+        case .Upload(_ /* message is ignored*/):
+            writeInt(&buf, Int32(16))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherUpgradeAttachmentError_lift(_ buf: RustBuffer) throws -> CipherUpgradeAttachmentError {
+    return try FfiConverterTypeCipherUpgradeAttachmentError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCipherUpgradeAttachmentError_lower(_ value: CipherUpgradeAttachmentError) -> RustBuffer {
+    return FfiConverterTypeCipherUpgradeAttachmentError.lower(value)
+}
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
