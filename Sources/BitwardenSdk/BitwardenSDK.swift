@@ -2108,6 +2108,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func httpGet(url: String) async throws  -> String
     
     /**
+     * Importers
+     */
+    func importers()  -> ImporterClient
+    
+    /**
      * Returns the key-management state bridge client used to register a
      * host-supplied storage implementation.
      */
@@ -2280,6 +2285,17 @@ open func httpGet(url: String)async throws  -> String  {
             liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
+}
+    
+    /**
+     * Importers
+     */
+open func importers() -> ImporterClient  {
+    return try!  FfiConverterTypeImporterClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_importers(
+            self.uniffiCloneHandle(),$0
+    )
+})
 }
     
     /**
@@ -6972,6 +6988,137 @@ public func FfiConverterTypeGeneratorClients_lower(_ value: GeneratorClients) ->
 
 
 
+public protocol ImporterClientProtocol: AnyObject, Sendable {
+    
+    /**
+     * Import a KeePass KDBX (`.kdbx`) database and submit it to the server.
+     */
+    func importKdbx(file: Data, password: String?, keyFile: Data?, options: ImportOptions) async throws  -> ImportSummary
+    
+}
+open class ImporterClient: ImporterClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_importerclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_importerclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Import a KeePass KDBX (`.kdbx`) database and submit it to the server.
+     */
+open func importKdbx(file: Data, password: String?, keyFile: Data?, options: ImportOptions)async throws  -> ImportSummary  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_importerclient_import_kdbx(
+                    self.uniffiCloneHandle(),
+                    FfiConverterData.lower(file),FfiConverterOptionString.lower(password),FfiConverterOptionData.lower(keyFile),FfiConverterTypeImportOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeImportSummary_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImporterClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ImporterClient
+
+    public static func lift(_ handle: UInt64) throws -> ImporterClient {
+        return ImporterClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ImporterClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImporterClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ImporterClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImporterClient_lift(_ handle: UInt64) throws -> ImporterClient {
+    return try FfiConverterTypeImporterClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImporterClient_lower(_ value: ImporterClient) -> UInt64 {
+    return FfiConverterTypeImporterClient.lower(value)
+}
+
+
+
+
+
+
 public protocol LocalUserDataKeyStateRepository: AnyObject, Sendable {
     
     func get(id: String) async throws  -> LocalUserDataKeyState?
@@ -11392,6 +11539,8 @@ public enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.Localiz
     )
     case Export(ExportError
     )
+    case Import(ImportError
+    )
     case MakeCredential(MakeCredentialError
     )
     case GetAssertion(GetAssertionError
@@ -11531,38 +11680,41 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 29: return .Export(
             try FfiConverterTypeExportError.read(from: &buf)
             )
-        case 30: return .MakeCredential(
+        case 30: return .Import(
+            try FfiConverterTypeImportError.read(from: &buf)
+            )
+        case 31: return .MakeCredential(
             try FfiConverterTypeMakeCredentialError.read(from: &buf)
             )
-        case 31: return .GetAssertion(
+        case 32: return .GetAssertion(
             try FfiConverterTypeGetAssertionError.read(from: &buf)
             )
-        case 32: return .SilentlyDiscoverCredentials(
+        case 33: return .SilentlyDiscoverCredentials(
             try FfiConverterTypeSilentlyDiscoverCredentialsError.read(from: &buf)
             )
-        case 33: return .CredentialsForAutofill(
+        case 34: return .CredentialsForAutofill(
             try FfiConverterTypeCredentialsForAutofillError.read(from: &buf)
             )
-        case 34: return .DecryptFido2AutofillCredentials(
+        case 35: return .DecryptFido2AutofillCredentials(
             try FfiConverterTypeDecryptFido2AutofillCredentialsError.read(from: &buf)
             )
-        case 35: return .Fido2Client(
+        case 36: return .Fido2Client(
             try FfiConverterTypeFido2ClientError.read(from: &buf)
             )
-        case 36: return .DeviceAuthKey(
+        case 37: return .DeviceAuthKey(
             try FfiConverterTypeDeviceAuthKeyError.read(from: &buf)
             )
-        case 37: return .SshGeneration(
+        case 38: return .SshGeneration(
             try FfiConverterTypeKeyGenerationError.read(from: &buf)
             )
-        case 38: return .SshImport(
+        case 39: return .SshImport(
             try FfiConverterTypeSshKeyImportError.read(from: &buf)
             )
-        case 39: return .AcquireCookie(
+        case 40: return .AcquireCookie(
             try FfiConverterTypeAcquireCookieError.read(from: &buf)
             )
-        case 40: return .Callback
-        case 41: return .Conversion(
+        case 41: return .Callback
+        case 42: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
 
@@ -11722,62 +11874,67 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeExportError.write(v1, into: &buf)
             
         
-        case let .MakeCredential(v1):
+        case let .Import(v1):
             writeInt(&buf, Int32(30))
+            FfiConverterTypeImportError.write(v1, into: &buf)
+            
+        
+        case let .MakeCredential(v1):
+            writeInt(&buf, Int32(31))
             FfiConverterTypeMakeCredentialError.write(v1, into: &buf)
             
         
         case let .GetAssertion(v1):
-            writeInt(&buf, Int32(31))
+            writeInt(&buf, Int32(32))
             FfiConverterTypeGetAssertionError.write(v1, into: &buf)
             
         
         case let .SilentlyDiscoverCredentials(v1):
-            writeInt(&buf, Int32(32))
+            writeInt(&buf, Int32(33))
             FfiConverterTypeSilentlyDiscoverCredentialsError.write(v1, into: &buf)
             
         
         case let .CredentialsForAutofill(v1):
-            writeInt(&buf, Int32(33))
+            writeInt(&buf, Int32(34))
             FfiConverterTypeCredentialsForAutofillError.write(v1, into: &buf)
             
         
         case let .DecryptFido2AutofillCredentials(v1):
-            writeInt(&buf, Int32(34))
+            writeInt(&buf, Int32(35))
             FfiConverterTypeDecryptFido2AutofillCredentialsError.write(v1, into: &buf)
             
         
         case let .Fido2Client(v1):
-            writeInt(&buf, Int32(35))
+            writeInt(&buf, Int32(36))
             FfiConverterTypeFido2ClientError.write(v1, into: &buf)
             
         
         case let .DeviceAuthKey(v1):
-            writeInt(&buf, Int32(36))
+            writeInt(&buf, Int32(37))
             FfiConverterTypeDeviceAuthKeyError.write(v1, into: &buf)
             
         
         case let .SshGeneration(v1):
-            writeInt(&buf, Int32(37))
+            writeInt(&buf, Int32(38))
             FfiConverterTypeKeyGenerationError.write(v1, into: &buf)
             
         
         case let .SshImport(v1):
-            writeInt(&buf, Int32(38))
+            writeInt(&buf, Int32(39))
             FfiConverterTypeSshKeyImportError.write(v1, into: &buf)
             
         
         case let .AcquireCookie(v1):
-            writeInt(&buf, Int32(39))
+            writeInt(&buf, Int32(40))
             FfiConverterTypeAcquireCookieError.write(v1, into: &buf)
             
         
         case .Callback:
-            writeInt(&buf, Int32(40))
+            writeInt(&buf, Int32(41))
         
         
         case let .Conversion(v1):
-            writeInt(&buf, Int32(41))
+            writeInt(&buf, Int32(42))
             FfiConverterString.write(v1, into: &buf)
             
         }
@@ -14014,6 +14171,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 43705) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_importers() != 5141) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_km_state_bridge() != 61296) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -14428,6 +14588,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 52745) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_kdbx() != 36643) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 20640) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -14583,6 +14746,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
+    uniffiEnsureBitwardenImportersInitialized()
     uniffiEnsureBitwardenPoliciesInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
