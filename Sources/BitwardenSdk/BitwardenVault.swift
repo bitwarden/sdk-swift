@@ -1201,7 +1201,11 @@ public struct Cipher: Equatable, Hashable {
      * Cipher.
      */
     public let key: EncString?
-    public let name: EncString
+    /**
+     * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
+     * the sealed `data` blob; required on the legacy field-level format.
+     */
+    public let name: EncString?
     public let notes: EncString?
     public let type: CipherType
     public let login: Login?
@@ -1234,7 +1238,11 @@ public struct Cipher: Equatable, Hashable {
         /**
          * More recent ciphers uses individual encryption keys to encrypt the other fields of the
          * Cipher.
-         */key: EncString?, name: EncString, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
+         */key: EncString?, 
+        /**
+         * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
+         * the sealed `data` blob; required on the legacy field-level format.
+         */name: EncString?, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1289,7 +1297,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
                 key: FfiConverterOptionTypeEncString.read(from: &buf), 
-                name: FfiConverterTypeEncString.read(from: &buf), 
+                name: FfiConverterOptionTypeEncString.read(from: &buf), 
                 notes: FfiConverterOptionTypeEncString.read(from: &buf), 
                 type: FfiConverterTypeCipherType.read(from: &buf), 
                 login: FfiConverterOptionTypeLogin.read(from: &buf), 
@@ -1324,7 +1332,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
         FfiConverterOptionTypeEncString.write(value.key, into: &buf)
-        FfiConverterTypeEncString.write(value.name, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.name, into: &buf)
         FfiConverterOptionTypeEncString.write(value.notes, into: &buf)
         FfiConverterTypeCipherType.write(value.type, into: &buf)
         FfiConverterOptionTypeLogin.write(value.login, into: &buf)
@@ -7538,6 +7546,8 @@ public enum EncryptError: Swift.Error, Equatable, Hashable, Foundation.Localized
     
     case Crypto(message: String)
     
+    case BlobEncryption(message: String)
+    
     case MissingUserId(message: String)
     
 
@@ -7573,7 +7583,11 @@ public struct FfiConverterTypeEncryptError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .MissingUserId(
+        case 2: return .BlobEncryption(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .MissingUserId(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -7590,8 +7604,10 @@ public struct FfiConverterTypeEncryptError: FfiConverterRustBuffer {
         
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .MissingUserId(_ /* message is ignored*/):
+        case .BlobEncryption(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
+        case .MissingUserId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
 
         
         }
