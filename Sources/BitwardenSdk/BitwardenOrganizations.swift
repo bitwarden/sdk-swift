@@ -1509,6 +1509,10 @@ public enum OrganizationUserStatusType: Int8, Equatable, Hashable {
      * The user has been confirmed by an admin and has full access.
      */
     case confirmed = 2
+    /**
+     * The user has been staged for provisioning but has not yet been invited.
+     */
+    case staged = 3
 
 
 
@@ -1538,6 +1542,8 @@ public struct FfiConverterTypeOrganizationUserStatusType: FfiConverterRustBuffer
         
         case 4: return .confirmed
         
+        case 5: return .staged
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -1560,6 +1566,10 @@ public struct FfiConverterTypeOrganizationUserStatusType: FfiConverterRustBuffer
         
         case .confirmed:
             writeInt(&buf, Int32(4))
+        
+        
+        case .staged:
+            writeInt(&buf, Int32(5))
         
         }
     }
