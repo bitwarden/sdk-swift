@@ -473,6 +473,24 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
 
 /**
  * A set of keys where a given `DownstreamKey` is protected by an encrypted public/private
@@ -1288,6 +1306,50 @@ public func FfiConverterTypeEncString_lift(_ value: RustBuffer) throws -> EncStr
 #endif
 public func FfiConverterTypeEncString_lower(_ value: EncString) -> RustBuffer {
     return FfiConverterTypeEncString.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias HighEntropySecret = Data
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHighEntropySecret: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HighEntropySecret {
+        return try FfiConverterData.read(from: &buf)
+    }
+
+    public static func write(_ value: HighEntropySecret, into buf: inout [UInt8]) {
+        return FfiConverterData.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> HighEntropySecret {
+        return try FfiConverterData.lift(value)
+    }
+
+    public static func lower(_ value: HighEntropySecret) -> RustBuffer {
+        return FfiConverterData.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHighEntropySecret_lift(_ value: RustBuffer) throws -> HighEntropySecret {
+    return try FfiConverterTypeHighEntropySecret.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHighEntropySecret_lower(_ value: HighEntropySecret) -> RustBuffer {
+    return FfiConverterTypeHighEntropySecret.lower(value)
 }
 
 
