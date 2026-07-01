@@ -9545,6 +9545,642 @@ public func FfiConverterTypeSendClient_lower(_ value: SendClient) -> UInt64 {
 
 
 
+public protocol SendRepository: AnyObject, Sendable {
+    
+    func get(id: String) async throws  -> Send?
+    
+    func list() async throws  -> [Send]
+    
+    func set(id: String, value: Send) async throws 
+    
+    func setBulk(values: [String: Send]) async throws 
+    
+    func remove(id: String) async throws 
+    
+    func removeBulk(keys: [String]) async throws 
+    
+    func removeAll() async throws 
+    
+    func has(id: String) async throws  -> Bool
+    
+}
+open class SendRepositoryImpl: SendRepository, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_sendrepository(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_sendrepository(handle, $0) }
+    }
+
+    
+
+    
+open func get(id: String)async throws  -> Send?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_get(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeSend.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func list()async throws  -> [Send]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_list(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeSend.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func set(id: String, value: Send)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_set(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id),FfiConverterTypeSend_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func setBulk(values: [String: Send])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_set_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterDictionaryStringTypeSend.lower(values)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func remove(id: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_remove(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeBulk(keys: [String])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_remove_bulk(
+                    self.uniffiCloneHandle(),
+                    FfiConverterSequenceString.lower(keys)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeAll()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_remove_all(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func has(id: String)async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_sendrepository_has(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceSendRepository {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceSendRepository] = [UniffiVTableCallbackInterfaceSendRepository(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeSendRepository.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface SendRepository: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeSendRepository.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface SendRepository: handle missing in uniffiClone")
+            }
+        },
+        get: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> Send? in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.get(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: Send?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeSend.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        list: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> [Send] in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.list(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: [Send]) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterSequenceTypeSend.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        set: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.set(
+                     id: try FfiConverterString.lift(id),
+                     value: try FfiConverterTypeSend_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setBulk: { (
+            uniffiHandle: UInt64,
+            values: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.setBulk(
+                     values: try FfiConverterDictionaryStringTypeSend.lift(values)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        remove: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.remove(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeBulk: { (
+            uniffiHandle: UInt64,
+            keys: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeBulk(
+                     keys: try FfiConverterSequenceString.lift(keys)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeAll: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeAll(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        has: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteI8,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> Bool in
+                guard let uniffiObj = try? FfiConverterTypeSendRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.has(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: Bool) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultI8(
+                        returnValue: FfiConverterBool.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultI8(
+                        returnValue: 0,
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitSendRepository() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_sendrepository(UniffiCallbackInterfaceSendRepository.vtable)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendRepository: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<SendRepository>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = SendRepository
+
+    public static func lift(_ handle: UInt64) throws -> SendRepository {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return SendRepositoryImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: SendRepository) -> UInt64 {
+         if let rustImpl = value as? SendRepositoryImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendRepository {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SendRepository, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendRepository_lift(_ handle: UInt64) throws -> SendRepository {
+    return try FfiConverterTypeSendRepository.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendRepository_lower(_ value: SendRepository) -> UInt64 {
+    return FfiConverterTypeSendRepository.lower(value)
+}
+
+
+
+
+
+
 /**
  * UniFFI wrapper for ServerCommunicationConfigClient
  */
@@ -11414,16 +12050,18 @@ public struct Repositories {
     public let localUserDataKeyState: LocalUserDataKeyStateRepository?
     public let ephemeralPinEnvelopeState: EphemeralPinEnvelopeStateRepository?
     public let organizationSharedKey: OrganizationSharedKeyRepository?
+    public let send: SendRepository?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(cipher: CipherRepository?, folder: FolderRepository?, userKeyState: UserKeyStateRepository?, localUserDataKeyState: LocalUserDataKeyStateRepository?, ephemeralPinEnvelopeState: EphemeralPinEnvelopeStateRepository?, organizationSharedKey: OrganizationSharedKeyRepository?) {
+    public init(cipher: CipherRepository?, folder: FolderRepository?, userKeyState: UserKeyStateRepository?, localUserDataKeyState: LocalUserDataKeyStateRepository?, ephemeralPinEnvelopeState: EphemeralPinEnvelopeStateRepository?, organizationSharedKey: OrganizationSharedKeyRepository?, send: SendRepository?) {
         self.cipher = cipher
         self.folder = folder
         self.userKeyState = userKeyState
         self.localUserDataKeyState = localUserDataKeyState
         self.ephemeralPinEnvelopeState = ephemeralPinEnvelopeState
         self.organizationSharedKey = organizationSharedKey
+        self.send = send
     }
 
     
@@ -11447,7 +12085,8 @@ public struct FfiConverterTypeRepositories: FfiConverterRustBuffer {
                 userKeyState: FfiConverterOptionTypeUserKeyStateRepository.read(from: &buf), 
                 localUserDataKeyState: FfiConverterOptionTypeLocalUserDataKeyStateRepository.read(from: &buf), 
                 ephemeralPinEnvelopeState: FfiConverterOptionTypeEphemeralPinEnvelopeStateRepository.read(from: &buf), 
-                organizationSharedKey: FfiConverterOptionTypeOrganizationSharedKeyRepository.read(from: &buf)
+                organizationSharedKey: FfiConverterOptionTypeOrganizationSharedKeyRepository.read(from: &buf), 
+                send: FfiConverterOptionTypeSendRepository.read(from: &buf)
         )
     }
 
@@ -11458,6 +12097,7 @@ public struct FfiConverterTypeRepositories: FfiConverterRustBuffer {
         FfiConverterOptionTypeLocalUserDataKeyStateRepository.write(value.localUserDataKeyState, into: &buf)
         FfiConverterOptionTypeEphemeralPinEnvelopeStateRepository.write(value.ephemeralPinEnvelopeState, into: &buf)
         FfiConverterOptionTypeOrganizationSharedKeyRepository.write(value.organizationSharedKey, into: &buf)
+        FfiConverterOptionTypeSendRepository.write(value.send, into: &buf)
     }
 }
 
@@ -12777,6 +13417,30 @@ fileprivate struct FfiConverterOptionTypeOrganizationSharedKeyRepository: FfiCon
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeSendRepository: FfiConverterRustBuffer {
+    typealias SwiftType = SendRepository?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSendRepository.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSendRepository.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeUserKeyStateRepository: FfiConverterRustBuffer {
     typealias SwiftType = UserKeyStateRepository?
 
@@ -13009,6 +13673,30 @@ fileprivate struct FfiConverterOptionTypeDeviceAuthKeyRecord: FfiConverterRustBu
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeDeviceAuthKeyRecord.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeSend: FfiConverterRustBuffer {
+    typealias SwiftType = Send?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSend.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSend.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -13916,6 +14604,32 @@ fileprivate struct FfiConverterDictionaryStringTypeUserKeyState: FfiConverterRus
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterDictionaryStringTypeSend: FfiConverterRustBuffer {
+    public static func write(_ value: [String: Send], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterTypeSend.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: Send] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: Send]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterTypeSend.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterDictionaryStringTypeCipher: FfiConverterRustBuffer {
     public static func write(_ value: [String: Cipher], into buf: inout [UInt8]) {
         let len = Int32(value.count)
@@ -14432,6 +15146,30 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_platformclient_user_fingerprint() != 36590) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_get() != 56283) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_list() != 22595) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_set() != 28221) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_set_bulk() != 35324) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_remove() != 12267) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_remove_bulk() != 51277) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_remove_all() != 46954) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_has() != 42775) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_stateclient_register_client_managed_repositories() != 15394) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -14736,6 +15474,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitLocalUserDataKeyStateRepository()
     uniffiCallbackInitLogCallback()
     uniffiCallbackInitOrganizationSharedKeyRepository()
+    uniffiCallbackInitSendRepository()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
     uniffiEnsureBitwardenAuthInitialized()
