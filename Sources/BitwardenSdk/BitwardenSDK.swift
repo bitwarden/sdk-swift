@@ -2103,6 +2103,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func generators()  -> GeneratorClients
     
     /**
+     * Whether the client is in Gov Mode.
+     */
+    func govMode()  -> Bool
+    
+    /**
      * Test method, calls http endpoint
      */
     func httpGet(url: String) async throws  -> String
@@ -2262,6 +2267,17 @@ open func exporters() -> ExporterClient  {
 open func generators() -> GeneratorClients  {
     return try!  FfiConverterTypeGeneratorClients_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_generators(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Whether the client is in Gov Mode.
+     */
+open func govMode() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_gov_mode(
             self.uniffiCloneHandle(),$0
     )
 })
@@ -14880,6 +14896,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 2321) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_gov_mode() != 9761) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 43705) {
