@@ -2316,12 +2316,25 @@ public enum SendAuthType: Equatable, Hashable {
      */
     case none
     /**
-     * Password-based authentication
+     * Password-based authentication. The SDK derives the wire-format `keyB64` via PBKDF2
+     * over the send key.
      */
     case password(
         /**
-         * The password required to access the Send
+         * The plaintext password the recipient will enter to access the Send.
          */password: String
+    )
+    /**
+     * Pre-derived password. The caller has already run PBKDF2 client-side and supplies the
+     * resulting base64-encoded hash; the SDK forwards it verbatim. Use this when the
+     * hashing happens outside the SDK (e.g. the legacy TypeScript clients that derive in
+     * `SendService.encrypt`). For new code that holds a plaintext password, use
+     * `Password { ... }` and let the SDK do the derivation.
+     */
+    case hashedPassword(
+        /**
+         * Base64-encoded PBKDF2 output (`keyB64`) ready for the wire.
+         */keyB64: String
     )
     /**
      * Email-based OTP authentication
@@ -2357,7 +2370,10 @@ public struct FfiConverterTypeSendAuthType: FfiConverterRustBuffer {
         case 2: return .password(password: try FfiConverterString.read(from: &buf)
         )
         
-        case 3: return .emails(emails: try FfiConverterSequenceString.read(from: &buf)
+        case 3: return .hashedPassword(keyB64: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .emails(emails: try FfiConverterSequenceString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -2377,8 +2393,13 @@ public struct FfiConverterTypeSendAuthType: FfiConverterRustBuffer {
             FfiConverterString.write(password, into: &buf)
             
         
-        case let .emails(emails):
+        case let .hashedPassword(keyB64):
             writeInt(&buf, Int32(3))
+            FfiConverterString.write(keyB64, into: &buf)
+            
+        
+        case let .emails(emails):
+            writeInt(&buf, Int32(4))
             FfiConverterSequenceString.write(emails, into: &buf)
             
         }
