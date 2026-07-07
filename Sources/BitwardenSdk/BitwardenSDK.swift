@@ -2131,6 +2131,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func policies()  -> PoliciesClient
     
     /**
+     * Random-number generation operations
+     */
+    func random()  -> SdkRandomNumberClient
+    
+    /**
      * Sends operations
      */
     func sends()  -> SendClient
@@ -2340,6 +2345,17 @@ open func platform() -> PlatformClient  {
 open func policies() -> PoliciesClient  {
     return try!  FfiConverterTypePoliciesClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_policies(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Random-number generation operations
+     */
+open func random() -> SdkRandomNumberClient  {
+    return try!  FfiConverterTypeSdkRandomNumberClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_random(
             self.uniffiCloneHandle(),$0
     )
 })
@@ -14916,6 +14932,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_policies() != 32874) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_random() != 52761) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 15997) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -15506,6 +15525,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenImportersInitialized()
     uniffiEnsureBitwardenPoliciesInitialized()
+    uniffiEnsureBitwardenRandomInitialized()
     uniffiEnsureBitwardenSendInitialized()
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
     uniffiEnsureBitwardenSshInitialized()
