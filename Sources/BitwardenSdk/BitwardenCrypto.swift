@@ -1490,6 +1490,50 @@ public func FfiConverterTypePublicKey_lower(_ value: PublicKey) -> RustBuffer {
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
+public typealias SecretProtectedKeyEnvelope = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecretProtectedKeyEnvelope: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecretProtectedKeyEnvelope {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: SecretProtectedKeyEnvelope, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> SecretProtectedKeyEnvelope {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: SecretProtectedKeyEnvelope) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecretProtectedKeyEnvelope_lift(_ value: RustBuffer) throws -> SecretProtectedKeyEnvelope {
+    return try FfiConverterTypeSecretProtectedKeyEnvelope.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecretProtectedKeyEnvelope_lower(_ value: SecretProtectedKeyEnvelope) -> RustBuffer {
+    return FfiConverterTypeSecretProtectedKeyEnvelope.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
 public typealias SignedPublicKey = String
 
 #if swift(>=5.8)
