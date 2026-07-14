@@ -906,6 +906,75 @@ public func FfiConverterTypeBankAccount_lower(_ value: BankAccount) -> RustBuffe
 }
 
 
+/**
+ * Minimal BankAccountView only including the needed details for list views
+ */
+public struct BankAccountListView: Equatable, Hashable {
+    /**
+     * The account number of the bank account.
+     */
+    public let accountNumber: String?
+    /**
+     * The type of the bank account, e.g. Checking, Savings, etc.
+     */
+    public let accountType: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account number of the bank account.
+         */accountNumber: String?, 
+        /**
+         * The type of the bank account, e.g. Checking, Savings, etc.
+         */accountType: String?) {
+        self.accountNumber = accountNumber
+        self.accountType = accountType
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension BankAccountListView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBankAccountListView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BankAccountListView {
+        return
+            try BankAccountListView(
+                accountNumber: FfiConverterOptionString.read(from: &buf), 
+                accountType: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BankAccountListView, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.accountNumber, into: &buf)
+        FfiConverterOptionString.write(value.accountType, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccountListView_lift(_ buf: RustBuffer) throws -> BankAccountListView {
+    return try FfiConverterTypeBankAccountListView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBankAccountListView_lower(_ value: BankAccountListView) -> RustBuffer {
+    return FfiConverterTypeBankAccountListView.lower(value)
+}
+
+
 public struct BankAccountView: Equatable, Hashable {
     public let bankName: String?
     public let nameOnAccount: String?
@@ -5403,7 +5472,8 @@ public enum CipherListViewType: Equatable, Hashable {
     )
     case identity
     case sshKey
-    case bankAccount
+    case bankAccount(BankAccountListView
+    )
     case passport
     case driversLicense
 
@@ -5439,7 +5509,8 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
         
         case 5: return .sshKey
         
-        case 6: return .bankAccount
+        case 6: return .bankAccount(try FfiConverterTypeBankAccountListView.read(from: &buf)
+        )
         
         case 7: return .passport
         
@@ -5475,9 +5546,10 @@ public struct FfiConverterTypeCipherListViewType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
         
         
-        case .bankAccount:
+        case let .bankAccount(v1):
             writeInt(&buf, Int32(6))
-        
+            FfiConverterTypeBankAccountListView.write(v1, into: &buf)
+            
         
         case .passport:
             writeInt(&buf, Int32(7))
