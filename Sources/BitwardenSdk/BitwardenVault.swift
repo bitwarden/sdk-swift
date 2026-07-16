@@ -4621,13 +4621,13 @@ public struct SshKey: Equatable, Hashable {
      */
     public let privateKey: EncString
     /**
-     * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
+     * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6).
      */
-    public let publicKey: EncString
+    public let publicKey: EncString?
     /**
-     * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
+     * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`.
      */
-    public let fingerprint: EncString
+    public let fingerprint: EncString?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -4636,11 +4636,11 @@ public struct SshKey: Equatable, Hashable {
          * SSH private key (ed25519/rsa) in unencrypted openssh private key format [OpenSSH private key](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key)
          */privateKey: EncString, 
         /**
-         * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6)
-         */publicKey: EncString, 
+         * SSH public key (ed25519/rsa) according to [RFC4253](https://datatracker.ietf.org/doc/html/rfc4253#section-6.6).
+         */publicKey: EncString?, 
         /**
-         * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`
-         */fingerprint: EncString) {
+         * SSH fingerprint using SHA256 in the format: `SHA256:BASE64_ENCODED_FINGERPRINT`.
+         */fingerprint: EncString?) {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.fingerprint = fingerprint
@@ -4663,15 +4663,15 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
         return
             try SshKey(
                 privateKey: FfiConverterTypeEncString.read(from: &buf), 
-                publicKey: FfiConverterTypeEncString.read(from: &buf), 
-                fingerprint: FfiConverterTypeEncString.read(from: &buf)
+                publicKey: FfiConverterOptionTypeEncString.read(from: &buf), 
+                fingerprint: FfiConverterOptionTypeEncString.read(from: &buf)
         )
     }
 
     public static func write(_ value: SshKey, into buf: inout [UInt8]) {
         FfiConverterTypeEncString.write(value.privateKey, into: &buf)
-        FfiConverterTypeEncString.write(value.publicKey, into: &buf)
-        FfiConverterTypeEncString.write(value.fingerprint, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.publicKey, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.fingerprint, into: &buf)
     }
 }
 
