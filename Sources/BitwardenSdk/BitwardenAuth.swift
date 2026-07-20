@@ -1882,6 +1882,10 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
      */
     public let emailVerificationToken: String?
     /**
+     * Optional token for sales-assisted trial/registration
+     */
+    public let salesAssistedToken: String?
+    /**
      * Optional organization user ID for organization invitations
      */
     public let organizationUserId: OrganizationId?
@@ -1929,6 +1933,9 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
          * Optional token for email verification
          */emailVerificationToken: String?, 
         /**
+         * Optional token for sales-assisted trial/registration
+         */salesAssistedToken: String?, 
+        /**
          * Optional organization user ID for organization invitations
          */organizationUserId: OrganizationId?, 
         /**
@@ -1954,6 +1961,7 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
         self.masterPassword = masterPassword
         self.masterPasswordHint = masterPasswordHint
         self.emailVerificationToken = emailVerificationToken
+        self.salesAssistedToken = salesAssistedToken
         self.organizationUserId = organizationUserId
         self.orgInviteToken = orgInviteToken
         self.orgSponsoredFreeFamilyPlanToken = orgSponsoredFreeFamilyPlanToken
@@ -1984,6 +1992,7 @@ public struct FfiConverterTypeUserMasterPasswordRegistrationRequest: FfiConverte
                 masterPassword: FfiConverterString.read(from: &buf), 
                 masterPasswordHint: FfiConverterOptionString.read(from: &buf), 
                 emailVerificationToken: FfiConverterOptionString.read(from: &buf), 
+                salesAssistedToken: FfiConverterOptionString.read(from: &buf), 
                 organizationUserId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
                 orgInviteToken: FfiConverterOptionString.read(from: &buf), 
                 orgSponsoredFreeFamilyPlanToken: FfiConverterOptionString.read(from: &buf), 
@@ -2000,6 +2009,7 @@ public struct FfiConverterTypeUserMasterPasswordRegistrationRequest: FfiConverte
         FfiConverterString.write(value.masterPassword, into: &buf)
         FfiConverterOptionString.write(value.masterPasswordHint, into: &buf)
         FfiConverterOptionString.write(value.emailVerificationToken, into: &buf)
+        FfiConverterOptionString.write(value.salesAssistedToken, into: &buf)
         FfiConverterOptionTypeOrganizationId.write(value.organizationUserId, into: &buf)
         FfiConverterOptionString.write(value.orgInviteToken, into: &buf)
         FfiConverterOptionString.write(value.orgSponsoredFreeFamilyPlanToken, into: &buf)
