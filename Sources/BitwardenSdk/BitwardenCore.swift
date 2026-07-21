@@ -3,6 +3,8 @@
 
 // swiftlint:disable all
 import Foundation
+import BitwardenSdkSupport
+import Foundation
 
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
@@ -4016,12 +4018,14 @@ public func FfiConverterTypeSecurityState_lower(_ value: SecurityState) -> RustB
 public struct UniffiConverterDummyRecord: Equatable, Hashable, Codable {
     public let uuid: Uuid
     public let date: DateTime
+    public let naiveDate: NaiveDate
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(uuid: Uuid, date: DateTime) {
+    public init(uuid: Uuid, date: DateTime, naiveDate: NaiveDate) {
         self.uuid = uuid
         self.date = date
+        self.naiveDate = naiveDate
     }
 
     
@@ -4041,13 +4045,15 @@ public struct FfiConverterTypeUniffiConverterDummyRecord: FfiConverterRustBuffer
         return
             try UniffiConverterDummyRecord(
                 uuid: FfiConverterTypeUuid.read(from: &buf), 
-                date: FfiConverterTypeDateTime.read(from: &buf)
+                date: FfiConverterTypeDateTime.read(from: &buf), 
+                naiveDate: FfiConverterTypeNaiveDate.read(from: &buf)
         )
     }
 
     public static func write(_ value: UniffiConverterDummyRecord, into buf: inout [UInt8]) {
         FfiConverterTypeUuid.write(value.uuid, into: &buf)
         FfiConverterTypeDateTime.write(value.date, into: &buf)
+        FfiConverterTypeNaiveDate.write(value.naiveDate, into: &buf)
     }
 }
 
@@ -7454,6 +7460,59 @@ public func FfiConverterTypeDateTime_lift(_ value: RustBuffer) throws -> DateTim
 #endif
 public func FfiConverterTypeDateTime_lower(_ value: DateTime) -> RustBuffer {
     return FfiConverterTypeDateTime.lower(value)
+}
+
+
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the custom type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+public typealias NaiveDate = Date
+
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNaiveDate: FfiConverter {
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NaiveDate {
+        let builtinValue = try FfiConverterString.read(from: &buf)
+        return try NaiveDateFormatter.date(from: builtinValue)
+    }
+
+    public static func write(_ value: NaiveDate, into buf: inout [UInt8]) {
+        let builtinValue = NaiveDateFormatter.string(from: value)
+        return FfiConverterString.write(builtinValue, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> NaiveDate {
+        let builtinValue = try FfiConverterString.lift(value)
+        return try NaiveDateFormatter.date(from: builtinValue)
+    }
+
+    public static func lower(_ value: NaiveDate) -> RustBuffer {
+        let builtinValue = NaiveDateFormatter.string(from: value)
+        return FfiConverterString.lower(builtinValue)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNaiveDate_lift(_ value: RustBuffer) throws -> NaiveDate {
+    return try FfiConverterTypeNaiveDate.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNaiveDate_lower(_ value: NaiveDate) -> RustBuffer {
+    return FfiConverterTypeNaiveDate.lower(value)
 }
 
 

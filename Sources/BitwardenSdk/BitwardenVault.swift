@@ -2598,18 +2598,18 @@ public struct DriversLicenseView: Equatable, Hashable {
     public let firstName: String?
     public let middleName: String?
     public let lastName: String?
-    public let dateOfBirth: String?
+    public let dateOfBirth: NaiveDate?
     public let licenseNumber: String?
     public let issuingCountry: String?
     public let issuingState: String?
-    public let issueDate: String?
-    public let expirationDate: String?
+    public let issueDate: NaiveDate?
+    public let expirationDate: NaiveDate?
     public let issuingAuthority: String?
     public let licenseClass: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(firstName: String?, middleName: String?, lastName: String?, dateOfBirth: String?, licenseNumber: String?, issuingCountry: String?, issuingState: String?, issueDate: String?, expirationDate: String?, issuingAuthority: String?, licenseClass: String?) {
+    public init(firstName: String?, middleName: String?, lastName: String?, dateOfBirth: NaiveDate?, licenseNumber: String?, issuingCountry: String?, issuingState: String?, issueDate: NaiveDate?, expirationDate: NaiveDate?, issuingAuthority: String?, licenseClass: String?) {
         self.firstName = firstName
         self.middleName = middleName
         self.lastName = lastName
@@ -2642,12 +2642,12 @@ public struct FfiConverterTypeDriversLicenseView: FfiConverterRustBuffer {
                 firstName: FfiConverterOptionString.read(from: &buf), 
                 middleName: FfiConverterOptionString.read(from: &buf), 
                 lastName: FfiConverterOptionString.read(from: &buf), 
-                dateOfBirth: FfiConverterOptionString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionTypeNaiveDate.read(from: &buf), 
                 licenseNumber: FfiConverterOptionString.read(from: &buf), 
                 issuingCountry: FfiConverterOptionString.read(from: &buf), 
                 issuingState: FfiConverterOptionString.read(from: &buf), 
-                issueDate: FfiConverterOptionString.read(from: &buf), 
-                expirationDate: FfiConverterOptionString.read(from: &buf), 
+                issueDate: FfiConverterOptionTypeNaiveDate.read(from: &buf), 
+                expirationDate: FfiConverterOptionTypeNaiveDate.read(from: &buf), 
                 issuingAuthority: FfiConverterOptionString.read(from: &buf), 
                 licenseClass: FfiConverterOptionString.read(from: &buf)
         )
@@ -2657,12 +2657,12 @@ public struct FfiConverterTypeDriversLicenseView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.firstName, into: &buf)
         FfiConverterOptionString.write(value.middleName, into: &buf)
         FfiConverterOptionString.write(value.lastName, into: &buf)
-        FfiConverterOptionString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.dateOfBirth, into: &buf)
         FfiConverterOptionString.write(value.licenseNumber, into: &buf)
         FfiConverterOptionString.write(value.issuingCountry, into: &buf)
         FfiConverterOptionString.write(value.issuingState, into: &buf)
-        FfiConverterOptionString.write(value.issueDate, into: &buf)
-        FfiConverterOptionString.write(value.expirationDate, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.issueDate, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.expirationDate, into: &buf)
         FfiConverterOptionString.write(value.issuingAuthority, into: &buf)
         FfiConverterOptionString.write(value.licenseClass, into: &buf)
     }
@@ -4253,7 +4253,7 @@ public func FfiConverterTypePassport_lower(_ value: Passport) -> RustBuffer {
 public struct PassportView: Equatable, Hashable {
     public let surname: String?
     public let givenName: String?
-    public let dateOfBirth: String?
+    public let dateOfBirth: NaiveDate?
     public let sex: String?
     public let birthPlace: String?
     public let nationality: String?
@@ -4262,12 +4262,12 @@ public struct PassportView: Equatable, Hashable {
     public let passportType: String?
     public let nationalIdentificationNumber: String?
     public let issuingAuthority: String?
-    public let issueDate: String?
-    public let expirationDate: String?
+    public let issueDate: NaiveDate?
+    public let expirationDate: NaiveDate?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(surname: String?, givenName: String?, dateOfBirth: String?, sex: String?, birthPlace: String?, nationality: String?, issuingCountry: String?, passportNumber: String?, passportType: String?, nationalIdentificationNumber: String?, issuingAuthority: String?, issueDate: String?, expirationDate: String?) {
+    public init(surname: String?, givenName: String?, dateOfBirth: NaiveDate?, sex: String?, birthPlace: String?, nationality: String?, issuingCountry: String?, passportNumber: String?, passportType: String?, nationalIdentificationNumber: String?, issuingAuthority: String?, issueDate: NaiveDate?, expirationDate: NaiveDate?) {
         self.surname = surname
         self.givenName = givenName
         self.dateOfBirth = dateOfBirth
@@ -4301,7 +4301,7 @@ public struct FfiConverterTypePassportView: FfiConverterRustBuffer {
             try PassportView(
                 surname: FfiConverterOptionString.read(from: &buf), 
                 givenName: FfiConverterOptionString.read(from: &buf), 
-                dateOfBirth: FfiConverterOptionString.read(from: &buf), 
+                dateOfBirth: FfiConverterOptionTypeNaiveDate.read(from: &buf), 
                 sex: FfiConverterOptionString.read(from: &buf), 
                 birthPlace: FfiConverterOptionString.read(from: &buf), 
                 nationality: FfiConverterOptionString.read(from: &buf), 
@@ -4310,15 +4310,15 @@ public struct FfiConverterTypePassportView: FfiConverterRustBuffer {
                 passportType: FfiConverterOptionString.read(from: &buf), 
                 nationalIdentificationNumber: FfiConverterOptionString.read(from: &buf), 
                 issuingAuthority: FfiConverterOptionString.read(from: &buf), 
-                issueDate: FfiConverterOptionString.read(from: &buf), 
-                expirationDate: FfiConverterOptionString.read(from: &buf)
+                issueDate: FfiConverterOptionTypeNaiveDate.read(from: &buf), 
+                expirationDate: FfiConverterOptionTypeNaiveDate.read(from: &buf)
         )
     }
 
     public static func write(_ value: PassportView, into buf: inout [UInt8]) {
         FfiConverterOptionString.write(value.surname, into: &buf)
         FfiConverterOptionString.write(value.givenName, into: &buf)
-        FfiConverterOptionString.write(value.dateOfBirth, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.dateOfBirth, into: &buf)
         FfiConverterOptionString.write(value.sex, into: &buf)
         FfiConverterOptionString.write(value.birthPlace, into: &buf)
         FfiConverterOptionString.write(value.nationality, into: &buf)
@@ -4327,8 +4327,8 @@ public struct FfiConverterTypePassportView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.passportType, into: &buf)
         FfiConverterOptionString.write(value.nationalIdentificationNumber, into: &buf)
         FfiConverterOptionString.write(value.issuingAuthority, into: &buf)
-        FfiConverterOptionString.write(value.issueDate, into: &buf)
-        FfiConverterOptionString.write(value.expirationDate, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.issueDate, into: &buf)
+        FfiConverterOptionTypeNaiveDate.write(value.expirationDate, into: &buf)
     }
 }
 
@@ -9668,6 +9668,30 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeDateTime.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeNaiveDate: FfiConverterRustBuffer {
+    typealias SwiftType = NaiveDate?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeNaiveDate.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeNaiveDate.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
