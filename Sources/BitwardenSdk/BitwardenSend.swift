@@ -1305,6 +1305,88 @@ public func FfiConverterTypeAccessSendError_lower(_ value: AccessSendError) -> R
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
+ * Controls how `bw send edit` updates the auth on an existing Send.
+ */
+
+public enum AuthEdit: Equatable, Hashable {
+    
+    /**
+     * Keep the existing auth on the Send.
+     */
+    case preserve
+    /**
+     * Replace the existing auth. Pass `SendAuthType::None` to strip auth entirely.
+     */
+    case set(
+        /**
+         * The new auth configuration to apply.
+         */auth: SendAuthType
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AuthEdit: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthEdit: FfiConverterRustBuffer {
+    typealias SwiftType = AuthEdit
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthEdit {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .preserve
+        
+        case 2: return .set(auth: try FfiConverterTypeSendAuthType.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AuthEdit, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .preserve:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .set(auth):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeSendAuthType.write(auth, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthEdit_lift(_ buf: RustBuffer) throws -> AuthEdit {
+    return try FfiConverterTypeAuthEdit.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthEdit_lower(_ value: AuthEdit) -> RustBuffer {
+    return FfiConverterTypeAuthEdit.lower(value)
+}
+
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
  * Indicates the authentication strategy to use when accessing a Send
  */
 
