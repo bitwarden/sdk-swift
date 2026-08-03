@@ -2844,6 +2844,10 @@ public enum SendType: UInt8, Equatable, Hashable {
      * File-based send
      */
     case file = 1
+    /**
+     * Item-based send
+     */
+    case item = 2
 
 
 
@@ -2869,6 +2873,8 @@ public struct FfiConverterTypeSendType: FfiConverterRustBuffer {
         
         case 2: return .file
         
+        case 3: return .item
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -2883,6 +2889,10 @@ public struct FfiConverterTypeSendType: FfiConverterRustBuffer {
         
         case .file:
             writeInt(&buf, Int32(2))
+        
+        
+        case .item:
+            writeInt(&buf, Int32(3))
         
         }
     }
