@@ -993,6 +993,12 @@ public enum PolicyType: UInt8, Equatable, Hashable {
      * the `pm-31885-send-controls` feature flag is active on the server.
      */
     case sendControls = 21
+    /**
+     * Enables the Fill Assist targeting-rules autofill engine as the default for members who
+     * have not explicitly set their Fill Assist preference, and optionally overrides the default
+     * rules feed URL.
+     */
+    case fillAssist = 22
 
 
 
@@ -1057,6 +1063,8 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
         case 21: return .organizationUserNotification
         
         case 22: return .sendControls
+        
+        case 23: return .fillAssist
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -1152,6 +1160,10 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
         
         case .sendControls:
             writeInt(&buf, Int32(22))
+        
+        
+        case .fillAssist:
+            writeInt(&buf, Int32(23))
         
         }
     }
