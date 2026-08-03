@@ -763,6 +763,11 @@ public func FfiConverterTypePinSettingsClient_lower(_ value: PinSettingsClient) 
 public protocol UserCryptoManagementClientProtocol: AnyObject, Sendable {
     
     /**
+     * Changes the account's KDF settings, and sets them on the server.
+     */
+    func changeKdf(password: String, newKdf: Kdf) async throws 
+    
+    /**
      * Returns the PIN settings sub-client.
      */
     func pinSettings()  -> PinSettingsClient
@@ -823,6 +828,26 @@ open class UserCryptoManagementClient: UserCryptoManagementClientProtocol, @unch
 
     
 
+    
+    /**
+     * Changes the account's KDF settings, and sets them on the server.
+     */
+open func changeKdf(password: String, newKdf: Kdf)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_change_kdf(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(password),FfiConverterTypeKdf_lower(newKdf)
+                )
+            },
+            pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeChangeKdfError_lift
+        )
+}
     
     /**
      * Returns the PIN settings sub-client.
@@ -1008,6 +1033,119 @@ public func FfiConverterTypeRotateUserKeysRequest_lift(_ buf: RustBuffer) throws
 #endif
 public func FfiConverterTypeRotateUserKeysRequest_lower(_ value: RotateUserKeysRequest) -> RustBuffer {
     return FfiConverterTypeRotateUserKeysRequest.lower(value)
+}
+
+
+/**
+ * Errors that can occur while changing the account KDF settings.
+ */
+public enum ChangeKdfError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Deriving the new authentication or unlock data failed.
+     */
+    case MasterPassword(message: String)
+    
+    /**
+     * The current master-password unlock data is not available in the state bridge.
+     */
+    case MissingMasterPasswordUnlockData(message: String)
+    
+    /**
+     * The client is not authenticated with a master password.
+     */
+    case NotAuthenticated(message: String)
+    
+    /**
+     * The server rejected the change-KDF request.
+     */
+    case Api(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ChangeKdfError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeChangeKdfError: FfiConverterRustBuffer {
+    typealias SwiftType = ChangeKdfError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ChangeKdfError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .MasterPassword(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingMasterPasswordUnlockData(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ChangeKdfError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .MasterPassword(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingMasterPasswordUnlockData(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeChangeKdfError_lift(_ buf: RustBuffer) throws -> ChangeKdfError {
+    return try FfiConverterTypeChangeKdfError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeChangeKdfError_lower(_ value: ChangeKdfError) -> RustBuffer {
+    return FfiConverterTypeChangeKdfError.lower(value)
 }
 
 
@@ -1789,6 +1927,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_validate_pin() != 3295) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_change_kdf() != 59756) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_pin_settings() != 40704) {

@@ -1030,6 +1030,21 @@ public protocol StateBridgeForeignImpl: AnyObject, Sendable {
      */
     func clearMasterpasswordUnlockData() async 
     
+    /**
+     * Stores the `kdf_config` value.
+     */
+    func setKdfConfig(value: Kdf) async 
+    
+    /**
+     * Returns the `kdf_config` value, if available.
+     */
+    func getKdfConfig() async  -> Kdf?
+    
+    /**
+     * Clears the `kdf_config` value.
+     */
+    func clearKdfConfig() async 
+    
 }
 /**
  * Foreign trait that Swift/Kotlin hosts implement to provide the state bridge.
@@ -1519,6 +1534,69 @@ open func clearMasterpasswordUnlockData()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_masterpassword_unlock_data(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Stores the `kdf_config` value.
+     */
+open func setKdfConfig(value: Kdf)async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_kdf_config(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeKdf_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the `kdf_config` value, if available.
+     */
+open func getKdfConfig()async  -> Kdf?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_kdf_config(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeKdf.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Clears the `kdf_config` value.
+     */
+open func clearKdfConfig()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_kdf_config(
                     self.uniffiCloneHandle()
                     
                 )
@@ -2361,6 +2439,124 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.clearMasterpasswordUnlockData(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setKdfConfig: { (
+            uniffiHandle: UInt64,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.setKdfConfig(
+                     value: try FfiConverterTypeKdf_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getKdfConfig: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> Kdf? in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.getKdfConfig(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: Kdf?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeKdf.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        clearKdfConfig: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.clearKdfConfig(
                 )
             }
 
@@ -4075,6 +4271,8 @@ public func FfiConverterTypeUniffiConverterDummyRecord_lower(_ value: UniffiConv
 
 /**
  * Response from the `update_kdf` function
+ *
+ * Note: This is deprecated and will be removed after key-connector fully uses sdk
  */
 public struct UpdateKdfResponse: Equatable, Hashable, Codable {
     /**
@@ -7276,6 +7474,30 @@ fileprivate struct FfiConverterOptionTypeWrappedAccountCryptographicState: FfiCo
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeKdf: FfiConverterRustBuffer {
+    typealias SwiftType = Kdf?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeKdf.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeKdf.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
     typealias SwiftType = UserId?
 
@@ -7912,6 +8134,15 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 29004) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 28669) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 42311) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 57545) {
         return InitializationResult.apiChecksumMismatch
     }
 

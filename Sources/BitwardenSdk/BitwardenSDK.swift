@@ -3673,6 +3673,7 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
      * Create the data necessary to update the user's kdf settings. The user's encryption key is
      * re-encrypted for the password under the new kdf settings. This returns the new encrypted
      * user key and the new password hash but does not update sdk state.
+     * Note: This is deprecated. Please use the user-crypto-management client instead.
      */
     func makeUpdateKdf(password: String, kdf: Kdf) async throws  -> UpdateKdfResponse
     
@@ -3930,6 +3931,7 @@ open func makePrfUserKeySet(prf: B64)throws  -> RotateableKeySet  {
      * Create the data necessary to update the user's kdf settings. The user's encryption key is
      * re-encrypted for the password under the new kdf settings. This returns the new encrypted
      * user key and the new password hash but does not update sdk state.
+     * Note: This is deprecated. Please use the user-crypto-management client instead.
      */
 open func makeUpdateKdf(password: String, kdf: Kdf)async throws  -> UpdateKdfResponse  {
     return
@@ -15034,7 +15036,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_prf_user_key_set() != 40733) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 17971) {
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_kdf() != 1070) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_make_update_password() != 55566) {
