@@ -1031,6 +1031,21 @@ public protocol StateBridgeForeignImpl: AnyObject, Sendable {
     func clearMasterpasswordUnlockData() async 
     
     /**
+     * Stores the `webauthn_prf_unlock_data` value.
+     */
+    func setWebauthnPrfUnlockData(value: WebAuthnPrfUnlockData) async 
+    
+    /**
+     * Returns the `webauthn_prf_unlock_data` value, if available.
+     */
+    func getWebauthnPrfUnlockData() async  -> WebAuthnPrfUnlockData?
+    
+    /**
+     * Clears the `webauthn_prf_unlock_data` value.
+     */
+    func clearWebauthnPrfUnlockData() async 
+    
+    /**
      * Stores the `kdf_config` value.
      */
     func setKdfConfig(value: Kdf) async 
@@ -1534,6 +1549,69 @@ open func clearMasterpasswordUnlockData()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_masterpassword_unlock_data(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Stores the `webauthn_prf_unlock_data` value.
+     */
+open func setWebauthnPrfUnlockData(value: WebAuthnPrfUnlockData)async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeWebAuthnPrfUnlockData_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the `webauthn_prf_unlock_data` value, if available.
+     */
+open func getWebauthnPrfUnlockData()async  -> WebAuthnPrfUnlockData?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeWebAuthnPrfUnlockData.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Clears the `webauthn_prf_unlock_data` value.
+     */
+open func clearWebauthnPrfUnlockData()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data(
                     self.uniffiCloneHandle()
                     
                 )
@@ -2439,6 +2517,124 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.clearMasterpasswordUnlockData(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setWebauthnPrfUnlockData: { (
+            uniffiHandle: UInt64,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.setWebauthnPrfUnlockData(
+                     value: try FfiConverterTypeWebAuthnPrfUnlockData_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getWebauthnPrfUnlockData: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> WebAuthnPrfUnlockData? in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.getWebauthnPrfUnlockData(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: WebAuthnPrfUnlockData?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeWebAuthnPrfUnlockData.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        clearWebauthnPrfUnlockData: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.clearWebauthnPrfUnlockData(
                 )
             }
 
@@ -4816,6 +5012,158 @@ public func FfiConverterTypeVerifyAsymmetricKeysResponse_lift(_ buf: RustBuffer)
 #endif
 public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAsymmetricKeysResponse) -> RustBuffer {
     return FfiConverterTypeVerifyAsymmetricKeysResponse.lower(value)
+}
+
+
+/**
+ * Every WebAuthn PRF credential the account can unlock with.
+ */
+public struct WebAuthnPrfUnlockData: Equatable, Hashable, Codable {
+    /**
+     * The credentials, in the order the server reported them.
+     */
+    public let options: [WebAuthnPrfUnlockOption]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The credentials, in the order the server reported them.
+         */options: [WebAuthnPrfUnlockOption]) {
+        self.options = options
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension WebAuthnPrfUnlockData: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWebAuthnPrfUnlockData: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WebAuthnPrfUnlockData {
+        return
+            try WebAuthnPrfUnlockData(
+                options: FfiConverterSequenceTypeWebAuthnPrfUnlockOption.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: WebAuthnPrfUnlockData, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeWebAuthnPrfUnlockOption.write(value.options, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebAuthnPrfUnlockData_lift(_ buf: RustBuffer) throws -> WebAuthnPrfUnlockData {
+    return try FfiConverterTypeWebAuthnPrfUnlockData.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebAuthnPrfUnlockData_lower(_ value: WebAuthnPrfUnlockData) -> RustBuffer {
+    return FfiConverterTypeWebAuthnPrfUnlockData.lower(value)
+}
+
+
+/**
+ * The unlock data for a single WebAuthn PRF credential.
+ */
+public struct WebAuthnPrfUnlockOption: Equatable, Hashable, Codable {
+    /**
+     * The private key of the unlock option, wrapped by the key derived from the credential's PRF
+     * output
+     */
+    public let encryptedPrivateKey: EncString
+    /**
+     * The user key, encapsulated with the public key of the unlock option
+     */
+    public let encryptedUserKey: UnsignedSharedKey
+    /**
+     * Credential ID for this WebAuthn PRF credential.
+     */
+    public let credentialId: String?
+    /**
+     * Transport methods available for this credential (e.g., "usb", "nfc", "ble", "internal",
+     * "hybrid").
+     */
+    public let transports: [String]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The private key of the unlock option, wrapped by the key derived from the credential's PRF
+         * output
+         */encryptedPrivateKey: EncString, 
+        /**
+         * The user key, encapsulated with the public key of the unlock option
+         */encryptedUserKey: UnsignedSharedKey, 
+        /**
+         * Credential ID for this WebAuthn PRF credential.
+         */credentialId: String?, 
+        /**
+         * Transport methods available for this credential (e.g., "usb", "nfc", "ble", "internal",
+         * "hybrid").
+         */transports: [String]?) {
+        self.encryptedPrivateKey = encryptedPrivateKey
+        self.encryptedUserKey = encryptedUserKey
+        self.credentialId = credentialId
+        self.transports = transports
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension WebAuthnPrfUnlockOption: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWebAuthnPrfUnlockOption: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WebAuthnPrfUnlockOption {
+        return
+            try WebAuthnPrfUnlockOption(
+                encryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf), 
+                encryptedUserKey: FfiConverterTypeUnsignedSharedKey.read(from: &buf), 
+                credentialId: FfiConverterOptionString.read(from: &buf), 
+                transports: FfiConverterOptionSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: WebAuthnPrfUnlockOption, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.encryptedPrivateKey, into: &buf)
+        FfiConverterTypeUnsignedSharedKey.write(value.encryptedUserKey, into: &buf)
+        FfiConverterOptionString.write(value.credentialId, into: &buf)
+        FfiConverterOptionSequenceString.write(value.transports, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebAuthnPrfUnlockOption_lift(_ buf: RustBuffer) throws -> WebAuthnPrfUnlockOption {
+    return try FfiConverterTypeWebAuthnPrfUnlockOption.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebAuthnPrfUnlockOption_lower(_ value: WebAuthnPrfUnlockOption) -> RustBuffer {
+    return FfiConverterTypeWebAuthnPrfUnlockOption.lower(value)
 }
 
 
@@ -7426,6 +7774,30 @@ fileprivate struct FfiConverterOptionTypeV2UpgradeToken: FfiConverterRustBuffer 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeWebAuthnPrfUnlockData: FfiConverterRustBuffer {
+    typealias SwiftType = WebAuthnPrfUnlockData?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeWebAuthnPrfUnlockData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeWebAuthnPrfUnlockData.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTrustDeviceResponse: FfiConverterRustBuffer {
     typealias SwiftType = TrustDeviceResponse?
 
@@ -7490,6 +7862,30 @@ fileprivate struct FfiConverterOptionTypeKdf: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeKdf.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -7612,6 +8008,56 @@ fileprivate struct FfiConverterOptionTypeSymmetricCryptoKey: FfiConverterRustBuf
         case 1: return try FfiConverterTypeSymmetricCryptoKey.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeWebAuthnPrfUnlockOption: FfiConverterRustBuffer {
+    typealias SwiftType = [WebAuthnPrfUnlockOption]
+
+    public static func write(_ value: [WebAuthnPrfUnlockOption], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeWebAuthnPrfUnlockOption.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [WebAuthnPrfUnlockOption] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [WebAuthnPrfUnlockOption]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeWebAuthnPrfUnlockOption.read(from: &buf))
+        }
+        return seq
     }
 }
 
@@ -8136,13 +8582,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 29004) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 28669) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 27676) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 42311) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 14602) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 57545) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 5273) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 38176) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 31239) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 32044) {
         return InitializationResult.apiChecksumMismatch
     }
 

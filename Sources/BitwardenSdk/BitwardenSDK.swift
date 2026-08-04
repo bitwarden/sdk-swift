@@ -2088,6 +2088,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func crypto()  -> CryptoClient
     
     /**
+     * Key management operations that run on every sync.
+     */
+    func cryptoSyncHandler()  -> CryptoSyncHandlerClient
+    
+    /**
      * Test method, echoes back the input
      */
     func echo(msg: String)  -> String
@@ -2238,6 +2243,17 @@ open func auth() -> AuthClient  {
 open func crypto() -> CryptoClient  {
     return try!  FfiConverterTypeCryptoClient_lift(try! rustCall() {
     uniffi_bitwarden_uniffi_fn_method_client_crypto(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Key management operations that run on every sync.
+     */
+open func cryptoSyncHandler() -> CryptoSyncHandlerClient  {
+    return try!  FfiConverterTypeCryptoSyncHandlerClient_lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_client_crypto_sync_handler(
             self.uniffiCloneHandle(),$0
     )
 })
@@ -14907,6 +14923,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 1549) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_crypto_sync_handler() != 40261) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 61009) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -15521,6 +15540,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()
     uniffiEnsureBitwardenCryptoInitialized()
+    uniffiEnsureBitwardenCryptoSyncHandlerInitialized()
     uniffiEnsureBitwardenEncodingInitialized()
     uniffiEnsureBitwardenExportersInitialized()
     uniffiEnsureBitwardenFidoInitialized()
