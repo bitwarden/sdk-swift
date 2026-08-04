@@ -2384,6 +2384,180 @@ public func FfiConverterTypeRenewFileUploadUrlError_lower(_ value: RenewFileUplo
     return FfiConverterTypeRenewFileUploadUrlError.lower(value)
 }
 
+
+/**
+ * Error returned when decrypting an anonymous send access response or file blob fails.
+ * Wraps [`CryptoError`], which never embeds plaintext or key material in its messages.
+ */
+public enum SendAccessDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The ciphertext was malformed, or the key derived from the URL fragment does not
+     * decrypt it (wrong key, or a tampered response).
+     */
+    case Crypto(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension SendAccessDecryptError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendAccessDecryptError: FfiConverterRustBuffer {
+    typealias SwiftType = SendAccessDecryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendAccessDecryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendAccessDecryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAccessDecryptError_lift(_ buf: RustBuffer) throws -> SendAccessDecryptError {
+    return try FfiConverterTypeSendAccessDecryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAccessDecryptError_lower(_ value: SendAccessDecryptError) -> RustBuffer {
+    return FfiConverterTypeSendAccessDecryptError.lower(value)
+}
+
+
+/**
+ * Error returned when the key from a send URL fragment cannot be turned into a
+ * [`SendAccessKey`]. Deliberately carries no key material.
+ */
+public enum SendAccessKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The fragment key was not valid URL-safe base64.
+     */
+    case InvalidEncoding(message: String)
+    
+    /**
+     * The decoded key was not `SEND_KEY_LEN` (16) bytes long.
+     */
+    case InvalidLength(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension SendAccessKeyError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendAccessKeyError: FfiConverterRustBuffer {
+    typealias SwiftType = SendAccessKeyError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendAccessKeyError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .InvalidEncoding(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidLength(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendAccessKeyError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .InvalidEncoding(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidLength(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAccessKeyError_lift(_ buf: RustBuffer) throws -> SendAccessKeyError {
+    return try FfiConverterTypeSendAccessKeyError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendAccessKeyError_lower(_ value: SendAccessKeyError) -> RustBuffer {
+    return FfiConverterTypeSendAccessKeyError.lower(value)
+}
+
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 /**
@@ -2929,6 +3103,11 @@ public enum UploadSendFileError: Swift.Error, Equatable, Hashable, Foundation.Lo
      */
     case Reqwest(message: String)
     
+    /**
+     * The Azure blob upload URL could not be renewed after it expired.
+     */
+    case RenewFileUploadUrl(message: String)
+    
 
     
 
@@ -2966,6 +3145,10 @@ public struct FfiConverterTypeUploadSendFileError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 3: return .RenewFileUploadUrl(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -2981,6 +3164,8 @@ public struct FfiConverterTypeUploadSendFileError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .Reqwest(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
+        case .RenewFileUploadUrl(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
 
         
         }
