@@ -15536,6 +15536,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitSendRepository()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiCallbackInitUserKeyStateRepository()
+    uniffiEnsureBitwardenApiBaseInitialized()
     uniffiEnsureBitwardenAuthInitialized()
     uniffiEnsureBitwardenCollectionsInitialized()
     uniffiEnsureBitwardenCoreInitialized()

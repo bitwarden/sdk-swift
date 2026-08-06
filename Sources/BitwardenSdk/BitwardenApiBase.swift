@@ -544,6 +544,130 @@ public func FfiConverterTypeResponseContent_lower(_ value: ResponseContent) -> R
 
 
 /**
+ * Errors that can occur during API operations.
+ */
+public enum ApiError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Error from the reqwest HTTP client.
+     */
+    case Reqwest(message: String)
+    
+    /**
+     * Error from the reqwest middleware.
+     */
+    case ReqwestMiddleware(message: String)
+    
+    /**
+     * JSON serialization/deserialization error.
+     */
+    case Serde(message: String)
+    
+    /**
+     * I/O error.
+     */
+    case Io(message: String)
+    
+    /**
+     * API returned an error response.
+     */
+    case Response(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ApiError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeApiError: FfiConverterRustBuffer {
+    typealias SwiftType = ApiError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ApiError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Reqwest(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .ReqwestMiddleware(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Serde(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 5: return .Response(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ApiError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Reqwest(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .ReqwestMiddleware(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Serde(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+        case .Response(_ /* message is ignored*/):
+            writeInt(&buf, Int32(5))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiError_lift(_ buf: RustBuffer) throws -> ApiError {
+    return try FfiConverterTypeApiError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiError_lower(_ value: ApiError) -> RustBuffer {
+    return FfiConverterTypeApiError.lower(value)
+}
+
+
+/**
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
