@@ -1408,6 +1408,75 @@ public func FfiConverterTypePasswordPreloginResponse_lower(_ value: PasswordPrel
 
 
 /**
+ * Open-organization-invite data to include on the register-finish payload.
+ */
+public struct RegistrationFinishOpenOrgInviteData: Equatable, Hashable {
+    /**
+     * The organization the registrant is joining via the open invite link.
+     */
+    public let organizationId: OrganizationId
+    /**
+     * The bearer code from the shared invite URL. Must be a UUID.
+     */
+    public let code: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The organization the registrant is joining via the open invite link.
+         */organizationId: OrganizationId, 
+        /**
+         * The bearer code from the shared invite URL. Must be a UUID.
+         */code: String) {
+        self.organizationId = organizationId
+        self.code = code
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension RegistrationFinishOpenOrgInviteData: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRegistrationFinishOpenOrgInviteData: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RegistrationFinishOpenOrgInviteData {
+        return
+            try RegistrationFinishOpenOrgInviteData(
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
+                code: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: RegistrationFinishOpenOrgInviteData, into buf: inout [UInt8]) {
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterString.write(value.code, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRegistrationFinishOpenOrgInviteData_lift(_ buf: RustBuffer) throws -> RegistrationFinishOpenOrgInviteData {
+    return try FfiConverterTypeRegistrationFinishOpenOrgInviteData.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRegistrationFinishOpenOrgInviteData_lower(_ value: RegistrationFinishOpenOrgInviteData) -> RustBuffer {
+    return FfiConverterTypeRegistrationFinishOpenOrgInviteData.lower(value)
+}
+
+
+/**
  * A send access token which can be used to access a send.
  */
 public struct SendAccessTokenResponse: Equatable, Hashable {
@@ -1890,7 +1959,7 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
      */
     public let organizationUserId: OrganizationId?
     /**
-     * Optional organization invite token for joining an organization
+     * Optional direct organization invite token for joining an organization
      */
     public let orgInviteToken: String?
     /**
@@ -1913,6 +1982,11 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
      * Optional provider user ID for provider invitations
      */
     public let providerUserId: UserId?
+    /**
+     * Optional open-organization-invite identifiers when finishing registration with an open
+     * organization invite link in client state.
+     */
+    public let openOrgInvite: RegistrationFinishOpenOrgInviteData?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1939,7 +2013,7 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
          * Optional organization user ID for organization invitations
          */organizationUserId: OrganizationId?, 
         /**
-         * Optional organization invite token for joining an organization
+         * Optional direct organization invite token for joining an organization
          */orgInviteToken: String?, 
         /**
          * Optional token for sponsored free family plan
@@ -1955,7 +2029,11 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
          */providerInviteToken: String?, 
         /**
          * Optional provider user ID for provider invitations
-         */providerUserId: UserId?) {
+         */providerUserId: UserId?, 
+        /**
+         * Optional open-organization-invite identifiers when finishing registration with an open
+         * organization invite link in client state.
+         */openOrgInvite: RegistrationFinishOpenOrgInviteData?) {
         self.email = email
         self.salt = salt
         self.masterPassword = masterPassword
@@ -1969,6 +2047,7 @@ public struct UserMasterPasswordRegistrationRequest: Equatable, Hashable {
         self.acceptEmergencyAccessId = acceptEmergencyAccessId
         self.providerInviteToken = providerInviteToken
         self.providerUserId = providerUserId
+        self.openOrgInvite = openOrgInvite
     }
 
     
@@ -1999,7 +2078,8 @@ public struct FfiConverterTypeUserMasterPasswordRegistrationRequest: FfiConverte
                 acceptEmergencyAccessInviteToken: FfiConverterOptionString.read(from: &buf), 
                 acceptEmergencyAccessId: FfiConverterOptionTypeUserId.read(from: &buf), 
                 providerInviteToken: FfiConverterOptionString.read(from: &buf), 
-                providerUserId: FfiConverterOptionTypeUserId.read(from: &buf)
+                providerUserId: FfiConverterOptionTypeUserId.read(from: &buf), 
+                openOrgInvite: FfiConverterOptionTypeRegistrationFinishOpenOrgInviteData.read(from: &buf)
         )
     }
 
@@ -2017,6 +2097,7 @@ public struct FfiConverterTypeUserMasterPasswordRegistrationRequest: FfiConverte
         FfiConverterOptionTypeUserId.write(value.acceptEmergencyAccessId, into: &buf)
         FfiConverterOptionString.write(value.providerInviteToken, into: &buf)
         FfiConverterOptionTypeUserId.write(value.providerUserId, into: &buf)
+        FfiConverterOptionTypeRegistrationFinishOpenOrgInviteData.write(value.openOrgInvite, into: &buf)
     }
 }
 
@@ -2525,6 +2606,11 @@ public enum RegistrationError: Swift.Error, Equatable, Hashable, Foundation.Loca
      */
     case Crypto(message: String)
     
+    /**
+     * Caller-provided input failed validation (e.g. malformed UUID).
+     */
+    case InvalidInput(message: String)
+    
 
     
 
@@ -2566,6 +2652,10 @@ public struct FfiConverterTypeRegistrationError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 4: return .InvalidInput(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -2583,6 +2673,8 @@ public struct FfiConverterTypeRegistrationError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
+        case .InvalidInput(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
 
         
         }
@@ -3148,6 +3240,30 @@ fileprivate struct FfiConverterOptionTypeKeyConnectorUserDecryptionOption: FfiCo
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeKeyConnectorUserDecryptionOption.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeRegistrationFinishOpenOrgInviteData: FfiConverterRustBuffer {
+    typealias SwiftType = RegistrationFinishOpenOrgInviteData?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeRegistrationFinishOpenOrgInviteData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeRegistrationFinishOpenOrgInviteData.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
