@@ -3301,59 +3301,6 @@ public func FfiConverterTypeEnrollPinResponse_lower(_ value: EnrollPinResponse) 
 
 
 /**
- * Represents the PIN envelope in memory, when ephemeral PIN unlock is used.
- */
-public struct EphemeralPinEnvelopeState: Equatable, Hashable, Codable {
-    public let pinEnvelope: PasswordProtectedKeyEnvelope
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(pinEnvelope: PasswordProtectedKeyEnvelope) {
-        self.pinEnvelope = pinEnvelope
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension EphemeralPinEnvelopeState: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeEphemeralPinEnvelopeState: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EphemeralPinEnvelopeState {
-        return
-            try EphemeralPinEnvelopeState(
-                pinEnvelope: FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: EphemeralPinEnvelopeState, into buf: inout [UInt8]) {
-        FfiConverterTypePasswordProtectedKeyEnvelope.write(value.pinEnvelope, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeEphemeralPinEnvelopeState_lift(_ buf: RustBuffer) throws -> EphemeralPinEnvelopeState {
-    return try FfiConverterTypeEphemeralPinEnvelopeState.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeEphemeralPinEnvelopeState_lower(_ value: EphemeralPinEnvelopeState) -> RustBuffer {
-    return FfiConverterTypeEphemeralPinEnvelopeState.lower(value)
-}
-
-
-/**
  * Request to generate a fingerprint.
  */
 public struct FingerprintRequest: Equatable, Hashable, Codable {
@@ -4741,60 +4688,6 @@ public func FfiConverterTypeUserCryptoV2KeysResponse_lift(_ buf: RustBuffer) thr
 #endif
 public func FfiConverterTypeUserCryptoV2KeysResponse_lower(_ value: UserCryptoV2KeysResponse) -> RustBuffer {
     return FfiConverterTypeUserCryptoV2KeysResponse.lower(value)
-}
-
-
-/**
- * Represents the decrypted symmetric user-key of a user. This is held in ephemeral state of the
- * client.
- */
-public struct UserKeyState: Equatable, Hashable, Codable {
-    public let decryptedUserKey: B64
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(decryptedUserKey: B64) {
-        self.decryptedUserKey = decryptedUserKey
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension UserKeyState: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeUserKeyState: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UserKeyState {
-        return
-            try UserKeyState(
-                decryptedUserKey: FfiConverterTypeB64.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: UserKeyState, into buf: inout [UInt8]) {
-        FfiConverterTypeB64.write(value.decryptedUserKey, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeUserKeyState_lift(_ buf: RustBuffer) throws -> UserKeyState {
-    return try FfiConverterTypeUserKeyState.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeUserKeyState_lower(_ value: UserKeyState) -> RustBuffer {
-    return FfiConverterTypeUserKeyState.lower(value)
 }
 
 
