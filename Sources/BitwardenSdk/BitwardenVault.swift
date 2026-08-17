@@ -2690,6 +2690,15 @@ public struct EncryptionContext: Equatable, Hashable {
      * Organization-owned ciphers
      */
     public let encryptedFor: UserId
+    /**
+     * Hex-encoded id of the key the cipher's fields are wrapped under - the organization key for
+     * Organization-owned ciphers, otherwise the user key - captured at the time the cipher was
+     * encrypted. The server uses it to reject writes made under a wrong key.
+     *
+     * `None` for keys that carry no key id, which is the case for the legacy AES-CBC-HMAC keys
+     * still used by V1 accounts.
+     */
+    public let encryptedByKeyId: String?
     public let cipher: Cipher
 
     // Default memberwise initializers are never public by default, so we
@@ -2698,8 +2707,17 @@ public struct EncryptionContext: Equatable, Hashable {
         /**
          * The Id of the user that encrypted the cipher. It should always represent a UserId, even for
          * Organization-owned ciphers
-         */encryptedFor: UserId, cipher: Cipher) {
+         */encryptedFor: UserId, 
+        /**
+         * Hex-encoded id of the key the cipher's fields are wrapped under - the organization key for
+         * Organization-owned ciphers, otherwise the user key - captured at the time the cipher was
+         * encrypted. The server uses it to reject writes made under a wrong key.
+         *
+         * `None` for keys that carry no key id, which is the case for the legacy AES-CBC-HMAC keys
+         * still used by V1 accounts.
+         */encryptedByKeyId: String? = nil, cipher: Cipher) {
         self.encryptedFor = encryptedFor
+        self.encryptedByKeyId = encryptedByKeyId
         self.cipher = cipher
     }
 
@@ -2720,12 +2738,14 @@ public struct FfiConverterTypeEncryptionContext: FfiConverterRustBuffer {
         return
             try EncryptionContext(
                 encryptedFor: FfiConverterTypeUserId.read(from: &buf), 
+                encryptedByKeyId: FfiConverterOptionString.read(from: &buf), 
                 cipher: FfiConverterTypeCipher.read(from: &buf)
         )
     }
 
     public static func write(_ value: EncryptionContext, into buf: inout [UInt8]) {
         FfiConverterTypeUserId.write(value.encryptedFor, into: &buf)
+        FfiConverterOptionString.write(value.encryptedByKeyId, into: &buf)
         FfiConverterTypeCipher.write(value.cipher, into: &buf)
     }
 }
