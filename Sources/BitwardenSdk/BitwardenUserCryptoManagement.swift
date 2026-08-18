@@ -768,6 +768,22 @@ public protocol UserCryptoManagementClientProtocol: AnyObject, Sendable {
     func changeKdf(password: String, newKdf: Kdf) async throws 
     
     /**
+     * Records the id of the user's current user key with the server, and stores it as the id the
+     * server knows.
+     *
+     * Safe to call when no backfill is needed, but [`Self::user_key_id_needs_backfill`] avoids the
+     * round trip.
+     *
+     * Requires the client to be unlocked so the current user key is available in memory.
+     */
+    func userKeyIdBackfill() async throws 
+    
+    /**
+     * Returns whether the server is missing the id of the user's current user key.
+     */
+    func userKeyIdNeedsBackfill() async throws  -> Bool
+    
+    /**
      * Returns the PIN settings sub-client.
      */
     func pinSettings()  -> PinSettingsClient
@@ -846,6 +862,52 @@ open func changeKdf(password: String, newKdf: Kdf)async throws   {
             freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_void,
             liftFunc: { $0 },
             errorHandler: FfiConverterTypeChangeKdfError_lift
+        )
+}
+    
+    /**
+     * Records the id of the user's current user key with the server, and stores it as the id the
+     * server knows.
+     *
+     * Safe to call when no backfill is needed, but [`Self::user_key_id_needs_backfill`] avoids the
+     * round trip.
+     *
+     * Requires the client to be unlocked so the current user key is available in memory.
+     */
+open func userKeyIdBackfill()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_user_key_id_backfill(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeKeyIdBackfillError_lift
+        )
+}
+    
+    /**
+     * Returns whether the server is missing the id of the user's current user key.
+     */
+open func userKeyIdNeedsBackfill()async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_user_key_id_needs_backfill(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_i8,
+            completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_i8,
+            freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeKeyIdBackfillError_lift
         )
 }
     
@@ -977,12 +1039,20 @@ public func FfiConverterTypePasswordChangeAndRotateUserKeysRequest_lower(_ value
 public struct RotateUserKeysRequest: Equatable, Hashable {
     public let keyRotationMethod: KeyRotationMethod
     public let trustedEmergencyAccessPublicKeys: [PublicKey]
+    /**
+     * Organization public keys the user confirmed as trusted. Only needed when the rotation
+     * shares the new user key for account recovery.
+     */
     public let trustedOrganizationPublicKeys: [PublicKey]
     public let upgradeTokenAction: UpgradeTokenAction
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(keyRotationMethod: KeyRotationMethod, trustedEmergencyAccessPublicKeys: [PublicKey], trustedOrganizationPublicKeys: [PublicKey], upgradeTokenAction: UpgradeTokenAction) {
+    public init(keyRotationMethod: KeyRotationMethod, trustedEmergencyAccessPublicKeys: [PublicKey], 
+        /**
+         * Organization public keys the user confirmed as trusted. Only needed when the rotation
+         * shares the new user key for account recovery.
+         */trustedOrganizationPublicKeys: [PublicKey], upgradeTokenAction: UpgradeTokenAction) {
         self.keyRotationMethod = keyRotationMethod
         self.trustedEmergencyAccessPublicKeys = trustedEmergencyAccessPublicKeys
         self.trustedOrganizationPublicKeys = trustedOrganizationPublicKeys
@@ -1146,6 +1216,119 @@ public func FfiConverterTypeChangeKdfError_lift(_ buf: RustBuffer) throws -> Cha
 #endif
 public func FfiConverterTypeChangeKdfError_lower(_ value: ChangeKdfError) -> RustBuffer {
     return FfiConverterTypeChangeKdfError.lower(value)
+}
+
+
+/**
+ * Errors returned by the user key id backfill.
+ */
+public enum KeyIdBackfillError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The user key is not in the key store, so the client is locked or not initialized.
+     */
+    case UserKeyNotAvailable(message: String)
+    
+    /**
+     * The current user key carries no key id
+     */
+    case NoKeyId(message: String)
+    
+    /**
+     * The key id the server knows is read from client-managed state, which needs a bridge.
+     */
+    case StateBridgeNotRegistered(message: String)
+    
+    /**
+     * The API call recording the key id failed.
+     */
+    case Api(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension KeyIdBackfillError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeKeyIdBackfillError: FfiConverterRustBuffer {
+    typealias SwiftType = KeyIdBackfillError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyIdBackfillError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .UserKeyNotAvailable(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .NoKeyId(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .StateBridgeNotRegistered(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: KeyIdBackfillError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .UserKeyNotAvailable(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .NoKeyId(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .StateBridgeNotRegistered(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyIdBackfillError_lift(_ buf: RustBuffer) throws -> KeyIdBackfillError {
+    return try FfiConverterTypeKeyIdBackfillError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyIdBackfillError_lower(_ value: KeyIdBackfillError) -> RustBuffer {
+    return FfiConverterTypeKeyIdBackfillError.lower(value)
 }
 
 
@@ -1930,6 +2113,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_change_kdf() != 59756) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_backfill() != 29149) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_needs_backfill() != 4195) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_pin_settings() != 40704) {

@@ -941,6 +941,21 @@ public protocol StateBridgeForeignImpl: AnyObject, Sendable {
     func clearUserKey() async 
     
     /**
+     * Stores the `user_key_id` value.
+     */
+    func setUserKeyId(value: KeyId) async 
+    
+    /**
+     * Returns the `user_key_id` value, if available.
+     */
+    func getUserKeyId() async  -> KeyId?
+    
+    /**
+     * Clears the `user_key_id` value.
+     */
+    func clearUserKeyId() async 
+    
+    /**
      * Stores the `persistent_pin_envelope` value.
      */
     func setPersistentPinEnvelope(value: PasswordProtectedKeyEnvelope) async 
@@ -1171,6 +1186,69 @@ open func clearUserKey()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_user_key(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Stores the `user_key_id` value.
+     */
+open func setUserKeyId(value: KeyId)async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_user_key_id(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeKeyId_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the `user_key_id` value, if available.
+     */
+open func getUserKeyId()async  -> KeyId?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_user_key_id(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeKeyId.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Clears the `user_key_id` value.
+     */
+open func clearUserKeyId()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_user_key_id(
                     self.uniffiCloneHandle()
                     
                 )
@@ -1809,6 +1887,124 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.clearUserKey(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setUserKeyId: { (
+            uniffiHandle: UInt64,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.setUserKeyId(
+                     value: try FfiConverterTypeKeyId_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getUserKeyId: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> KeyId? in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.getUserKeyId(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: KeyId?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeKeyId.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        clearUserKeyId: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.clearUserKeyId(
                 )
             }
 
@@ -7726,6 +7922,30 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeKeyId: FfiConverterRustBuffer {
+    typealias SwiftType = KeyId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeKeyId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeKeyId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypePasswordProtectedKeyEnvelope: FfiConverterRustBuffer {
     typealias SwiftType = PasswordProtectedKeyEnvelope?
 
@@ -8312,76 +8532,85 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key() != 18713) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_persistent_pin_envelope() != 29309) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_user_key_id() != 33525) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_persistent_pin_envelope() != 37703) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_user_key_id() != 62971) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_persistent_pin_envelope() != 34752) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key_id() != 64800) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_ephemeral_pin_envelope() != 16556) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_persistent_pin_envelope() != 50971) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_ephemeral_pin_envelope() != 19537) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_persistent_pin_envelope() != 36396) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_ephemeral_pin_envelope() != 50283) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_persistent_pin_envelope() != 24164) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_encrypted_pin() != 10946) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_ephemeral_pin_envelope() != 44015) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_encrypted_pin() != 43596) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_ephemeral_pin_envelope() != 3322) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_encrypted_pin() != 37173) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_ephemeral_pin_envelope() != 39810) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 56320) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_encrypted_pin() != 60687) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 33556) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_encrypted_pin() != 8756) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 9284) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_encrypted_pin() != 48721) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 39322) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 6043) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 52633) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 17319) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 25957) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 4334) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 60370) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 7138) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 32901) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 59004) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 29004) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 34049) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 27676) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 49377) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 14602) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 62086) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 5273) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 49140) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 38176) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 971) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 31239) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 21742) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 32044) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 22963) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 53368) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 17093) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 56933) {
         return InitializationResult.apiChecksumMismatch
     }
 

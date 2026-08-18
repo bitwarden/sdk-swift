@@ -683,6 +683,10 @@ public struct CryptoSyncUserDecryption: Equatable, Hashable {
      * The WebAuthn PRF credentials the account can unlock with.
      */
     public let webAuthnPrfOptions: [WebAuthnPrfUnlockOption]?
+    /**
+     * The id of the account's current user key.
+     */
+    public let userKeyId: KeyId?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -695,10 +699,14 @@ public struct CryptoSyncUserDecryption: Equatable, Hashable {
          */v2UpgradeToken: V2UpgradeToken?, 
         /**
          * The WebAuthn PRF credentials the account can unlock with.
-         */webAuthnPrfOptions: [WebAuthnPrfUnlockOption]?) {
+         */webAuthnPrfOptions: [WebAuthnPrfUnlockOption]?, 
+        /**
+         * The id of the account's current user key.
+         */userKeyId: KeyId?) {
         self.masterPasswordUnlock = masterPasswordUnlock
         self.v2UpgradeToken = v2UpgradeToken
         self.webAuthnPrfOptions = webAuthnPrfOptions
+        self.userKeyId = userKeyId
     }
 
     
@@ -719,7 +727,8 @@ public struct FfiConverterTypeCryptoSyncUserDecryption: FfiConverterRustBuffer {
             try CryptoSyncUserDecryption(
                 masterPasswordUnlock: FfiConverterOptionTypeMasterPasswordUnlockData.read(from: &buf), 
                 v2UpgradeToken: FfiConverterOptionTypeV2UpgradeToken.read(from: &buf), 
-                webAuthnPrfOptions: FfiConverterOptionSequenceTypeWebAuthnPrfUnlockOption.read(from: &buf)
+                webAuthnPrfOptions: FfiConverterOptionSequenceTypeWebAuthnPrfUnlockOption.read(from: &buf), 
+                userKeyId: FfiConverterOptionTypeKeyId.read(from: &buf)
         )
     }
 
@@ -727,6 +736,7 @@ public struct FfiConverterTypeCryptoSyncUserDecryption: FfiConverterRustBuffer {
         FfiConverterOptionTypeMasterPasswordUnlockData.write(value.masterPasswordUnlock, into: &buf)
         FfiConverterOptionTypeV2UpgradeToken.write(value.v2UpgradeToken, into: &buf)
         FfiConverterOptionSequenceTypeWebAuthnPrfUnlockOption.write(value.webAuthnPrfOptions, into: &buf)
+        FfiConverterOptionTypeKeyId.write(value.userKeyId, into: &buf)
     }
 }
 
@@ -868,6 +878,30 @@ fileprivate struct FfiConverterOptionSequenceTypeWebAuthnPrfUnlockOption: FfiCon
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeKeyId: FfiConverterRustBuffer {
+    typealias SwiftType = KeyId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeKeyId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeKeyId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeWebAuthnPrfUnlockOption: FfiConverterRustBuffer {
     typealias SwiftType = [WebAuthnPrfUnlockOption]
 
@@ -958,6 +992,7 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 

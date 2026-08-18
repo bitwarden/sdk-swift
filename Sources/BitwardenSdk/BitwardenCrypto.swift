@@ -1358,6 +1358,50 @@ public func FfiConverterTypeHighEntropySecret_lower(_ value: HighEntropySecret) 
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
+public typealias KeyId = String
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeKeyId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> KeyId {
+        return try FfiConverterString.read(from: &buf)
+    }
+
+    public static func write(_ value: KeyId, into buf: inout [UInt8]) {
+        return FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> KeyId {
+        return try FfiConverterString.lift(value)
+    }
+
+    public static func lower(_ value: KeyId) -> RustBuffer {
+        return FfiConverterString.lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyId_lift(_ value: RustBuffer) throws -> KeyId {
+    return try FfiConverterTypeKeyId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeKeyId_lower(_ value: KeyId) -> RustBuffer {
+    return FfiConverterTypeKeyId.lower(value)
+}
+
+
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
 public typealias NonZeroU32 = UInt32
 
 #if swift(>=5.8)
