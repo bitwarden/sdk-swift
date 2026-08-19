@@ -3363,11 +3363,11 @@ public func FfiConverterTypeDeriveKeyConnectorRequest_lower(_ value: DeriveKeyCo
  */
 public struct DerivePinKeyResponse: Equatable, Hashable, Codable {
     /**
-     * [UserKey] protected by PIN
+     * [UserKey][bitwarden_crypto::UserKey] protected by PIN
      */
     public let pinProtectedUserKey: EncString
     /**
-     * PIN protected by [UserKey]
+     * PIN protected by [UserKey][bitwarden_crypto::UserKey]
      */
     public let encryptedPin: EncString
 
@@ -3375,10 +3375,10 @@ public struct DerivePinKeyResponse: Equatable, Hashable, Codable {
     // declare one manually.
     public init(
         /**
-         * [UserKey] protected by PIN
+         * [UserKey][bitwarden_crypto::UserKey] protected by PIN
          */pinProtectedUserKey: EncString, 
         /**
-         * PIN protected by [UserKey]
+         * PIN protected by [UserKey][bitwarden_crypto::UserKey]
          */encryptedPin: EncString) {
         self.pinProtectedUserKey = pinProtectedUserKey
         self.encryptedPin = encryptedPin
@@ -3432,11 +3432,11 @@ public func FfiConverterTypeDerivePinKeyResponse_lower(_ value: DerivePinKeyResp
  */
 public struct EnrollPinResponse: Equatable, Hashable, Codable {
     /**
-     * [UserKey] protected by PIN
+     * [UserKey][bitwarden_crypto::UserKey] protected by PIN
      */
     public let pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope
     /**
-     * PIN protected by [UserKey]
+     * PIN protected by [UserKey][bitwarden_crypto::UserKey]
      */
     public let userKeyEncryptedPin: EncString
 
@@ -3444,10 +3444,10 @@ public struct EnrollPinResponse: Equatable, Hashable, Codable {
     // declare one manually.
     public init(
         /**
-         * [UserKey] protected by PIN
+         * [UserKey][bitwarden_crypto::UserKey] protected by PIN
          */pinProtectedUserKeyEnvelope: PasswordProtectedKeyEnvelope, 
         /**
-         * PIN protected by [UserKey]
+         * PIN protected by [UserKey][bitwarden_crypto::UserKey]
          */userKeyEncryptedPin: EncString) {
         self.pinProtectedUserKeyEnvelope = pinProtectedUserKeyEnvelope
         self.userKeyEncryptedPin = userKeyEncryptedPin
@@ -3844,75 +3844,6 @@ public func FfiConverterTypeLocalUserDataKeyState_lift(_ buf: RustBuffer) throws
 #endif
 public func FfiConverterTypeLocalUserDataKeyState_lower(_ value: LocalUserDataKeyState) -> RustBuffer {
     return FfiConverterTypeLocalUserDataKeyState.lower(value)
-}
-
-
-/**
- * Response from the `make_key_pair` function
- */
-public struct MakeKeyPairResponse: Equatable, Hashable, Codable {
-    /**
-     * The user's public key
-     */
-    public let userPublicKey: B64
-    /**
-     * User's private key, encrypted with the user key
-     */
-    public let userKeyEncryptedPrivateKey: EncString
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * The user's public key
-         */userPublicKey: B64, 
-        /**
-         * User's private key, encrypted with the user key
-         */userKeyEncryptedPrivateKey: EncString) {
-        self.userPublicKey = userPublicKey
-        self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension MakeKeyPairResponse: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeMakeKeyPairResponse: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MakeKeyPairResponse {
-        return
-            try MakeKeyPairResponse(
-                userPublicKey: FfiConverterTypeB64.read(from: &buf), 
-                userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: MakeKeyPairResponse, into buf: inout [UInt8]) {
-        FfiConverterTypeB64.write(value.userPublicKey, into: &buf)
-        FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeMakeKeyPairResponse_lift(_ buf: RustBuffer) throws -> MakeKeyPairResponse {
-    return try FfiConverterTypeMakeKeyPairResponse.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeMakeKeyPairResponse_lower(_ value: MakeKeyPairResponse) -> RustBuffer {
-    return FfiConverterTypeMakeKeyPairResponse.lower(value)
 }
 
 
@@ -4953,154 +4884,6 @@ public func FfiConverterTypeV2UpgradeToken_lift(_ buf: RustBuffer) throws -> V2U
 #endif
 public func FfiConverterTypeV2UpgradeToken_lower(_ value: V2UpgradeToken) -> RustBuffer {
     return FfiConverterTypeV2UpgradeToken.lower(value)
-}
-
-
-/**
- * Request for `verify_asymmetric_keys`.
- */
-public struct VerifyAsymmetricKeysRequest: Equatable, Hashable, Codable {
-    /**
-     * The user's user key
-     */
-    public let userKey: B64
-    /**
-     * The user's public key
-     */
-    public let userPublicKey: B64
-    /**
-     * User's private key, encrypted with the user key
-     */
-    public let userKeyEncryptedPrivateKey: EncString
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * The user's user key
-         */userKey: B64, 
-        /**
-         * The user's public key
-         */userPublicKey: B64, 
-        /**
-         * User's private key, encrypted with the user key
-         */userKeyEncryptedPrivateKey: EncString) {
-        self.userKey = userKey
-        self.userPublicKey = userPublicKey
-        self.userKeyEncryptedPrivateKey = userKeyEncryptedPrivateKey
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension VerifyAsymmetricKeysRequest: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeVerifyAsymmetricKeysRequest: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VerifyAsymmetricKeysRequest {
-        return
-            try VerifyAsymmetricKeysRequest(
-                userKey: FfiConverterTypeB64.read(from: &buf), 
-                userPublicKey: FfiConverterTypeB64.read(from: &buf), 
-                userKeyEncryptedPrivateKey: FfiConverterTypeEncString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: VerifyAsymmetricKeysRequest, into buf: inout [UInt8]) {
-        FfiConverterTypeB64.write(value.userKey, into: &buf)
-        FfiConverterTypeB64.write(value.userPublicKey, into: &buf)
-        FfiConverterTypeEncString.write(value.userKeyEncryptedPrivateKey, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeVerifyAsymmetricKeysRequest_lift(_ buf: RustBuffer) throws -> VerifyAsymmetricKeysRequest {
-    return try FfiConverterTypeVerifyAsymmetricKeysRequest.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeVerifyAsymmetricKeysRequest_lower(_ value: VerifyAsymmetricKeysRequest) -> RustBuffer {
-    return FfiConverterTypeVerifyAsymmetricKeysRequest.lower(value)
-}
-
-
-/**
- * Response for `verify_asymmetric_keys`.
- */
-public struct VerifyAsymmetricKeysResponse: Equatable, Hashable, Codable {
-    /**
-     * Whether the user's private key was decryptable by the user key.
-     */
-    public let privateKeyDecryptable: Bool
-    /**
-     * Whether the user's private key was a valid RSA key and matched the public key provided.
-     */
-    public let validPrivateKey: Bool
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * Whether the user's private key was decryptable by the user key.
-         */privateKeyDecryptable: Bool, 
-        /**
-         * Whether the user's private key was a valid RSA key and matched the public key provided.
-         */validPrivateKey: Bool) {
-        self.privateKeyDecryptable = privateKeyDecryptable
-        self.validPrivateKey = validPrivateKey
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension VerifyAsymmetricKeysResponse: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeVerifyAsymmetricKeysResponse: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VerifyAsymmetricKeysResponse {
-        return
-            try VerifyAsymmetricKeysResponse(
-                privateKeyDecryptable: FfiConverterBool.read(from: &buf), 
-                validPrivateKey: FfiConverterBool.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: VerifyAsymmetricKeysResponse, into buf: inout [UInt8]) {
-        FfiConverterBool.write(value.privateKeyDecryptable, into: &buf)
-        FfiConverterBool.write(value.validPrivateKey, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeVerifyAsymmetricKeysResponse_lift(_ buf: RustBuffer) throws -> VerifyAsymmetricKeysResponse {
-    return try FfiConverterTypeVerifyAsymmetricKeysResponse.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeVerifyAsymmetricKeysResponse_lower(_ value: VerifyAsymmetricKeysResponse) -> RustBuffer {
-    return FfiConverterTypeVerifyAsymmetricKeysResponse.lower(value)
 }
 
 
