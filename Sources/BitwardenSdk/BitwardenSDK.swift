@@ -4540,7 +4540,7 @@ public protocol ExporterClientProtocol: AnyObject, Sendable {
      * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
      * Ideally the input should be immediately serialized from [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
      */
-    func importCxf(payload: String) throws  -> [Cipher]
+    func importCxf(payload: String) throws  -> [EncryptionContext]
     
 }
 open class ExporterClient: ExporterClientProtocol, @unchecked Sendable {
@@ -4656,8 +4656,8 @@ open func exportVault(folders: [Folder], ciphers: [Cipher], format: ExportFormat
      * For use with Apple using [ASCredentialExportManager](https://developer.apple.com/documentation/authenticationservices/ascredentialexportmanager).
      * Ideally the input should be immediately serialized from [ASImportableAccount](https://developer.apple.com/documentation/authenticationservices/asimportableaccount).
      */
-open func importCxf(payload: String)throws  -> [Cipher]  {
-    return try  FfiConverterSequenceTypeCipher.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+open func importCxf(payload: String)throws  -> [EncryptionContext]  {
+    return try  FfiConverterSequenceTypeEncryptionContext.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
     uniffi_bitwarden_uniffi_fn_method_exporterclient_import_cxf(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(payload),$0
@@ -13844,7 +13844,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_vault() != 56665) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 33437) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 48644) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_passphrase() != 32758) {
