@@ -2694,9 +2694,6 @@ public struct EncryptionContext: Equatable, Hashable {
      * Hex-encoded id of the key the cipher's fields are wrapped under - the organization key for
      * Organization-owned ciphers, otherwise the user key - captured at the time the cipher was
      * encrypted. The server uses it to reject writes made under a wrong key.
-     *
-     * `None` for keys that carry no key id, which is the case for the legacy AES-CBC-HMAC keys
-     * still used by V1 accounts.
      */
     public let encryptedByKeyId: String?
     public let cipher: Cipher
@@ -2712,9 +2709,6 @@ public struct EncryptionContext: Equatable, Hashable {
          * Hex-encoded id of the key the cipher's fields are wrapped under - the organization key for
          * Organization-owned ciphers, otherwise the user key - captured at the time the cipher was
          * encrypted. The server uses it to reject writes made under a wrong key.
-         *
-         * `None` for keys that carry no key id, which is the case for the legacy AES-CBC-HMAC keys
-         * still used by V1 accounts.
          */encryptedByKeyId: String? = nil, cipher: Cipher) {
         self.encryptedFor = encryptedFor
         self.encryptedByKeyId = encryptedByKeyId

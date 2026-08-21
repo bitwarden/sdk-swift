@@ -4008,6 +4008,11 @@ public struct MasterPasswordUnlockData: Equatable, Hashable, Codable {
      * The salt used in the KDF, typically the user's email
      */
     public let salt: String
+    /**
+     * When present, this asserts what key is contained in the
+     * `master_key_wrapped_user_key`.
+     */
+    public let containedKeyId: KeyId?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -4020,10 +4025,15 @@ public struct MasterPasswordUnlockData: Equatable, Hashable, Codable {
          */masterKeyWrappedUserKey: EncString, 
         /**
          * The salt used in the KDF, typically the user's email
-         */salt: String) {
+         */salt: String, 
+        /**
+         * When present, this asserts what key is contained in the
+         * `master_key_wrapped_user_key`.
+         */containedKeyId: KeyId? = nil) {
         self.kdf = kdf
         self.masterKeyWrappedUserKey = masterKeyWrappedUserKey
         self.salt = salt
+        self.containedKeyId = containedKeyId
     }
 
     
@@ -4044,7 +4054,8 @@ public struct FfiConverterTypeMasterPasswordUnlockData: FfiConverterRustBuffer {
             try MasterPasswordUnlockData(
                 kdf: FfiConverterTypeKdf.read(from: &buf), 
                 masterKeyWrappedUserKey: FfiConverterTypeEncString.read(from: &buf), 
-                salt: FfiConverterString.read(from: &buf)
+                salt: FfiConverterString.read(from: &buf), 
+                containedKeyId: FfiConverterOptionTypeKeyId.read(from: &buf)
         )
     }
 
@@ -4052,6 +4063,7 @@ public struct FfiConverterTypeMasterPasswordUnlockData: FfiConverterRustBuffer {
         FfiConverterTypeKdf.write(value.kdf, into: &buf)
         FfiConverterTypeEncString.write(value.masterKeyWrappedUserKey, into: &buf)
         FfiConverterString.write(value.salt, into: &buf)
+        FfiConverterOptionTypeKeyId.write(value.containedKeyId, into: &buf)
     }
 }
 
@@ -6586,6 +6598,11 @@ public enum MasterPasswordError: Swift.Error, Equatable, Hashable, Codable, Foun
     case InvalidKdfConfiguration(message: String)
     
     /**
+     * The contained key id could not be parsed, because it has an invalid value
+     */
+    case KeyIdMalformed(message: String)
+    
+    /**
      * The wrapped encryption key or salt fields are missing or KDF data is incomplete
      */
     case MissingField(message: String)
@@ -6641,15 +6658,19 @@ public struct FfiConverterTypeMasterPasswordError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .MissingField(
+        case 4: return .KeyIdMalformed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .Crypto(
+        case 5: return .MissingField(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .WrongPassword(
+        case 6: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 7: return .WrongPassword(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -6670,12 +6691,14 @@ public struct FfiConverterTypeMasterPasswordError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         case .InvalidKdfConfiguration(_ /* message is ignored*/):
             writeInt(&buf, Int32(3))
-        case .MissingField(_ /* message is ignored*/):
+        case .KeyIdMalformed(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .Crypto(_ /* message is ignored*/):
+        case .MissingField(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .WrongPassword(_ /* message is ignored*/):
+        case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
+        case .WrongPassword(_ /* message is ignored*/):
+            writeInt(&buf, Int32(7))
 
         
         }
