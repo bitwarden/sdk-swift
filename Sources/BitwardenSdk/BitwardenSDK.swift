@@ -7394,6 +7394,186 @@ public func FfiConverterTypeLogCallback_lower(_ value: LogCallback) -> UInt64 {
 
 
 
+/**
+ * UniFFI wrapper for [`ManagedSettingsClient`].
+ *
+ * The host application constructs one of these at boot, acquires a management profile from the
+ * operating system's Unified Endpoint Management channel, and pushes it in with
+ * [`update_profile`](ManagedSettingsBindingClient::update_profile).
+ */
+public protocol ManagedSettingsBindingClientProtocol: AnyObject, Sendable {
+    
+    /**
+     * Raw JSON-encoded value for `key`, if a value is present.
+     */
+    func get(key: String)  -> String?
+    
+    /**
+     * Returns `true` if `key` is present in the active profile.
+     */
+    func isManaged(key: String)  -> Bool
+    
+    /**
+     * Replace the active profile. Clear the profile with `None`.
+     */
+    func updateProfile(profile: ManagementProfile?) 
+    
+}
+/**
+ * UniFFI wrapper for [`ManagedSettingsClient`].
+ *
+ * The host application constructs one of these at boot, acquires a management profile from the
+ * operating system's Unified Endpoint Management channel, and pushes it in with
+ * [`update_profile`](ManagedSettingsBindingClient::update_profile).
+ */
+open class ManagedSettingsBindingClient: ManagedSettingsBindingClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_managedsettingsbindingclient(self.handle, $0) }
+    }
+    /**
+     * Fresh handle with no active profile.
+     */
+public convenience init() {
+    let handle =
+        try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_constructor_managedsettingsbindingclient_new($0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_managedsettingsbindingclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Raw JSON-encoded value for `key`, if a value is present.
+     */
+open func get(key: String) -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_managedsettingsbindingclient_get(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(key),$0
+    )
+})
+}
+    
+    /**
+     * Returns `true` if `key` is present in the active profile.
+     */
+open func isManaged(key: String) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_managedsettingsbindingclient_is_managed(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(key),$0
+    )
+})
+}
+    
+    /**
+     * Replace the active profile. Clear the profile with `None`.
+     */
+open func updateProfile(profile: ManagementProfile?)  {try! rustCall() {
+    uniffi_bitwarden_uniffi_fn_method_managedsettingsbindingclient_update_profile(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeManagementProfile.lower(profile),$0
+    )
+}
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeManagedSettingsBindingClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ManagedSettingsBindingClient
+
+    public static func lift(_ handle: UInt64) throws -> ManagedSettingsBindingClient {
+        return ManagedSettingsBindingClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ManagedSettingsBindingClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ManagedSettingsBindingClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ManagedSettingsBindingClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeManagedSettingsBindingClient_lift(_ handle: UInt64) throws -> ManagedSettingsBindingClient {
+    return try FfiConverterTypeManagedSettingsBindingClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeManagedSettingsBindingClient_lower(_ value: ManagedSettingsBindingClient) -> UInt64 {
+    return FfiConverterTypeManagedSettingsBindingClient.lower(value)
+}
+
+
+
+
+
+
 public protocol OrganizationSharedKeyRepository: AnyObject, Sendable {
     
     func get(id: String) async throws  -> OrganizationSharedKey?
@@ -12355,6 +12535,30 @@ fileprivate struct FfiConverterOptionTypeDeviceAuthKeyRecord: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeManagementProfile: FfiConverterRustBuffer {
+    typealias SwiftType = ManagementProfile?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeManagementProfile.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeManagementProfile.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSend: FfiConverterRustBuffer {
     typealias SwiftType = Send?
 
@@ -13589,6 +13793,15 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 8139) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_managedsettingsbindingclient_get() != 23590) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_managedsettingsbindingclient_is_managed() != 14246) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_managedsettingsbindingclient_update_profile() != 8914) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_cipherrepository_get() != 47885) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -13997,6 +14210,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 46660) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_constructor_managedsettingsbindingclient_new() != 36772) {
+        return InitializationResult.apiChecksumMismatch
+    }
 
     uniffiCallbackInitCipherRepository()
     uniffiCallbackInitDeviceAuthKeyStore()
@@ -14019,6 +14235,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenFidoInitialized()
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenImportersInitialized()
+    uniffiEnsureBitwardenManagedSettingsTypesInitialized()
     uniffiEnsureBitwardenPoliciesInitialized()
     uniffiEnsureBitwardenRandomInitialized()
     uniffiEnsureBitwardenSendInitialized()
