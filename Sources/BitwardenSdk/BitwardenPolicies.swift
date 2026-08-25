@@ -537,6 +537,89 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 
 
 /**
+ * The FFI-facing counterpart of the native `EnforcedPolicy`, with its
+ * strongly-typed `data` erased to [`PolicyDataType`] so it can cross the
+ * binding boundary.
+ */
+public struct EnforcedPolicyErased: Equatable, Hashable {
+    /**
+     * The organization this enforcement decision is for.
+     */
+    public let organizationId: OrganizationId
+    /**
+     * The policy data, if any.
+     */
+    public let data: PolicyDataType
+    /**
+     * Whether the policy is being enforced against the current user for this
+     * organization.
+     */
+    public let enforced: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The organization this enforcement decision is for.
+         */organizationId: OrganizationId, 
+        /**
+         * The policy data, if any.
+         */data: PolicyDataType, 
+        /**
+         * Whether the policy is being enforced against the current user for this
+         * organization.
+         */enforced: Bool) {
+        self.organizationId = organizationId
+        self.data = data
+        self.enforced = enforced
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension EnforcedPolicyErased: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEnforcedPolicyErased: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EnforcedPolicyErased {
+        return
+            try EnforcedPolicyErased(
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
+                data: FfiConverterTypePolicyDataType.read(from: &buf), 
+                enforced: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: EnforcedPolicyErased, into buf: inout [UInt8]) {
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterTypePolicyDataType.write(value.data, into: &buf)
+        FfiConverterBool.write(value.enforced, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnforcedPolicyErased_lift(_ buf: RustBuffer) throws -> EnforcedPolicyErased {
+    return try FfiConverterTypeEnforcedPolicyErased.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnforcedPolicyErased_lower(_ value: EnforcedPolicyErased) -> RustBuffer {
+    return FfiConverterTypeEnforcedPolicyErased.lower(value)
+}
+
+
+/**
  * SDK domain model for master password policy requirements.
  * Defines the complexity requirements for a user's master password
  * when enforced by an organization policy.
@@ -666,13 +749,13 @@ public func FfiConverterTypeMasterPasswordPolicyResponse_lower(_ value: MasterPa
 /**
  * A minimal set of data for a user in an organization. This provides
  * the context needed to evaluate the policies that are applied to the
- * user by the organization.
+ * user.
  */
 public struct OrganizationUserPolicyContext: Equatable, Hashable {
     /**
      * The organization's unique ID.
      */
-    public let id: Uuid
+    public let id: OrganizationId
     /**
      * The user's membership status in the organization.
      */
@@ -700,7 +783,7 @@ public struct OrganizationUserPolicyContext: Equatable, Hashable {
     public init(
         /**
          * The organization's unique ID.
-         */id: Uuid, 
+         */id: OrganizationId, 
         /**
          * The user's membership status in the organization.
          */status: OrganizationUserStatusType, 
@@ -741,7 +824,7 @@ public struct FfiConverterTypeOrganizationUserPolicyContext: FfiConverterRustBuf
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OrganizationUserPolicyContext {
         return
             try OrganizationUserPolicyContext(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterTypeOrganizationId.read(from: &buf), 
                 status: FfiConverterTypeOrganizationUserStatusType.read(from: &buf), 
                 role: FfiConverterTypeOrganizationUserType.read(from: &buf), 
                 enabled: FfiConverterBool.read(from: &buf), 
@@ -751,7 +834,7 @@ public struct FfiConverterTypeOrganizationUserPolicyContext: FfiConverterRustBuf
     }
 
     public static func write(_ value: OrganizationUserPolicyContext, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterTypeOrganizationId.write(value.id, into: &buf)
         FfiConverterTypeOrganizationUserStatusType.write(value.status, into: &buf)
         FfiConverterTypeOrganizationUserType.write(value.role, into: &buf)
         FfiConverterBool.write(value.enabled, into: &buf)
@@ -777,7 +860,9 @@ public func FfiConverterTypeOrganizationUserPolicyContext_lower(_ value: Organiz
 
 
 /**
- * An organization policy.
+ * An organization policy in the raw data format that is sent over the FFI.
+ *
+ * TODO: this is misnamed, but changing it is a breaking change.
  */
 public struct PolicyView: Equatable, Hashable {
     /**
@@ -787,7 +872,7 @@ public struct PolicyView: Equatable, Hashable {
     /**
      * The organization this policy belongs to.
      */
-    public let organizationId: Uuid
+    public let organizationId: OrganizationId
     /**
      * The type of policy.
      */
@@ -813,7 +898,7 @@ public struct PolicyView: Equatable, Hashable {
          */id: Uuid, 
         /**
          * The organization this policy belongs to.
-         */organizationId: Uuid, 
+         */organizationId: OrganizationId, 
         /**
          * The type of policy.
          */type: PolicyType, 
@@ -851,7 +936,7 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
         return
             try PolicyView(
                 id: FfiConverterTypeUuid.read(from: &buf), 
-                organizationId: FfiConverterTypeUuid.read(from: &buf), 
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
                 type: FfiConverterTypePolicyType.read(from: &buf), 
                 data: FfiConverterOptionString.read(from: &buf), 
                 enabled: FfiConverterBool.read(from: &buf), 
@@ -861,7 +946,7 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
 
     public static func write(_ value: PolicyView, into buf: inout [UInt8]) {
         FfiConverterTypeUuid.write(value.id, into: &buf)
-        FfiConverterTypeUuid.write(value.organizationId, into: &buf)
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterTypePolicyType.write(value.type, into: &buf)
         FfiConverterOptionString.write(value.data, into: &buf)
         FfiConverterBool.write(value.enabled, into: &buf)
@@ -883,6 +968,232 @@ public func FfiConverterTypePolicyView_lift(_ buf: RustBuffer) throws -> PolicyV
 public func FfiConverterTypePolicyView_lower(_ value: PolicyView) -> RustBuffer {
     return FfiConverterTypePolicyView.lower(value)
 }
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * Type-erased policy type + data for crossing the FFI boundary.
+ *
+ * Each variant carries the strongly-typed data for one policy, mirroring the
+ * generic `Policy::Data` used on the native side. Variants are
+ * named identically to (and documented by) the matching [`PolicyType`] variant.
+ *
+ * TODO: this is missing policy data for current policies.
+ */
+
+public enum PolicyDataType: Equatable, Hashable {
+    
+    case twoFactorAuthentication
+    case masterPassword(MasterPasswordPolicyResponse
+    )
+    case passwordGenerator
+    case singleOrg
+    case requireSso
+    case organizationDataOwnership
+    case disableSend
+    case sendOptions
+    case resetPassword
+    case maximumVaultTimeout
+    case disablePersonalVaultExport
+    case activateAutofill
+    case automaticAppLogIn
+    case freeFamiliesSponsorship
+    case removeUnlockWithPin
+    case restrictedItemTypes
+    case uriMatchDefaults
+    case autotypeDefaultSetting
+    case automaticUserConfirmation
+    case blockClaimedDomainAccountCreation
+    case organizationUserNotification
+    case sendControls
+    case fillAssist
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PolicyDataType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyDataType: FfiConverterRustBuffer {
+    typealias SwiftType = PolicyDataType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyDataType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .twoFactorAuthentication
+        
+        case 2: return .masterPassword(try FfiConverterTypeMasterPasswordPolicyResponse.read(from: &buf)
+        )
+        
+        case 3: return .passwordGenerator
+        
+        case 4: return .singleOrg
+        
+        case 5: return .requireSso
+        
+        case 6: return .organizationDataOwnership
+        
+        case 7: return .disableSend
+        
+        case 8: return .sendOptions
+        
+        case 9: return .resetPassword
+        
+        case 10: return .maximumVaultTimeout
+        
+        case 11: return .disablePersonalVaultExport
+        
+        case 12: return .activateAutofill
+        
+        case 13: return .automaticAppLogIn
+        
+        case 14: return .freeFamiliesSponsorship
+        
+        case 15: return .removeUnlockWithPin
+        
+        case 16: return .restrictedItemTypes
+        
+        case 17: return .uriMatchDefaults
+        
+        case 18: return .autotypeDefaultSetting
+        
+        case 19: return .automaticUserConfirmation
+        
+        case 20: return .blockClaimedDomainAccountCreation
+        
+        case 21: return .organizationUserNotification
+        
+        case 22: return .sendControls
+        
+        case 23: return .fillAssist
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PolicyDataType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .twoFactorAuthentication:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .masterPassword(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterTypeMasterPasswordPolicyResponse.write(v1, into: &buf)
+            
+        
+        case .passwordGenerator:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .singleOrg:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .requireSso:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .organizationDataOwnership:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .disableSend:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .sendOptions:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .resetPassword:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .maximumVaultTimeout:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .disablePersonalVaultExport:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .activateAutofill:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .automaticAppLogIn:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .freeFamiliesSponsorship:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .removeUnlockWithPin:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .restrictedItemTypes:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .uriMatchDefaults:
+            writeInt(&buf, Int32(17))
+        
+        
+        case .autotypeDefaultSetting:
+            writeInt(&buf, Int32(18))
+        
+        
+        case .automaticUserConfirmation:
+            writeInt(&buf, Int32(19))
+        
+        
+        case .blockClaimedDomainAccountCreation:
+            writeInt(&buf, Int32(20))
+        
+        
+        case .organizationUserNotification:
+            writeInt(&buf, Int32(21))
+        
+        
+        case .sendControls:
+            writeInt(&buf, Int32(22))
+        
+        
+        case .fillAssist:
+            writeInt(&buf, Int32(23))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyDataType_lift(_ buf: RustBuffer) throws -> PolicyDataType {
+    return try FfiConverterTypePolicyDataType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyDataType_lower(_ value: PolicyDataType) -> RustBuffer {
+    return FfiConverterTypePolicyDataType.lower(value)
+}
+
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
