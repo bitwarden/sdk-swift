@@ -850,6 +850,11 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     case BitwardenCrypto(message: String)
     
     /**
+     * A Keeper importer cryptography operation failed.
+     */
+    case KeeperCrypto(message: String)
+    
+    /**
      * Encryption from the shared import bridge (`bitwarden_exporters::encrypt_import`).
      */
     case Export(message: String)
@@ -911,7 +916,11 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .Export(
+        case 8: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 9: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -940,8 +949,10 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(6))
         case .BitwardenCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
-        case .Export(_ /* message is ignored*/):
+        case .KeeperCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
 
         
         }

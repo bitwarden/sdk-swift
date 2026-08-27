@@ -13822,10 +13822,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_echo() != 18759) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_exporters() != 28048) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_exporters() != 24833) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 29846) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_generators() != 57771) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_gov_mode() != 46112) {
@@ -13834,7 +13834,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_http_get() != 38997) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_importers() != 15925) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_importers() != 45428) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_km_state_bridge() != 58008) {
@@ -13849,10 +13849,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_random() != 46393) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 56170) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 45809) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 2857) {
+    if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 4261) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_user_crypto_management() != 21823) {
@@ -14215,58 +14215,58 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 17069) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 1511) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 6329) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_organization_vault() != 24637) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_organization_vault() != 36740) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_vault() != 9466) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_vault() != 55579) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 21342) {
+    if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_import_cxf() != 28199) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_passphrase() != 5834) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_passphrase() != 35555) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password() != 9433) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password() != 2777) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password_rules() != 53273) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_password_rules() != 29165) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 20626) {
+    if (uniffi_bitwarden_uniffi_checksum_method_generatorclients_username() != 13146) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_kdbx() != 2357) {
+    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_kdbx() != 13340) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 47506) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 15802) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_buffer() != 55724) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_buffer() != 7265) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_file() != 45034) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_file() != 57723) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_list() != 602) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt_list() != 30313) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt() != 18357) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt() != 43042) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_buffer() != 17798) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_buffer() != 59327) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 52598) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sendclient_encrypt_file() != 53551) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 11975) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_generate_ssh_key() != 51701) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 62373) {
+    if (uniffi_bitwarden_uniffi_checksum_method_sshclient_import_ssh_key() != 54881) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_attachments() != 62056) {
