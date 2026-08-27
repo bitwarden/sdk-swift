@@ -39,6 +39,52 @@ fileprivate extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
         self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
     }
+
+    init(rawBufferPointer: UnsafeRawBufferPointer) {
+        self.init(
+            len: Int32(rawBufferPointer.count),
+            data: rawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        )
+    }
+}
+
+// Converter for `&[u8]` / `[ByRef] bytes` arguments.
+//
+// Conforms to `FfiConverter` so the compiler enforces the full converter
+// method set. Only the scope-bound `lower(_:_body:)` overload is sound —
+// zero-copy byte buffers only flow foreign -> Rust, and only in argument
+// position. The four protocol-witness methods (`lift`, `lower`, `read`,
+// `write`) `fatalError` at runtime if anyone reaches them.
+//
+// The scope-bound `lower` takes a closure because the `ForeignBytes`
+// pointer is only guaranteed valid for the duration of
+// `Data.withUnsafeBytes`. Callers must run the full FFI call inside
+// the closure body.
+fileprivate enum FfiConverterByRefBytes: FfiConverter {
+    typealias SwiftType = Data
+    typealias FfiType = ForeignBytes
+
+    static func lower<R>(_ value: Data, _ body: (ForeignBytes) throws -> R) rethrows -> R {
+        return try value.withUnsafeBytes { rawBuf in
+            try body(ForeignBytes(rawBufferPointer: rawBuf))
+        }
+    }
+
+    static func lower(_ value: Data) -> ForeignBytes {
+        fatalError("ByRef bytes cannot use the plain lower: returning ForeignBytes escapes the Data.withUnsafeBytes scope. Use the scope-bound lower(_:_body:) overload instead.")
+    }
+
+    static func lift(_ value: ForeignBytes) throws -> Data {
+        fatalError("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
+    }
+
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        fatalError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
+
+    static func write(_ value: Data, into buf: inout [UInt8]) {
+        fatalError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
 }
 
 // For every type used in the interface, we provide helper methods for conveniently
@@ -487,7 +533,11 @@ fileprivate struct FfiConverterString: FfiConverter {
             return String()
         }
         let bytes = UnsafeBufferPointer<UInt8>(start: value.data!, count: Int(value.len))
-        return String(bytes: bytes, encoding: String.Encoding.utf8)!
+        // Use Swift's native UTF-8 decoder; `String(bytes:encoding:.utf8)` goes
+        // through Foundation's NSString and silently strips a leading U+FEFF BOM.
+        // Invalid UTF-8 substitutes U+FFFD instead of trapping (unreachable
+        // given Rust's `String` invariant).
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     public static func lower(_ value: String) -> RustBuffer {
@@ -503,7 +553,8 @@ fileprivate struct FfiConverterString: FfiConverter {
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> String {
         let len: Int32 = try readInt(&buf)
-        return String(bytes: try readBytes(&buf, count: Int(len)), encoding: String.Encoding.utf8)!
+        // See `lift` above for why we avoid Foundation's NSString-backed decoder here.
+        return String(decoding: try readBytes(&buf, count: Int(len)), as: UTF8.self)
     }
 
     public static func write(_ value: String, into buf: inout [UInt8]) {
@@ -540,12 +591,17 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
         let seconds: Int64 = try readInt(&buf)
         let nanoseconds: UInt32 = try readInt(&buf)
+        // Build the Date from whole seconds first, then add the nanoseconds as a
+        // separate TimeInterval.  Date stores CFAbsoluteTime (seconds since 2001),
+        // so adding a small fraction to the ~7.8e8 base is twice as precise as
+        // adding it to the ~1.76e9 Unix-epoch value, because the smaller magnitude
+        // leaves more mantissa bits for the sub-second part.
         if seconds >= 0 {
-            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(Double(nanoseconds) / 1.0e9)
         } else {
-            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(-Double(nanoseconds) / 1.0e9)
         }
     }
 
@@ -4847,7 +4903,8 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 }
 
 
-public enum BulkUpdateCollectionsCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum BulkUpdateCollectionsCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -4929,7 +4986,8 @@ public func FfiConverterTypeBulkUpdateCollectionsCipherError_lower(_ value: Bulk
 }
 
 
-public enum CipherAdminGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherAdminGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5019,7 +5077,8 @@ public func FfiConverterTypeCipherAdminGetAttachmentDownloadUrlError_lower(_ val
 }
 
 
-public enum CipherCreateAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherCreateAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5125,7 +5184,8 @@ public func FfiConverterTypeCipherCreateAttachmentError_lower(_ value: CipherCre
 }
 
 
-public enum CipherDeleteAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherDeleteAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5223,7 +5283,8 @@ public func FfiConverterTypeCipherDeleteAttachmentError_lower(_ value: CipherDel
 }
 
 
-public enum CipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5369,7 +5430,8 @@ public func FfiConverterTypeCipherError_lower(_ value: CipherError) -> RustBuffe
 }
 
 
-public enum CipherGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5474,8 +5536,7 @@ public func FfiConverterTypeCipherGetAttachmentDownloadUrlError_lower(_ value: C
     return FfiConverterTypeCipherGetAttachmentDownloadUrlError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum CipherListViewType: Equatable, Hashable {
     
@@ -5593,7 +5654,8 @@ public func FfiConverterTypeCipherListViewType_lower(_ value: CipherListViewType
 
 
 
-public enum CipherRenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherRenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5674,8 +5736,7 @@ public func FfiConverterTypeCipherRenewFileUploadUrlError_lower(_ value: CipherR
     return FfiConverterTypeCipherRenewFileUploadUrlError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum CipherRepromptType: UInt8, Equatable, Hashable {
     
@@ -5745,7 +5806,8 @@ public func FfiConverterTypeCipherRepromptType_lower(_ value: CipherRepromptType
 /**
  * Error type for cipher risk evaluation operations
  */
-public enum CipherRiskError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherRiskError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -5818,8 +5880,7 @@ public func FfiConverterTypeCipherRiskError_lower(_ value: CipherRiskError) -> R
     return FfiConverterTypeCipherRiskError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum CipherType: UInt8, Equatable, Hashable {
     
@@ -5928,7 +5989,8 @@ public func FfiConverterTypeCipherType_lower(_ value: CipherType) -> RustBuffer 
 
 
 
-public enum CipherUpgradeAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CipherUpgradeAttachmentError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6121,8 +6183,7 @@ public func FfiConverterTypeCipherUpgradeAttachmentError_lower(_ value: CipherUp
     return FfiConverterTypeCipherUpgradeAttachmentError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Represents the inner data of a cipher view.
  */
@@ -6257,8 +6318,7 @@ public func FfiConverterTypeCipherViewType_lower(_ value: CipherViewType) -> Rus
 }
 
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Available fields on a cipher and can be copied from a the list view in the UI.
  */
@@ -6496,7 +6556,8 @@ public func FfiConverterTypeCopyableCipherFields_lower(_ value: CopyableCipherFi
 
 
 
-public enum CreateCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CreateCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6602,7 +6663,8 @@ public func FfiConverterTypeCreateCipherAdminError_lower(_ value: CreateCipherAd
 }
 
 
-public enum CreateCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CreateCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6716,7 +6778,8 @@ public func FfiConverterTypeCreateCipherError_lower(_ value: CreateCipherError) 
 }
 
 
-public enum CreateFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CreateFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6825,7 +6888,8 @@ public func FfiConverterTypeCreateFolderError_lower(_ value: CreateFolderError) 
 /**
  * Generic error type for decryption errors
  */
-public enum DecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6902,7 +6966,8 @@ public func FfiConverterTypeDecryptError_lower(_ value: DecryptError) -> RustBuf
 /**
  * Generic error type for decryption errors
  */
-public enum DecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -6984,7 +7049,8 @@ public func FfiConverterTypeDecryptFileError_lower(_ value: DecryptFileError) ->
 }
 
 
-public enum DeleteAttachmentAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DeleteAttachmentAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7077,7 +7143,8 @@ public func FfiConverterTypeDeleteAttachmentAdminError_lower(_ value: DeleteAtta
 /**
  * Errors that can occur when deleting ciphers as an admin.
  */
-public enum DeleteCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DeleteCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7151,7 +7218,8 @@ public func FfiConverterTypeDeleteCipherAdminError_lower(_ value: DeleteCipherAd
 }
 
 
-public enum DeleteCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DeleteCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7233,7 +7301,8 @@ public func FfiConverterTypeDeleteCipherError_lower(_ value: DeleteCipherError) 
 }
 
 
-public enum EditCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EditCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7371,7 +7440,8 @@ public func FfiConverterTypeEditCipherAdminError_lower(_ value: EditCipherAdminE
 }
 
 
-public enum EditCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EditCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7501,7 +7571,8 @@ public func FfiConverterTypeEditCipherError_lower(_ value: EditCipherError) -> R
 }
 
 
-public enum EditFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EditFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7626,7 +7697,8 @@ public func FfiConverterTypeEditFolderError_lower(_ value: EditFolderError) -> R
 /**
  * Generic error type for vault encryption errors.
  */
-public enum EncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7719,7 +7791,8 @@ public func FfiConverterTypeEncryptError_lower(_ value: EncryptError) -> RustBuf
 /**
  * Generic error type for vault encryption errors.
  */
-public enum EncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -7800,8 +7873,7 @@ public func FfiConverterTypeEncryptFileError_lower(_ value: EncryptFileError) ->
     return FfiConverterTypeEncryptFileError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Result of checking password exposure via HIBP API.
  */
@@ -7892,8 +7964,7 @@ public func FfiConverterTypeExposedPasswordResult_lower(_ value: ExposedPassword
 }
 
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Represents the type of a [FieldView].
  */
@@ -7989,7 +8060,8 @@ public func FfiConverterTypeFieldType_lower(_ value: FieldType) -> RustBuffer {
 
 
 
-public enum GetAssignedOrgCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetAssignedOrgCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8071,7 +8143,8 @@ public func FfiConverterTypeGetAssignedOrgCiphersAdminError_lower(_ value: GetAs
 }
 
 
-public enum GetCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8161,7 +8234,8 @@ public func FfiConverterTypeGetCipherError_lower(_ value: GetCipherError) -> Rus
 }
 
 
-public enum GetFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetFolderError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8251,7 +8325,8 @@ public func FfiConverterTypeGetFolderError_lower(_ value: GetFolderError) -> Rus
 }
 
 
-public enum GetOrganizationCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetOrganizationCiphersAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8333,7 +8408,8 @@ public func FfiConverterTypeGetOrganizationCiphersAdminError_lower(_ value: GetO
 }
 
 
-public enum MoveCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum MoveCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8415,7 +8491,8 @@ public func FfiConverterTypeMoveCipherError_lower(_ value: MoveCipherError) -> R
 }
 
 
-public enum RestoreCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum RestoreCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8505,7 +8582,8 @@ public func FfiConverterTypeRestoreCipherAdminError_lower(_ value: RestoreCipher
 }
 
 
-public enum RestoreCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum RestoreCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8602,8 +8680,7 @@ public func FfiConverterTypeRestoreCipherError_lower(_ value: RestoreCipherError
     return FfiConverterTypeRestoreCipherError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum SecureNoteType: UInt8, Equatable, Hashable {
     
@@ -8663,7 +8740,8 @@ public func FfiConverterTypeSecureNoteType_lower(_ value: SecureNoteType) -> Rus
 
 
 
-public enum TotpError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum TotpError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -8752,8 +8830,7 @@ public func FfiConverterTypeTotpError_lower(_ value: TotpError) -> RustBuffer {
     return FfiConverterTypeTotpError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum UriMatchType: UInt8, Equatable, Hashable {
     
@@ -10259,10 +10336,6 @@ fileprivate struct FfiConverterDictionaryTypeCollectionIdString: FfiConverterRus
 }
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias CipherId = Uuid
 
 #if swift(>=5.8)
@@ -10303,10 +10376,6 @@ public func FfiConverterTypeCipherId_lower(_ value: CipherId) -> RustBuffer {
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias FolderId = Uuid
 
 #if swift(>=5.8)
@@ -10347,10 +10416,6 @@ public func FfiConverterTypeFolderId_lower(_ value: FolderId) -> RustBuffer {
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias LinkedIdType = UInt32
 
 #if swift(>=5.8)

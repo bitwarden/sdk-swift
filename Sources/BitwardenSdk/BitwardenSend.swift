@@ -39,6 +39,52 @@ fileprivate extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
         self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
     }
+
+    init(rawBufferPointer: UnsafeRawBufferPointer) {
+        self.init(
+            len: Int32(rawBufferPointer.count),
+            data: rawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        )
+    }
+}
+
+// Converter for `&[u8]` / `[ByRef] bytes` arguments.
+//
+// Conforms to `FfiConverter` so the compiler enforces the full converter
+// method set. Only the scope-bound `lower(_:_body:)` overload is sound —
+// zero-copy byte buffers only flow foreign -> Rust, and only in argument
+// position. The four protocol-witness methods (`lift`, `lower`, `read`,
+// `write`) `fatalError` at runtime if anyone reaches them.
+//
+// The scope-bound `lower` takes a closure because the `ForeignBytes`
+// pointer is only guaranteed valid for the duration of
+// `Data.withUnsafeBytes`. Callers must run the full FFI call inside
+// the closure body.
+fileprivate enum FfiConverterByRefBytes: FfiConverter {
+    typealias SwiftType = Data
+    typealias FfiType = ForeignBytes
+
+    static func lower<R>(_ value: Data, _ body: (ForeignBytes) throws -> R) rethrows -> R {
+        return try value.withUnsafeBytes { rawBuf in
+            try body(ForeignBytes(rawBufferPointer: rawBuf))
+        }
+    }
+
+    static func lower(_ value: Data) -> ForeignBytes {
+        fatalError("ByRef bytes cannot use the plain lower: returning ForeignBytes escapes the Data.withUnsafeBytes scope. Use the scope-bound lower(_:_body:) overload instead.")
+    }
+
+    static func lift(_ value: ForeignBytes) throws -> Data {
+        fatalError("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
+    }
+
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        fatalError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
+
+    static func write(_ value: Data, into buf: inout [UInt8]) {
+        fatalError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
 }
 
 // For every type used in the interface, we provide helper methods for conveniently
@@ -471,7 +517,11 @@ fileprivate struct FfiConverterString: FfiConverter {
             return String()
         }
         let bytes = UnsafeBufferPointer<UInt8>(start: value.data!, count: Int(value.len))
-        return String(bytes: bytes, encoding: String.Encoding.utf8)!
+        // Use Swift's native UTF-8 decoder; `String(bytes:encoding:.utf8)` goes
+        // through Foundation's NSString and silently strips a leading U+FEFF BOM.
+        // Invalid UTF-8 substitutes U+FFFD instead of trapping (unreachable
+        // given Rust's `String` invariant).
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     public static func lower(_ value: String) -> RustBuffer {
@@ -487,7 +537,8 @@ fileprivate struct FfiConverterString: FfiConverter {
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> String {
         let len: Int32 = try readInt(&buf)
-        return String(bytes: try readBytes(&buf, count: Int(len)), encoding: String.Encoding.utf8)!
+        // See `lift` above for why we avoid Foundation's NSString-backed decoder here.
+        return String(decoding: try readBytes(&buf, count: Int(len)), as: UTF8.self)
     }
 
     public static func write(_ value: String, into buf: inout [UInt8]) {
@@ -506,12 +557,17 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
         let seconds: Int64 = try readInt(&buf)
         let nanoseconds: UInt32 = try readInt(&buf)
+        // Build the Date from whole seconds first, then add the nanoseconds as a
+        // separate TimeInterval.  Date stores CFAbsoluteTime (seconds since 2001),
+        // so adding a small fraction to the ~7.8e8 base is twice as precise as
+        // adding it to the ~1.76e9 Unix-epoch value, because the smaller magnitude
+        // leaves more mantissa bits for the sub-second part.
         if seconds >= 0 {
-            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(Double(nanoseconds) / 1.0e9)
         } else {
-            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(-Double(nanoseconds) / 1.0e9)
         }
     }
 
@@ -1337,7 +1393,8 @@ public func FfiConverterTypeSendView_lower(_ value: SendView) -> RustBuffer {
 /**
  * Error returned when accessing a send fails.
  */
-public enum AccessSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum AccessSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1426,8 +1483,7 @@ public func FfiConverterTypeAccessSendError_lower(_ value: AccessSendError) -> R
     return FfiConverterTypeAccessSendError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Controls how `bw send edit` updates the auth on an existing Send.
  */
@@ -1508,8 +1564,7 @@ public func FfiConverterTypeAuthEdit_lower(_ value: AuthEdit) -> RustBuffer {
 }
 
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Indicates the authentication strategy to use when accessing a Send
  */
@@ -1595,7 +1650,8 @@ public func FfiConverterTypeAuthType_lower(_ value: AuthType) -> RustBuffer {
 
 
 
-public enum CreateFileSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CreateFileSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1727,7 +1783,8 @@ public func FfiConverterTypeCreateFileSendError_lower(_ value: CreateFileSendErr
 }
 
 
-public enum CreateSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum CreateSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1841,7 +1898,8 @@ public func FfiConverterTypeCreateSendError_lower(_ value: CreateSendError) -> R
 }
 
 
-public enum DeleteSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum DeleteSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1923,7 +1981,8 @@ public func FfiConverterTypeDeleteSendError_lower(_ value: DeleteSendError) -> R
 }
 
 
-public enum EditSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum EditSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2060,8 +2119,7 @@ public func FfiConverterTypeEditSendError_lower(_ value: EditSendError) -> RustB
     return FfiConverterTypeEditSendError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Where the client should upload the encrypted file bytes after [`SendClient::create_file_send`].
  */
@@ -2140,7 +2198,8 @@ public func FfiConverterTypeFileUploadType_lower(_ value: FileUploadType) -> Rus
 /**
  * Error returned when getting send file download data fails.
  */
-public enum GetFileDownloadDataError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetFileDownloadDataError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2217,7 +2276,8 @@ public func FfiConverterTypeGetFileDownloadDataError_lower(_ value: GetFileDownl
 }
 
 
-public enum GetSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum GetSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2315,7 +2375,8 @@ public func FfiConverterTypeGetSendError_lower(_ value: GetSendError) -> RustBuf
 }
 
 
-public enum RemoveSendPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum RemoveSendPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2421,7 +2482,8 @@ public func FfiConverterTypeRemoveSendPasswordError_lower(_ value: RemoveSendPas
 }
 
 
-public enum RenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum RenewFileUploadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2513,7 +2575,8 @@ public func FfiConverterTypeRenewFileUploadUrlError_lower(_ value: RenewFileUplo
  * Error returned when decrypting an anonymous send access response or file blob fails.
  * Wraps [`CryptoError`], which never embeds plaintext or key material in its messages.
  */
-public enum SendAccessDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendAccessDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2595,7 +2658,8 @@ public func FfiConverterTypeSendAccessDecryptError_lower(_ value: SendAccessDecr
  * Error returned when the key from a send URL fragment cannot be turned into a
  * [`SendAccessKey`]. Deliberately carries no key material.
  */
-public enum SendAccessKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendAccessKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2682,8 +2746,7 @@ public func FfiConverterTypeSendAccessKeyError_lower(_ value: SendAccessKeyError
     return FfiConverterTypeSendAccessKeyError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Type-safe authentication method for a Send, including the authentication data.
  * This ensures that password and email authentication are mutually exclusive.
@@ -2806,7 +2869,8 @@ public func FfiConverterTypeSendAuthType_lower(_ value: SendAuthType) -> RustBuf
 /**
  * Generic error type for send decryption errors
  */
-public enum SendDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2883,7 +2947,8 @@ public func FfiConverterTypeSendDecryptError_lower(_ value: SendDecryptError) ->
 /**
  * Generic error type for send decryption errors
  */
-public enum SendDecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendDecryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -2968,7 +3033,8 @@ public func FfiConverterTypeSendDecryptFileError_lower(_ value: SendDecryptFileE
 /**
  * Generic error type for send encryption errors.
  */
-public enum SendEncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendEncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3045,7 +3111,8 @@ public func FfiConverterTypeSendEncryptError_lower(_ value: SendEncryptError) ->
 /**
  * Generic error type for send encryption errors.
  */
-public enum SendEncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SendEncryptFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3126,8 +3193,7 @@ public func FfiConverterTypeSendEncryptFileError_lower(_ value: SendEncryptFileE
     return FfiConverterTypeSendEncryptFileError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Indicates the version of Send data encryption that is being used
  */
@@ -3192,8 +3258,7 @@ public func FfiConverterTypeSendEncryptionType_lower(_ value: SendEncryptionType
 }
 
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * The type of Send, either text, file, or item
  */
@@ -3279,7 +3344,8 @@ public func FfiConverterTypeSendType_lower(_ value: SendType) -> RustBuffer {
 
 
 
-public enum UploadSendFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum UploadSendFileError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -3667,10 +3733,6 @@ fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
 }
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias SendId = Uuid
 
 #if swift(>=5.8)

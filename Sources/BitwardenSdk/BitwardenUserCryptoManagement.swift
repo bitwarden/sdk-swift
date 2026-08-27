@@ -39,6 +39,52 @@ fileprivate extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
         self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
     }
+
+    init(rawBufferPointer: UnsafeRawBufferPointer) {
+        self.init(
+            len: Int32(rawBufferPointer.count),
+            data: rawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        )
+    }
+}
+
+// Converter for `&[u8]` / `[ByRef] bytes` arguments.
+//
+// Conforms to `FfiConverter` so the compiler enforces the full converter
+// method set. Only the scope-bound `lower(_:_body:)` overload is sound —
+// zero-copy byte buffers only flow foreign -> Rust, and only in argument
+// position. The four protocol-witness methods (`lift`, `lower`, `read`,
+// `write`) `fatalError` at runtime if anyone reaches them.
+//
+// The scope-bound `lower` takes a closure because the `ForeignBytes`
+// pointer is only guaranteed valid for the duration of
+// `Data.withUnsafeBytes`. Callers must run the full FFI call inside
+// the closure body.
+fileprivate enum FfiConverterByRefBytes: FfiConverter {
+    typealias SwiftType = Data
+    typealias FfiType = ForeignBytes
+
+    static func lower<R>(_ value: Data, _ body: (ForeignBytes) throws -> R) rethrows -> R {
+        return try value.withUnsafeBytes { rawBuf in
+            try body(ForeignBytes(rawBufferPointer: rawBuf))
+        }
+    }
+
+    static func lower(_ value: Data) -> ForeignBytes {
+        fatalError("ByRef bytes cannot use the plain lower: returning ForeignBytes escapes the Data.withUnsafeBytes scope. Use the scope-bound lower(_:_body:) overload instead.")
+    }
+
+    static func lift(_ value: ForeignBytes) throws -> Data {
+        fatalError("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
+    }
+
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        fatalError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
+
+    static func write(_ value: Data, into buf: inout [UInt8]) {
+        fatalError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
 }
 
 // For every type used in the interface, we provide helper methods for conveniently
@@ -455,7 +501,11 @@ fileprivate struct FfiConverterString: FfiConverter {
             return String()
         }
         let bytes = UnsafeBufferPointer<UInt8>(start: value.data!, count: Int(value.len))
-        return String(bytes: bytes, encoding: String.Encoding.utf8)!
+        // Use Swift's native UTF-8 decoder; `String(bytes:encoding:.utf8)` goes
+        // through Foundation's NSString and silently strips a leading U+FEFF BOM.
+        // Invalid UTF-8 substitutes U+FFFD instead of trapping (unreachable
+        // given Rust's `String` invariant).
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     public static func lower(_ value: String) -> RustBuffer {
@@ -471,7 +521,8 @@ fileprivate struct FfiConverterString: FfiConverter {
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> String {
         let len: Int32 = try readInt(&buf)
-        return String(bytes: try readBytes(&buf, count: Int(len)), encoding: String.Encoding.utf8)!
+        // See `lift` above for why we avoid Foundation's NSString-backed decoder here.
+        return String(decoding: try readBytes(&buf, count: Int(len)), as: UTF8.self)
     }
 
     public static func write(_ value: String, into buf: inout [UInt8]) {
@@ -587,8 +638,7 @@ open func getLockType()async  -> PinLockType?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_get_lock_type(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_rust_buffer,
@@ -608,8 +658,7 @@ open func getPin()async  -> String?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_get_pin(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_rust_buffer,
@@ -629,8 +678,7 @@ open func getStatus()async  -> PinUnlockStatus  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_get_status(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_rust_buffer,
@@ -653,8 +701,7 @@ open func setPin(pin: String, lockType: PinLockType)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_set_pin(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(pin),FfiConverterTypePinLockType_lower(lockType)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pin),FfiConverterTypePinLockType_lower(lockType)
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
@@ -673,8 +720,7 @@ open func unsetPin()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_unset_pin(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
@@ -694,8 +740,7 @@ open func validatePin(pin: String)async  -> Bool  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_validate_pin(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(pin)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pin)
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_i8,
@@ -853,8 +898,7 @@ open func changeKdf(password: String, newKdf: Kdf)async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_change_kdf(
-                    self.uniffiCloneHandle(),
-                    FfiConverterString.lower(password),FfiConverterTypeKdf_lower(newKdf)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(password),FfiConverterTypeKdf_lower(newKdf)
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
@@ -879,8 +923,7 @@ open func userKeyIdBackfill()async throws   {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_user_key_id_backfill(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_void,
@@ -899,8 +942,7 @@ open func userKeyIdNeedsBackfill()async throws  -> Bool  {
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_user_key_id_needs_backfill(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_i8,
@@ -916,8 +958,9 @@ open func userKeyIdNeedsBackfill()async throws  -> Bool  {
      */
 open func pinSettings() -> PinSettingsClient  {
     return try!  FfiConverterTypePinSettingsClient_lift(try! rustCall() {
+        uniffiCallStatus in
     uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_pin_settings(
-            self.uniffiCloneHandle(),$0
+            self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
 }
@@ -1109,7 +1152,8 @@ public func FfiConverterTypeRotateUserKeysRequest_lower(_ value: RotateUserKeysR
 /**
  * Errors that can occur while changing the account KDF settings.
  */
-public enum ChangeKdfError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum ChangeKdfError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1222,7 +1266,8 @@ public func FfiConverterTypeChangeKdfError_lower(_ value: ChangeKdfError) -> Rus
 /**
  * Errors returned by the user key id backfill.
  */
-public enum KeyIdBackfillError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum KeyIdBackfillError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1332,7 +1377,8 @@ public func FfiConverterTypeKeyIdBackfillError_lower(_ value: KeyIdBackfillError
 }
 
 
-public enum KeyPairRegenerationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum KeyPairRegenerationError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1421,8 +1467,7 @@ public func FfiConverterTypeKeyPairRegenerationError_lower(_ value: KeyPairRegen
     return FfiConverterTypeKeyPairRegenerationError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum KeyRotationMethod: Equatable, Hashable {
     
@@ -1511,7 +1556,8 @@ public func FfiConverterTypeKeyRotationMethod_lower(_ value: KeyRotationMethod) 
 
 
 
-public enum MigrateToKeyConnectorError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum MigrateToKeyConnectorError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1612,7 +1658,8 @@ public func FfiConverterTypeMigrateToKeyConnectorError_lower(_ value: MigrateToK
 /**
  * Errors returned by PIN settings operations.
  */
-public enum PinSettingsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum PinSettingsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1689,7 +1736,8 @@ public func FfiConverterTypePinSettingsError_lower(_ value: PinSettingsError) ->
 }
 
 
-public enum RotateUserKeysError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum RotateUserKeysError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1803,7 +1851,8 @@ public func FfiConverterTypeRotateUserKeysError_lower(_ value: RotateUserKeysErr
 }
 
 
-public enum SyncError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+public 
+enum SyncError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
     
     
@@ -1884,8 +1933,7 @@ public func FfiConverterTypeSyncError_lower(_ value: SyncError) -> RustBuffer {
     return FfiConverterTypeSyncError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum UpgradeTokenAction: Equatable, Hashable {
     
@@ -2094,34 +2142,34 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_lock_type() != 47108) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_lock_type() != 12547) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_pin() != 40915) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_pin() != 9959) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_status() != 13492) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_status() != 14937) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_set_pin() != 54964) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_set_pin() != 37007) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_unset_pin() != 64665) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_unset_pin() != 59838) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_validate_pin() != 3295) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_validate_pin() != 27655) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_change_kdf() != 59756) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_change_kdf() != 43896) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_backfill() != 29149) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_backfill() != 42991) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_needs_backfill() != 4195) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_user_key_id_needs_backfill() != 59669) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_pin_settings() != 40704) {
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_pin_settings() != 55321) {
         return InitializationResult.apiChecksumMismatch
     }
 

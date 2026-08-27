@@ -41,6 +41,52 @@ fileprivate extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
         self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
     }
+
+    init(rawBufferPointer: UnsafeRawBufferPointer) {
+        self.init(
+            len: Int32(rawBufferPointer.count),
+            data: rawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        )
+    }
+}
+
+// Converter for `&[u8]` / `[ByRef] bytes` arguments.
+//
+// Conforms to `FfiConverter` so the compiler enforces the full converter
+// method set. Only the scope-bound `lower(_:_body:)` overload is sound —
+// zero-copy byte buffers only flow foreign -> Rust, and only in argument
+// position. The four protocol-witness methods (`lift`, `lower`, `read`,
+// `write`) `fatalError` at runtime if anyone reaches them.
+//
+// The scope-bound `lower` takes a closure because the `ForeignBytes`
+// pointer is only guaranteed valid for the duration of
+// `Data.withUnsafeBytes`. Callers must run the full FFI call inside
+// the closure body.
+fileprivate enum FfiConverterByRefBytes: FfiConverter {
+    typealias SwiftType = Data
+    typealias FfiType = ForeignBytes
+
+    static func lower<R>(_ value: Data, _ body: (ForeignBytes) throws -> R) rethrows -> R {
+        return try value.withUnsafeBytes { rawBuf in
+            try body(ForeignBytes(rawBufferPointer: rawBuf))
+        }
+    }
+
+    static func lower(_ value: Data) -> ForeignBytes {
+        fatalError("ByRef bytes cannot use the plain lower: returning ForeignBytes escapes the Data.withUnsafeBytes scope. Use the scope-bound lower(_:_body:) overload instead.")
+    }
+
+    static func lift(_ value: ForeignBytes) throws -> Data {
+        fatalError("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
+    }
+
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        fatalError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
+
+    static func write(_ value: Data, into buf: inout [UInt8]) {
+        fatalError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
 }
 
 // For every type used in the interface, we provide helper methods for conveniently
@@ -495,7 +541,11 @@ fileprivate struct FfiConverterString: FfiConverter {
             return String()
         }
         let bytes = UnsafeBufferPointer<UInt8>(start: value.data!, count: Int(value.len))
-        return String(bytes: bytes, encoding: String.Encoding.utf8)!
+        // Use Swift's native UTF-8 decoder; `String(bytes:encoding:.utf8)` goes
+        // through Foundation's NSString and silently strips a leading U+FEFF BOM.
+        // Invalid UTF-8 substitutes U+FFFD instead of trapping (unreachable
+        // given Rust's `String` invariant).
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     public static func lower(_ value: String) -> RustBuffer {
@@ -511,7 +561,8 @@ fileprivate struct FfiConverterString: FfiConverter {
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> String {
         let len: Int32 = try readInt(&buf)
-        return String(bytes: try readBytes(&buf, count: Int(len)), encoding: String.Encoding.utf8)!
+        // See `lift` above for why we avoid Foundation's NSString-backed decoder here.
+        return String(decoding: try readBytes(&buf, count: Int(len)), as: UTF8.self)
     }
 
     public static func write(_ value: String, into buf: inout [UInt8]) {
@@ -530,12 +581,17 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
         let seconds: Int64 = try readInt(&buf)
         let nanoseconds: UInt32 = try readInt(&buf)
+        // Build the Date from whole seconds first, then add the nanoseconds as a
+        // separate TimeInterval.  Date stores CFAbsoluteTime (seconds since 2001),
+        // so adding a small fraction to the ~7.8e8 base is twice as precise as
+        // adding it to the ~1.76e9 Unix-epoch value, because the smaller magnitude
+        // leaves more mantissa bits for the sub-second part.
         if seconds >= 0 {
-            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(Double(nanoseconds) / 1.0e9)
         } else {
-            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(-Double(nanoseconds) / 1.0e9)
         }
     }
 
@@ -637,8 +693,7 @@ open func getAccessToken()async  -> String?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_clientmanagedtokens_get_access_token(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -662,9 +717,8 @@ fileprivate struct UniffiCallbackInterfaceClientManagedTokens {
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
     //
-    // This creates 1-element array, since this seems to be the only way to construct a const
-    // pointer that we can pass to the Rust code.
-    static let vtable: [UniffiVTableCallbackInterfaceClientManagedTokens] = [UniffiVTableCallbackInterfaceClientManagedTokens(
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceClientManagedTokens = UniffiVTableCallbackInterfaceClientManagedTokens(
         uniffiFree: { (uniffiHandle: UInt64) -> () in
             do {
                 try FfiConverterTypeClientManagedTokens.handleMap.remove(handle: uniffiHandle)
@@ -719,11 +773,23 @@ fileprivate struct UniffiCallbackInterfaceClientManagedTokens {
                 droppedCallback: uniffiOutDroppedCallback
             )
         }
-    )]
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceClientManagedTokens> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceClientManagedTokens>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
 }
 
 private func uniffiCallbackInitClientManagedTokens() {
-    uniffi_bitwarden_core_fn_init_callback_vtable_clientmanagedtokens(UniffiCallbackInterfaceClientManagedTokens.vtable)
+    uniffi_bitwarden_core_fn_init_callback_vtable_clientmanagedtokens(UniffiCallbackInterfaceClientManagedTokens.vtablePtr)
 }
 
 #if swift(>=5.8)
@@ -859,9 +925,10 @@ open class StateBridgeClient: StateBridgeClientProtocol, @unchecked Sendable {
      * Registers the host-supplied state bridge implementation.
      */
 open func registerBridgeImpl(bridgeImpl: StateBridgeForeignImpl)  {try! rustCall() {
+        uniffiCallStatus in
     uniffi_bitwarden_core_fn_method_statebridgeclient_register_bridge_impl(
             self.uniffiCloneHandle(),
-        FfiConverterTypeStateBridgeForeignImpl_lower(bridgeImpl),$0
+        FfiConverterTypeStateBridgeForeignImpl_lower(bridgeImpl),uniffiCallStatus
     )
 }
 }
@@ -1144,8 +1211,7 @@ open func setUserKey(value: SymmetricCryptoKey)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_user_key(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeSymmetricCryptoKey_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeSymmetricCryptoKey_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1165,8 +1231,7 @@ open func getUserKey()async  -> SymmetricCryptoKey?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_user_key(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1186,8 +1251,7 @@ open func clearUserKey()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_user_key(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1207,8 +1271,7 @@ open func setUserKeyId(value: KeyId)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_user_key_id(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeKeyId_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeKeyId_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1228,8 +1291,7 @@ open func getUserKeyId()async  -> KeyId?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_user_key_id(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1249,8 +1311,7 @@ open func clearUserKeyId()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_user_key_id(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1270,8 +1331,7 @@ open func setPersistentPinEnvelope(value: PasswordProtectedKeyEnvelope)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_persistent_pin_envelope(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypePasswordProtectedKeyEnvelope_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypePasswordProtectedKeyEnvelope_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1291,8 +1351,7 @@ open func getPersistentPinEnvelope()async  -> PasswordProtectedKeyEnvelope?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_persistent_pin_envelope(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1312,8 +1371,7 @@ open func clearPersistentPinEnvelope()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_persistent_pin_envelope(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1333,8 +1391,7 @@ open func setEphemeralPinEnvelope(value: PasswordProtectedKeyEnvelope)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_ephemeral_pin_envelope(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypePasswordProtectedKeyEnvelope_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypePasswordProtectedKeyEnvelope_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1354,8 +1411,7 @@ open func getEphemeralPinEnvelope()async  -> PasswordProtectedKeyEnvelope?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_ephemeral_pin_envelope(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1375,8 +1431,7 @@ open func clearEphemeralPinEnvelope()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_ephemeral_pin_envelope(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1396,8 +1451,7 @@ open func setEncryptedPin(value: EncString)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_encrypted_pin(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeEncString_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeEncString_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1417,8 +1471,7 @@ open func getEncryptedPin()async  -> EncString?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_encrypted_pin(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1438,8 +1491,7 @@ open func clearEncryptedPin()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_encrypted_pin(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1459,8 +1511,7 @@ open func setV2UpgradeToken(value: V2UpgradeToken)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_v2_upgrade_token(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeV2UpgradeToken_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeV2UpgradeToken_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1480,8 +1531,7 @@ open func getV2UpgradeToken()async  -> V2UpgradeToken?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_v2_upgrade_token(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1501,8 +1551,7 @@ open func clearV2UpgradeToken()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_v2_upgrade_token(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1522,8 +1571,7 @@ open func setAccountCryptographicState(value: WrappedAccountCryptographicState)a
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_account_cryptographic_state(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeWrappedAccountCryptographicState_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeWrappedAccountCryptographicState_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1543,8 +1591,7 @@ open func getAccountCryptographicState()async  -> WrappedAccountCryptographicSta
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_account_cryptographic_state(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1564,8 +1611,7 @@ open func clearAccountCryptographicState()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_account_cryptographic_state(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1585,8 +1631,7 @@ open func setMasterpasswordUnlockData(value: MasterPasswordUnlockData)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_masterpassword_unlock_data(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeMasterPasswordUnlockData_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeMasterPasswordUnlockData_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1606,8 +1651,7 @@ open func getMasterpasswordUnlockData()async  -> MasterPasswordUnlockData?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_masterpassword_unlock_data(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1627,8 +1671,7 @@ open func clearMasterpasswordUnlockData()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_masterpassword_unlock_data(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1648,8 +1691,7 @@ open func setWebauthnPrfUnlockData(value: WebAuthnPrfUnlockData)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeWebAuthnPrfUnlockData_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeWebAuthnPrfUnlockData_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1669,8 +1711,7 @@ open func getWebauthnPrfUnlockData()async  -> WebAuthnPrfUnlockData?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1690,8 +1731,7 @@ open func clearWebauthnPrfUnlockData()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1711,8 +1751,7 @@ open func setKdfConfig(value: Kdf)async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_kdf_config(
-                    self.uniffiCloneHandle(),
-                    FfiConverterTypeKdf_lower(value)
+                        self.uniffiCloneHandle(),FfiConverterTypeKdf_lower(value)
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1732,8 +1771,7 @@ open func getKdfConfig()async  -> Kdf?  {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_kdf_config(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
@@ -1753,8 +1791,7 @@ open func clearKdfConfig()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_kdf_config(
-                    self.uniffiCloneHandle()
-                    
+                        self.uniffiCloneHandle()
                 )
             },
             pollFunc: ffi_bitwarden_core_rust_future_poll_void,
@@ -1778,9 +1815,8 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
     //
-    // This creates 1-element array, since this seems to be the only way to construct a const
-    // pointer that we can pass to the Rust code.
-    static let vtable: [UniffiVTableCallbackInterfaceStateBridgeForeignImpl] = [UniffiVTableCallbackInterfaceStateBridgeForeignImpl(
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceStateBridgeForeignImpl = UniffiVTableCallbackInterfaceStateBridgeForeignImpl(
         uniffiFree: { (uniffiHandle: UInt64) -> () in
             do {
                 try FfiConverterTypeStateBridgeForeignImpl.handleMap.remove(handle: uniffiHandle)
@@ -2975,11 +3011,23 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                 droppedCallback: uniffiOutDroppedCallback
             )
         }
-    )]
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceStateBridgeForeignImpl> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceStateBridgeForeignImpl>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
 }
 
 private func uniffiCallbackInitStateBridgeForeignImpl() {
-    uniffi_bitwarden_core_fn_init_callback_vtable_statebridgeforeignimpl(UniffiCallbackInterfaceStateBridgeForeignImpl.vtable)
+    uniffi_bitwarden_core_fn_init_callback_vtable_statebridgeforeignimpl(UniffiCallbackInterfaceStateBridgeForeignImpl.vtablePtr)
 }
 
 #if swift(>=5.8)
@@ -5054,7 +5102,8 @@ public func FfiConverterTypeWebAuthnPrfUnlockOption_lower(_ value: WebAuthnPrfUn
 /**
  * Errors that can occur during initialization of the account cryptographic state.
  */
-public enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum AccountCryptographyInitializationError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5177,7 +5226,8 @@ public func FfiConverterTypeAccountCryptographyInitializationError_lower(_ value
 }
 
 
-public enum ApproveAuthRequestError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum ApproveAuthRequestError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5250,8 +5300,7 @@ public func FfiConverterTypeApproveAuthRequestError_lower(_ value: ApproveAuthRe
     return FfiConverterTypeApproveAuthRequestError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Auth requests supports multiple initialization methods.
  */
@@ -5346,7 +5395,8 @@ public func FfiConverterTypeAuthRequestMethod_lower(_ value: AuthRequestMethod) 
 /**
  * Error for authentication related operations
  */
-public enum AuthValidateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum AuthValidateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5447,7 +5497,8 @@ public func FfiConverterTypeAuthValidateError_lower(_ value: AuthValidateError) 
 /**
  * Catch all error for mobile crypto operations.
  */
-public enum CryptoClientError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum CryptoClientError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5577,7 +5628,8 @@ public func FfiConverterTypeCryptoClientError_lower(_ value: CryptoClientError) 
 }
 
 
-public enum DeriveKeyConnectorError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum DeriveKeyConnectorError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -5658,8 +5710,7 @@ public func FfiConverterTypeDeriveKeyConnectorError_lower(_ value: DeriveKeyConn
     return FfiConverterTypeDeriveKeyConnectorError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 
 public enum DeviceType: Equatable, Hashable, Codable {
     
@@ -5901,7 +5952,8 @@ public func FfiConverterTypeDeviceType_lower(_ value: DeviceType) -> RustBuffer 
 
 
 
-public enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -6078,7 +6130,8 @@ public func FfiConverterTypeEncryptionSettingsError_lower(_ value: EncryptionSet
 }
 
 
-public enum EnrollAdminPasswordResetError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum EnrollAdminPasswordResetError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -6155,7 +6208,8 @@ public func FfiConverterTypeEnrollAdminPasswordResetError_lower(_ value: EnrollA
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum FingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum FingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -6228,8 +6282,7 @@ public func FfiConverterTypeFingerprintError_lower(_ value: FingerprintError) ->
     return FfiConverterTypeFingerprintError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * The crypto method used to initialize the user cryptographic state.
  */
@@ -6465,7 +6518,8 @@ public func FfiConverterTypeInitUserCryptoMethod_lower(_ value: InitUserCryptoMe
 /**
  * Errors that can occur when making keys for account cryptography registration.
  */
-public enum MakeKeysError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum MakeKeysError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -6578,7 +6632,8 @@ public func FfiConverterTypeMakeKeysError_lower(_ value: MakeKeysError) -> RustB
 /**
  * Error for master password related operations.
  */
-public enum MasterPasswordError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum MasterPasswordError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -6720,8 +6775,7 @@ public func FfiConverterTypeMasterPasswordError_lower(_ value: MasterPasswordErr
     return FfiConverterTypeMasterPasswordError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Pin unlock can be configured to use one of two modes. Before-first-unlock and
  * after-first-unlock. In AFU mode, the PIN is available only after unlocking once with the master
@@ -6800,8 +6854,7 @@ public func FfiConverterTypePinLockType_lower(_ value: PinLockType) -> RustBuffe
 }
 
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Current availability state for PIN-based unlock.
  */
@@ -6891,7 +6944,8 @@ public func FfiConverterTypePinUnlockStatus_lower(_ value: PinUnlockStatus) -> R
 /**
  * Errors that can occur when re-initializing user cryptography state.
  */
-public enum ReinitUserCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum ReinitUserCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -7032,7 +7086,8 @@ public func FfiConverterTypeReinitUserCryptoError_lower(_ value: ReinitUserCrypt
 /**
  * Errors that can occur during rotation of the account cryptographic state.
  */
-public enum RotateCryptographyStateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum RotateCryptographyStateError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -7124,7 +7179,8 @@ public func FfiConverterTypeRotateCryptographyStateError_lower(_ value: RotateCr
  * Signifies that the state is invalid from a cryptographic perspective, such as a required
  * security value missing, or being invalid
  */
-public enum StatefulCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum StatefulCryptoError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -7221,7 +7277,8 @@ public func FfiConverterTypeStatefulCryptoError_lower(_ value: StatefulCryptoErr
 }
 
 
-public enum TrustDeviceError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum TrustDeviceError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -7298,7 +7355,8 @@ public func FfiConverterTypeTrustDeviceError_lower(_ value: TrustDeviceError) ->
 /**
  * Errors that can occur when computing a fingerprint.
  */
-public enum UserFingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
+public 
+enum UserFingerprintError: Swift.Error, Equatable, Hashable, Codable, Foundation.LocalizedError {
 
     
     
@@ -7379,8 +7437,7 @@ public func FfiConverterTypeUserFingerprintError_lower(_ value: UserFingerprintE
     return FfiConverterTypeUserFingerprintError.lower(value)
 }
 
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+
 /**
  * Any keys / cryptographic protection "downstream" from the account symmetric key (user key).
  * Private keys are protected by the user key.
@@ -7898,10 +7955,6 @@ fileprivate struct FfiConverterDictionaryTypeOrganizationIdTypeUnsignedSharedKey
 }
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias DateTime = Date
 
 #if swift(>=5.8)
@@ -7944,10 +7997,6 @@ public func FfiConverterTypeDateTime_lower(_ value: DateTime) -> RustBuffer {
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the custom type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias NaiveDate = Date
 
 
@@ -7995,10 +8044,6 @@ public func FfiConverterTypeNaiveDate_lower(_ value: NaiveDate) -> RustBuffer {
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias OrganizationId = Uuid
 
 #if swift(>=5.8)
@@ -8039,10 +8084,6 @@ public func FfiConverterTypeOrganizationId_lower(_ value: OrganizationId) -> Rus
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias SignedSecurityState = String
 
 #if swift(>=5.8)
@@ -8083,10 +8124,6 @@ public func FfiConverterTypeSignedSecurityState_lower(_ value: SignedSecuritySta
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias UserId = Uuid
 
 #if swift(>=5.8)
@@ -8127,10 +8164,6 @@ public func FfiConverterTypeUserId_lower(_ value: UserId) -> RustBuffer {
 
 
 
-/**
- * Typealias from the type name used in the UDL file to the builtin type.  This
- * is needed because the UDL type name is used in function/method signatures.
- */
 public typealias Uuid = String
 
 #if swift(>=5.8)
@@ -8323,100 +8356,100 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_clientmanagedtokens_get_access_token() != 59718) {
+    if (uniffi_bitwarden_core_checksum_method_clientmanagedtokens_get_access_token() != 773) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeclient_register_bridge_impl() != 54401) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeclient_register_bridge_impl() != 12117) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_user_key() != 59664) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_user_key() != 23197) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_user_key() != 2915) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_user_key() != 19508) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key() != 18713) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key() != 39934) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_user_key_id() != 33525) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_user_key_id() != 10192) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_user_key_id() != 62971) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_user_key_id() != 2994) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key_id() != 64800) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_user_key_id() != 34811) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_persistent_pin_envelope() != 50971) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_persistent_pin_envelope() != 57128) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_persistent_pin_envelope() != 36396) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_persistent_pin_envelope() != 49175) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_persistent_pin_envelope() != 24164) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_persistent_pin_envelope() != 6560) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_ephemeral_pin_envelope() != 44015) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_ephemeral_pin_envelope() != 27856) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_ephemeral_pin_envelope() != 3322) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_ephemeral_pin_envelope() != 39615) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_ephemeral_pin_envelope() != 39810) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_ephemeral_pin_envelope() != 17498) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_encrypted_pin() != 60687) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_encrypted_pin() != 17509) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_encrypted_pin() != 8756) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_encrypted_pin() != 19563) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_encrypted_pin() != 48721) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_encrypted_pin() != 10055) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 6043) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 9446) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 17319) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 53579) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 4334) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 28561) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 7138) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 60012) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 59004) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 47859) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 34049) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 8738) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 49377) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 28882) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 62086) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 61247) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 49140) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 32522) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 971) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 33517) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 21742) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 45954) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 22963) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 27969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 53368) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 13425) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 17093) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 32905) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 56933) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 3217) {
         return InitializationResult.apiChecksumMismatch
     }
 
