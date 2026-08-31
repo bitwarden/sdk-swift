@@ -626,56 +626,6 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
-public struct AncestorMap: Equatable, Hashable {
-    public let ancestors: [CollectionId: String]
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(ancestors: [CollectionId: String]) {
-        self.ancestors = ancestors
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension AncestorMap: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeAncestorMap: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AncestorMap {
-        return
-            try AncestorMap(
-                ancestors: FfiConverterDictionaryTypeCollectionIdString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: AncestorMap, into buf: inout [UInt8]) {
-        FfiConverterDictionaryTypeCollectionIdString.write(value.ancestors, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeAncestorMap_lift(_ buf: RustBuffer) throws -> AncestorMap {
-    return try FfiConverterTypeAncestorMap.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeAncestorMap_lower(_ value: AncestorMap) -> RustBuffer {
-    return FfiConverterTypeAncestorMap.lower(value)
-}
-
-
 public struct Attachment: Equatable, Hashable {
     public let id: String?
     public let url: String?
@@ -10303,32 +10253,6 @@ fileprivate struct FfiConverterDictionaryStringUInt32: FfiConverterRustBuffer {
         for _ in 0..<len {
             let key = try FfiConverterString.read(from: &buf)
             let value = try FfiConverterUInt32.read(from: &buf)
-            dict[key] = value
-        }
-        return dict
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterDictionaryTypeCollectionIdString: FfiConverterRustBuffer {
-    public static func write(_ value: [CollectionId: String], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for (key, value) in value {
-            FfiConverterTypeCollectionId.write(key, into: &buf)
-            FfiConverterString.write(value, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionId: String] {
-        let len: Int32 = try readInt(&buf)
-        var dict = [CollectionId: String]()
-        dict.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            let key = try FfiConverterTypeCollectionId.read(from: &buf)
-            let value = try FfiConverterString.read(from: &buf)
             dict[key] = value
         }
         return dict

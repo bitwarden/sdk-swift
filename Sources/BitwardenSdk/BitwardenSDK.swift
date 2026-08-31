@@ -2147,6 +2147,15 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func auth()  -> AuthClient
     
     /**
+     * Collection related operations.
+     *
+     * This is registered directly on the top-level client in addition to being nested under
+     * [`vault`](Self::vault). Once mobile clients have migrated to this accessor, the nested one
+     * will be removed.
+     */
+    func collections()  -> CollectionsClient
+    
+    /**
      * Crypto operations
      */
     func crypto()  -> CryptoClient
@@ -2298,6 +2307,22 @@ open func auth() -> AuthClient  {
     return try!  FfiConverterTypeAuthClient_lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_client_auth(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Collection related operations.
+     *
+     * This is registered directly on the top-level client in addition to being nested under
+     * [`vault`](Self::vault). Once mobile clients have migrated to this accessor, the nested one
+     * will be removed.
+     */
+open func collections() -> CollectionsClient  {
+    return try!  FfiConverterTypeCollectionsClient_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_client_collections(
             self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
@@ -11284,6 +11309,10 @@ enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError
     )
     case EncryptFile(EncryptFileError
     )
+    case CollectionDecrypt(CollectionDecryptError
+    )
+    case CollectionEncrypt(CollectionEncryptError
+    )
     case SendDecrypt(SendDecryptError
     )
     case SendDecryptFile(SendDecryptFileError
@@ -11420,56 +11449,62 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 24: return .EncryptFile(
             try FfiConverterTypeEncryptFileError.read(from: &buf)
             )
-        case 25: return .SendDecrypt(
+        case 25: return .CollectionDecrypt(
+            try FfiConverterTypeCollectionDecryptError.read(from: &buf)
+            )
+        case 26: return .CollectionEncrypt(
+            try FfiConverterTypeCollectionEncryptError.read(from: &buf)
+            )
+        case 27: return .SendDecrypt(
             try FfiConverterTypeSendDecryptError.read(from: &buf)
             )
-        case 26: return .SendDecryptFile(
+        case 28: return .SendDecryptFile(
             try FfiConverterTypeSendDecryptFileError.read(from: &buf)
             )
-        case 27: return .SendEncrypt(
+        case 29: return .SendEncrypt(
             try FfiConverterTypeSendEncryptError.read(from: &buf)
             )
-        case 28: return .SendEncryptFile(
+        case 30: return .SendEncryptFile(
             try FfiConverterTypeSendEncryptFileError.read(from: &buf)
             )
-        case 29: return .Export(
+        case 31: return .Export(
             try FfiConverterTypeExportError.read(from: &buf)
             )
-        case 30: return .Import(
+        case 32: return .Import(
             try FfiConverterTypeImportError.read(from: &buf)
             )
-        case 31: return .MakeCredential(
+        case 33: return .MakeCredential(
             try FfiConverterTypeMakeCredentialError.read(from: &buf)
             )
-        case 32: return .GetAssertion(
+        case 34: return .GetAssertion(
             try FfiConverterTypeGetAssertionError.read(from: &buf)
             )
-        case 33: return .SilentlyDiscoverCredentials(
+        case 35: return .SilentlyDiscoverCredentials(
             try FfiConverterTypeSilentlyDiscoverCredentialsError.read(from: &buf)
             )
-        case 34: return .CredentialsForAutofill(
+        case 36: return .CredentialsForAutofill(
             try FfiConverterTypeCredentialsForAutofillError.read(from: &buf)
             )
-        case 35: return .DecryptFido2AutofillCredentials(
+        case 37: return .DecryptFido2AutofillCredentials(
             try FfiConverterTypeDecryptFido2AutofillCredentialsError.read(from: &buf)
             )
-        case 36: return .Fido2Client(
+        case 38: return .Fido2Client(
             try FfiConverterTypeFido2ClientError.read(from: &buf)
             )
-        case 37: return .DeviceAuthKey(
+        case 39: return .DeviceAuthKey(
             try FfiConverterTypeDeviceAuthKeyError.read(from: &buf)
             )
-        case 38: return .SshGeneration(
+        case 40: return .SshGeneration(
             try FfiConverterTypeKeyGenerationError.read(from: &buf)
             )
-        case 39: return .SshImport(
+        case 41: return .SshImport(
             try FfiConverterTypeSshKeyImportError.read(from: &buf)
             )
-        case 40: return .AcquireCookie(
+        case 42: return .AcquireCookie(
             try FfiConverterTypeAcquireCookieError.read(from: &buf)
             )
-        case 41: return .Callback
-        case 42: return .Conversion(
+        case 43: return .Callback
+        case 44: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
 
@@ -11604,92 +11639,102 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeEncryptFileError.write(v1, into: &buf)
             
         
-        case let .SendDecrypt(v1):
+        case let .CollectionDecrypt(v1):
             writeInt(&buf, Int32(25))
+            FfiConverterTypeCollectionDecryptError.write(v1, into: &buf)
+            
+        
+        case let .CollectionEncrypt(v1):
+            writeInt(&buf, Int32(26))
+            FfiConverterTypeCollectionEncryptError.write(v1, into: &buf)
+            
+        
+        case let .SendDecrypt(v1):
+            writeInt(&buf, Int32(27))
             FfiConverterTypeSendDecryptError.write(v1, into: &buf)
             
         
         case let .SendDecryptFile(v1):
-            writeInt(&buf, Int32(26))
+            writeInt(&buf, Int32(28))
             FfiConverterTypeSendDecryptFileError.write(v1, into: &buf)
             
         
         case let .SendEncrypt(v1):
-            writeInt(&buf, Int32(27))
+            writeInt(&buf, Int32(29))
             FfiConverterTypeSendEncryptError.write(v1, into: &buf)
             
         
         case let .SendEncryptFile(v1):
-            writeInt(&buf, Int32(28))
+            writeInt(&buf, Int32(30))
             FfiConverterTypeSendEncryptFileError.write(v1, into: &buf)
             
         
         case let .Export(v1):
-            writeInt(&buf, Int32(29))
+            writeInt(&buf, Int32(31))
             FfiConverterTypeExportError.write(v1, into: &buf)
             
         
         case let .Import(v1):
-            writeInt(&buf, Int32(30))
+            writeInt(&buf, Int32(32))
             FfiConverterTypeImportError.write(v1, into: &buf)
             
         
         case let .MakeCredential(v1):
-            writeInt(&buf, Int32(31))
+            writeInt(&buf, Int32(33))
             FfiConverterTypeMakeCredentialError.write(v1, into: &buf)
             
         
         case let .GetAssertion(v1):
-            writeInt(&buf, Int32(32))
+            writeInt(&buf, Int32(34))
             FfiConverterTypeGetAssertionError.write(v1, into: &buf)
             
         
         case let .SilentlyDiscoverCredentials(v1):
-            writeInt(&buf, Int32(33))
+            writeInt(&buf, Int32(35))
             FfiConverterTypeSilentlyDiscoverCredentialsError.write(v1, into: &buf)
             
         
         case let .CredentialsForAutofill(v1):
-            writeInt(&buf, Int32(34))
+            writeInt(&buf, Int32(36))
             FfiConverterTypeCredentialsForAutofillError.write(v1, into: &buf)
             
         
         case let .DecryptFido2AutofillCredentials(v1):
-            writeInt(&buf, Int32(35))
+            writeInt(&buf, Int32(37))
             FfiConverterTypeDecryptFido2AutofillCredentialsError.write(v1, into: &buf)
             
         
         case let .Fido2Client(v1):
-            writeInt(&buf, Int32(36))
+            writeInt(&buf, Int32(38))
             FfiConverterTypeFido2ClientError.write(v1, into: &buf)
             
         
         case let .DeviceAuthKey(v1):
-            writeInt(&buf, Int32(37))
+            writeInt(&buf, Int32(39))
             FfiConverterTypeDeviceAuthKeyError.write(v1, into: &buf)
             
         
         case let .SshGeneration(v1):
-            writeInt(&buf, Int32(38))
+            writeInt(&buf, Int32(40))
             FfiConverterTypeKeyGenerationError.write(v1, into: &buf)
             
         
         case let .SshImport(v1):
-            writeInt(&buf, Int32(39))
+            writeInt(&buf, Int32(41))
             FfiConverterTypeSshKeyImportError.write(v1, into: &buf)
             
         
         case let .AcquireCookie(v1):
-            writeInt(&buf, Int32(40))
+            writeInt(&buf, Int32(42))
             FfiConverterTypeAcquireCookieError.write(v1, into: &buf)
             
         
         case .Callback:
-            writeInt(&buf, Int32(41))
+            writeInt(&buf, Int32(43))
         
         
         case let .Conversion(v1):
-            writeInt(&buf, Int32(42))
+            writeInt(&buf, Int32(44))
             FfiConverterString.write(v1, into: &buf)
             
         }
@@ -13813,6 +13858,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 59537) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_collections() != 51066) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_crypto() != 45769) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -14323,7 +14371,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_prepare_ciphers_for_bulk_share() != 17223) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 18989) {
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 12701) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_children() != 64647) {

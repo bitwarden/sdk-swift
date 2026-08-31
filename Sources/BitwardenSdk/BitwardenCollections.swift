@@ -533,6 +533,56 @@ fileprivate struct FfiConverterString: FfiConverter {
 }
 
 
+public struct AncestorMap: Equatable, Hashable {
+    public let ancestors: [CollectionId: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ancestors: [CollectionId: String]) {
+        self.ancestors = ancestors
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AncestorMap: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAncestorMap: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AncestorMap {
+        return
+            try AncestorMap(
+                ancestors: FfiConverterDictionaryTypeCollectionIdString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AncestorMap, into buf: inout [UInt8]) {
+        FfiConverterDictionaryTypeCollectionIdString.write(value.ancestors, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAncestorMap_lift(_ buf: RustBuffer) throws -> AncestorMap {
+    return try FfiConverterTypeAncestorMap.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAncestorMap_lower(_ value: AncestorMap) -> RustBuffer {
+    return FfiConverterTypeAncestorMap.lower(value)
+}
+
+
 public struct Collection: Equatable, Hashable {
     public let id: CollectionId?
     public let organizationId: OrganizationId
@@ -769,6 +819,88 @@ public func FfiConverterTypeCollectionDecryptError_lower(_ value: CollectionDecr
 
 
 /**
+ * Generic error type for collection encryption errors.
+ *
+ * This intentionally mirrors `bitwarden_vault::EncryptError` rather than depending on it, to
+ * avoid creating a circular dependency between the `bitwarden-collections` and `bitwarden-vault`
+ * crates.
+ */
+public 
+enum CollectionEncryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Crypto(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CollectionEncryptError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCollectionEncryptError: FfiConverterRustBuffer {
+    typealias SwiftType = CollectionEncryptError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CollectionEncryptError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CollectionEncryptError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionEncryptError_lift(_ buf: RustBuffer) throws -> CollectionEncryptError {
+    return try FfiConverterTypeCollectionEncryptError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCollectionEncryptError_lower(_ value: CollectionEncryptError) -> RustBuffer {
+    return FfiConverterTypeCollectionEncryptError.lower(value)
+}
+
+
+/**
  * Type of collection
  */
 
@@ -888,6 +1020,32 @@ fileprivate struct FfiConverterOptionTypeCollectionId: FfiConverterRustBuffer {
         case 1: return try FfiConverterTypeCollectionId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryTypeCollectionIdString: FfiConverterRustBuffer {
+    public static func write(_ value: [CollectionId: String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterTypeCollectionId.write(key, into: &buf)
+            FfiConverterString.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionId: String] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [CollectionId: String]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterTypeCollectionId.read(from: &buf)
+            let value = try FfiConverterString.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
     }
 }
 
