@@ -2214,6 +2214,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func random()  -> SdkRandomNumberClient
     
     /**
+     * Send sync handler operations
+     */
+    func sendSyncHandler()  -> SendSyncHandlerClient
+    
+    /**
      * Sends operations
      */
     func sends()  -> SendClient
@@ -2473,6 +2478,18 @@ open func random() -> SdkRandomNumberClient  {
     return try!  FfiConverterTypeSdkRandomNumberClient_lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_client_random(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Send sync handler operations
+     */
+open func sendSyncHandler() -> SendSyncHandlerClient  {
+    return try!  FfiConverterTypeSendSyncHandlerClient_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_client_send_sync_handler(
             self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
@@ -13895,6 +13912,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_random() != 46393) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_send_sync_handler() != 55269) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_sends() != 45809) {

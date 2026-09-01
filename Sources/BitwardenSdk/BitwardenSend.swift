@@ -592,6 +592,144 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 }
 
 
+
+
+/**
+ * Client for the Send sync handler, for callers that fetch sync data themselves (e.g. the Web
+ * client) and only want the Send-persistence part of a sync run.
+ */
+public protocol SendSyncHandlerClientProtocol: AnyObject, Sendable {
+    
+    /**
+     * Persists the sends from a sync response. Call this after each sync.
+     */
+    func onSync(sends: [Send]) async throws 
+    
+}
+/**
+ * Client for the Send sync handler, for callers that fetch sync data themselves (e.g. the Web
+ * client) and only want the Send-persistence part of a sync run.
+ */
+open class SendSyncHandlerClient: SendSyncHandlerClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_send_fn_clone_sendsynchandlerclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_send_fn_free_sendsynchandlerclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Persists the sends from a sync response. Call this after each sync.
+     */
+open func onSync(sends: [Send])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_send_fn_method_sendsynchandlerclient_on_sync(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeSend.lower(sends)
+                )
+            },
+            pollFunc: ffi_bitwarden_send_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_send_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_send_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeSendSyncError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendSyncHandlerClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = SendSyncHandlerClient
+
+    public static func lift(_ handle: UInt64) throws -> SendSyncHandlerClient {
+        return SendSyncHandlerClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: SendSyncHandlerClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendSyncHandlerClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SendSyncHandlerClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendSyncHandlerClient_lift(_ handle: UInt64) throws -> SendSyncHandlerClient {
+    return try FfiConverterTypeSendSyncHandlerClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendSyncHandlerClient_lower(_ value: SendSyncHandlerClient) -> UInt64 {
+    return FfiConverterTypeSendSyncHandlerClient.lower(value)
+}
+
+
+
+
 public struct Send: Equatable, Hashable {
     public let id: SendId?
     public let accessId: String?
@@ -2120,6 +2258,105 @@ public func FfiConverterTypeEditSendError_lower(_ value: EditSendError) -> RustB
 }
 
 
+public 
+enum FetchSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case MissingField(message: String)
+    
+    case Repository(message: String)
+    
+    case SendParse(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension FetchSendError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFetchSendError: FfiConverterRustBuffer {
+    typealias SwiftType = FetchSendError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FetchSendError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .SendParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: FetchSendError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .SendParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFetchSendError_lift(_ buf: RustBuffer) throws -> FetchSendError {
+    return try FfiConverterTypeFetchSendError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFetchSendError_lower(_ value: FetchSendError) -> RustBuffer {
+    return FfiConverterTypeFetchSendError.lower(value)
+}
+
+
 /**
  * Where the client should upload the encrypted file bytes after [`SendClient::create_file_send`].
  */
@@ -3260,6 +3497,84 @@ public func FfiConverterTypeSendEncryptionType_lower(_ value: SendEncryptionType
 
 
 /**
+ * Errors returned by [`SendSyncHandlerClient::on_sync`].
+ */
+public 
+enum SendSyncError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Repository(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension SendSyncError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendSyncError: FfiConverterRustBuffer {
+    typealias SwiftType = SendSyncError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendSyncError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Repository(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SendSyncError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Repository(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendSyncError_lift(_ buf: RustBuffer) throws -> SendSyncError {
+    return try FfiConverterTypeSendSyncError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendSyncError_lower(_ value: SendSyncError) -> RustBuffer {
+    return FfiConverterTypeSendSyncError.lower(value)
+}
+
+
+/**
  * The type of Send, either text, file, or item
  */
 
@@ -3732,6 +4047,31 @@ fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSend: FfiConverterRustBuffer {
+    typealias SwiftType = [Send]
+
+    public static func write(_ value: [Send], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSend.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Send] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Send]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSend.read(from: &buf))
+        }
+        return seq
+    }
+}
+
 
 public typealias SendId = Uuid
 
@@ -3771,6 +4111,54 @@ public func FfiConverterTypeSendId_lower(_ value: SendId) -> RustBuffer {
     return FfiConverterTypeSendId.lower(value)
 }
 
+private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
+private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
+
+fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
+
+fileprivate func uniffiRustCallAsync<F, T>(
+    rustFutureFunc: () -> UInt64,
+    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
+    freeFunc: (UInt64) -> (),
+    liftFunc: (F) throws -> T,
+    errorHandler: ((RustBuffer) throws -> Swift.Error)?
+) async throws -> T {
+    // Make sure to call the ensure init function since future creation doesn't have a
+    // RustCallStatus param, so doesn't use makeRustCall()
+    uniffiEnsureBitwardenSendInitialized()
+    let rustFuture = rustFutureFunc()
+    defer {
+        freeFunc(rustFuture)
+    }
+    var pollResult: Int8;
+    repeat {
+        pollResult = await withUnsafeContinuation {
+            pollFunc(
+                rustFuture,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
+                uniffiContinuationHandleMap.insert(obj: $0)
+            )
+        }
+    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+
+    return try liftFunc(makeRustCall(
+        { completeFunc(rustFuture, $0) },
+        errorHandler: errorHandler
+    ))
+}
+
+// Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
+// lift the return value or error and resume the suspended function.
+fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: Int8) {
+    if let continuation = try? uniffiContinuationHandleMap.remove(handle: handle) {
+        continuation.resume(returning: pollResult)
+    } else {
+        print("uniffiFutureContinuationCallback invalid handle")
+    }
+}
 
 private enum InitializationResult {
     case ok
@@ -3786,6 +4174,9 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_bitwarden_send_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
+    }
+    if (uniffi_bitwarden_send_checksum_method_sendsynchandlerclient_on_sync() != 54989) {
+        return InitializationResult.apiChecksumMismatch
     }
 
     uniffiEnsureBitwardenCoreInitialized()
