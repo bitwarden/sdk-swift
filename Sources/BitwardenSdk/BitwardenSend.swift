@@ -2823,6 +2823,11 @@ enum SendAccessDecryptError: Swift.Error, Equatable, Hashable, Foundation.Locali
      */
     case Crypto(message: String)
     
+    /**
+     * The key could not be derived from the URL fragment
+     */
+    case Key(message: String)
+    
 
     
 
@@ -2856,6 +2861,10 @@ public struct FfiConverterTypeSendAccessDecryptError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 2: return .Key(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -2869,6 +2878,8 @@ public struct FfiConverterTypeSendAccessDecryptError: FfiConverterRustBuffer {
         
         case .Crypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
+        case .Key(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
 
         
         }
