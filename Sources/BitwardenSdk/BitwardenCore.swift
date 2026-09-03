@@ -1142,6 +1142,21 @@ public protocol StateBridgeForeignImpl: AnyObject, Sendable {
      */
     func clearKdfConfig() async 
     
+    /**
+     * Stores the `v2_encrypted_migrations_grace_period_start` value.
+     */
+    func setV2EncryptedMigrationsGracePeriodStart(value: V2EncryptedMigrationsGracePeriodStart) async 
+    
+    /**
+     * Returns the `v2_encrypted_migrations_grace_period_start` value, if available.
+     */
+    func getV2EncryptedMigrationsGracePeriodStart() async  -> V2EncryptedMigrationsGracePeriodStart?
+    
+    /**
+     * Clears the `v2_encrypted_migrations_grace_period_start` value.
+     */
+    func clearV2EncryptedMigrationsGracePeriodStart() async 
+    
 }
 /**
  * Foreign trait that Swift/Kotlin hosts implement to provide the state bridge.
@@ -1791,6 +1806,66 @@ open func clearKdfConfig()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_kdf_config(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Stores the `v2_encrypted_migrations_grace_period_start` value.
+     */
+open func setV2EncryptedMigrationsGracePeriodStart(value: V2EncryptedMigrationsGracePeriodStart)async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_v2_encrypted_migrations_grace_period_start(
+                        self.uniffiCloneHandle(),FfiConverterTypeV2EncryptedMigrationsGracePeriodStart_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the `v2_encrypted_migrations_grace_period_start` value, if available.
+     */
+open func getV2EncryptedMigrationsGracePeriodStart()async  -> V2EncryptedMigrationsGracePeriodStart?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_v2_encrypted_migrations_grace_period_start(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeV2EncryptedMigrationsGracePeriodStart.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Clears the `v2_encrypted_migrations_grace_period_start` value.
+     */
+open func clearV2EncryptedMigrationsGracePeriodStart()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_v2_encrypted_migrations_grace_period_start(
                         self.uniffiCloneHandle()
                 )
             },
@@ -2985,6 +3060,124 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.clearKdfConfig(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setV2EncryptedMigrationsGracePeriodStart: { (
+            uniffiHandle: UInt64,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.setV2EncryptedMigrationsGracePeriodStart(
+                     value: try FfiConverterTypeV2EncryptedMigrationsGracePeriodStart_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getV2EncryptedMigrationsGracePeriodStart: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> V2EncryptedMigrationsGracePeriodStart? in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.getV2EncryptedMigrationsGracePeriodStart(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: V2EncryptedMigrationsGracePeriodStart?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeV2EncryptedMigrationsGracePeriodStart.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        clearV2EncryptedMigrationsGracePeriodStart: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.clearV2EncryptedMigrationsGracePeriodStart(
                 )
             }
 
@@ -7761,6 +7954,30 @@ fileprivate struct FfiConverterOptionTypeUserId: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeV2EncryptedMigrationsGracePeriodStart: FfiConverterRustBuffer {
+    typealias SwiftType = V2EncryptedMigrationsGracePeriodStart?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeV2EncryptedMigrationsGracePeriodStart.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeV2EncryptedMigrationsGracePeriodStart.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
     typealias SwiftType = EncString?
 
@@ -8202,6 +8419,46 @@ public func FfiConverterTypeUuid_lower(_ value: Uuid) -> RustBuffer {
     return FfiConverterTypeUuid.lower(value)
 }
 
+
+
+public typealias V2EncryptedMigrationsGracePeriodStart = DateTime
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeV2EncryptedMigrationsGracePeriodStart: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> V2EncryptedMigrationsGracePeriodStart {
+        return try FfiConverterTypeDateTime.read(from: &buf)
+    }
+
+    public static func write(_ value: V2EncryptedMigrationsGracePeriodStart, into buf: inout [UInt8]) {
+        return FfiConverterTypeDateTime.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> V2EncryptedMigrationsGracePeriodStart {
+        return try FfiConverterTypeDateTime_lift(value)
+    }
+
+    public static func lower(_ value: V2EncryptedMigrationsGracePeriodStart) -> RustBuffer {
+        return FfiConverterTypeDateTime_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeV2EncryptedMigrationsGracePeriodStart_lift(_ value: RustBuffer) throws -> V2EncryptedMigrationsGracePeriodStart {
+    return try FfiConverterTypeV2EncryptedMigrationsGracePeriodStart.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeV2EncryptedMigrationsGracePeriodStart_lower(_ value: V2EncryptedMigrationsGracePeriodStart) -> RustBuffer {
+    return FfiConverterTypeV2EncryptedMigrationsGracePeriodStart.lower(value)
+}
+
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
@@ -8450,6 +8707,15 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 3217) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_encrypted_migrations_grace_period_start() != 2362) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_encrypted_migrations_grace_period_start() != 35678) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_encrypted_migrations_grace_period_start() != 23521) {
         return InitializationResult.apiChecksumMismatch
     }
 

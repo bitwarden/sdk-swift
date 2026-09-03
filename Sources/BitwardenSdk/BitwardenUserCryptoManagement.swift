@@ -833,6 +833,26 @@ public protocol UserCryptoManagementClientProtocol: AnyObject, Sendable {
      */
     func pinSettings()  -> PinSettingsClient
     
+    /**
+     * Returns whether the client may prompt the user to migrate to v2 encryption.
+     *
+     * [`MigrationPermission::Wait`] means the user is still inside the two-week grace period and
+     * the prompt must not be shown. [`MigrationPermission::Migrate`] means the grace period has
+     * elapsed.
+     *
+     * The first call has a side effect: when no timestamp is stored, it writes
+     * the current timestamp and returns [`MigrationPermission::Wait`]. The
+     * window is therefore two weeks from the first call, not from login. A
+     * client that never calls this method never opens the window.
+     *
+     * The SDK never clears the timestamp. Clearing is the client's decision
+     * and resets the window. The timestamp is persisted so a user who logs out
+     * often cannot avoid the prompt indefinitely.
+     *
+     * Panics when no state bridge is registered.
+     */
+    func requestPermissionToMigrateToV2() async  -> MigrationPermission
+    
 }
 /**
  * Client for managing the cryptographic machinery of a user account, including key-rotation.
@@ -963,6 +983,41 @@ open func pinSettings() -> PinSettingsClient  {
             self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * Returns whether the client may prompt the user to migrate to v2 encryption.
+     *
+     * [`MigrationPermission::Wait`] means the user is still inside the two-week grace period and
+     * the prompt must not be shown. [`MigrationPermission::Migrate`] means the grace period has
+     * elapsed.
+     *
+     * The first call has a side effect: when no timestamp is stored, it writes
+     * the current timestamp and returns [`MigrationPermission::Wait`]. The
+     * window is therefore two weeks from the first call, not from login. A
+     * client that never calls this method never opens the window.
+     *
+     * The SDK never clears the timestamp. Clearing is the client's decision
+     * and resets the window. The timestamp is persisted so a user who logs out
+     * often cannot avoid the prompt indefinitely.
+     *
+     * Panics when no state bridge is registered.
+     */
+open func requestPermissionToMigrateToV2()async  -> MigrationPermission  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_user_crypto_management_fn_method_usercryptomanagementclient_request_permission_to_migrate_to_v2(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeMigrationPermission_lift,
+            errorHandler: nil
+            
+        )
 }
     
 
@@ -1656,6 +1711,81 @@ public func FfiConverterTypeMigrateToKeyConnectorError_lower(_ value: MigrateToK
 
 
 /**
+ * Whether the client may prompt the user to migrate to v2 encryption.
+ */
+
+public enum MigrationPermission: Equatable, Hashable {
+    
+    /**
+     * The user is inside the grace period. Do not show the migration prompt.
+     */
+    case wait
+    /**
+     * The grace period has elapsed. Show the migration prompt.
+     */
+    case migrate
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension MigrationPermission: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMigrationPermission: FfiConverterRustBuffer {
+    typealias SwiftType = MigrationPermission
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MigrationPermission {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .wait
+        
+        case 2: return .migrate
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MigrationPermission, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .wait:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .migrate:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMigrationPermission_lift(_ buf: RustBuffer) throws -> MigrationPermission {
+    return try FfiConverterTypeMigrationPermission.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMigrationPermission_lower(_ value: MigrationPermission) -> RustBuffer {
+    return FfiConverterTypeMigrationPermission.lower(value)
+}
+
+
+
+/**
  * Errors returned by PIN settings operations.
  */
 public 
@@ -2170,6 +2300,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_pin_settings() != 55321) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_usercryptomanagementclient_request_permission_to_migrate_to_v2() != 32658) {
         return InitializationResult.apiChecksumMismatch
     }
 
