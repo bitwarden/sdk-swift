@@ -3818,6 +3818,14 @@ public protocol CryptoClientProtocol: AnyObject, Sendable {
     func enrollPinWithEncryptedPin(encryptedPin: EncString) throws  -> EnrollPinResponse
     
     /**
+     * Takes a base64-encoded raw key and returns the corresponding hex-encoded key id.
+     *
+     * Mirrors the associated function on [`bitwarden_core::key_management::CryptoClient`],
+     * because UniFFI does not generate static functions.
+     */
+    func getKeyIdForSymmetricKey(key: B64) throws  -> String?
+    
+    /**
      * Gets the upgraded V2 user key using an upgrade token.
      * If the current key is already V2, returns it directly.
      * If the current key is V1 and a token is provided, extracts the V2 key.
@@ -4014,6 +4022,22 @@ open func enrollPinWithEncryptedPin(encryptedPin: EncString)throws  -> EnrollPin
     uniffi_bitwarden_uniffi_fn_method_cryptoclient_enroll_pin_with_encrypted_pin(
             self.uniffiCloneHandle(),
         FfiConverterTypeEncString_lower(encryptedPin),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Takes a base64-encoded raw key and returns the corresponding hex-encoded key id.
+     *
+     * Mirrors the associated function on [`bitwarden_core::key_management::CryptoClient`],
+     * because UniFFI does not generate static functions.
+     */
+open func getKeyIdForSymmetricKey(key: B64)throws  -> String?  {
+    return try  FfiConverterOptionString.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_cryptoclient_get_key_id_for_symmetric_key(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeB64_lower(key),uniffiCallStatus
     )
 })
 }
@@ -14232,6 +14256,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_enroll_pin_with_encrypted_pin() != 5739) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_key_id_for_symmetric_key() != 23176) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_get_upgraded_user_key() != 39046) {
