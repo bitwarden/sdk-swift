@@ -2308,14 +2308,20 @@ open class Client: ClientProtocol, @unchecked Sendable {
     }
     /**
      * Initialize a new instance of the SDK client
+     *
+     * `managed_settings` is the host-owned handle onto the operating system's Unified Endpoint
+     * Management profile. The client shares its profile, so profiles pushed after construction
+     * are visible here. Pass a fresh `ManagedSettingsBindingClient` where the host has no UEM
+     * source.
      */
-public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSettings?) {
+public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSettings?, managedSettings: ManagedSettingsBindingClient) {
     let handle =
         try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_constructor_client_new(
         FfiConverterTypeClientManagedTokens_lower(tokenProvider),
-        FfiConverterOptionTypeClientSettings.lower(settings),uniffiCallStatus
+        FfiConverterOptionTypeClientSettings.lower(settings),
+        FfiConverterTypeManagedSettingsBindingClient_lower(managedSettings),uniffiCallStatus
     )
 }
     self.init(unsafeFromHandle: handle)
@@ -14055,7 +14061,7 @@ public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
  * ```kotlin
  * // Initialize with callback and trace-level logging before creating clients
  * initLogger(FlightRecorderCallback(), LogLevel.TRACE)
- * val client = Client(tokenProvider, settings)
+ * val client = Client(tokenProvider, settings, ManagedSettingsBindingClient())
  * ```
  *
  * # Notes
@@ -14087,7 +14093,7 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 54408) {
+    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 19046) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 59537) {
@@ -14669,7 +14675,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_encrypt() != 49379) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 27436) {
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 3828) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_constructor_managedsettingsbindingclient_new() != 23819) {
