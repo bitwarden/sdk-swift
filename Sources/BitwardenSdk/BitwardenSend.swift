@@ -2045,6 +2045,8 @@ enum DeleteSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedErro
     
     case Repository(message: String)
     
+    case State(message: String)
+    
 
     
 
@@ -2082,6 +2084,10 @@ public struct FfiConverterTypeDeleteSendError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 3: return .State(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -2097,6 +2103,8 @@ public struct FfiConverterTypeDeleteSendError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         case .Repository(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
+        case .State(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
 
         
         }
