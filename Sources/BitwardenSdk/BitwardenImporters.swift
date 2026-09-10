@@ -7,8 +7,8 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(bitwarden_importersFFI)
-import bitwarden_importersFFI
+#if canImport(BitwardenImportersFFI)
+import BitwardenImportersFFI
 #endif
 
 fileprivate extension RustBuffer {
@@ -529,8 +529,8 @@ fileprivate struct FfiConverterString: FfiConverter {
  * Number of imported ciphers of a given type.
  */
 public struct CipherTypeCount: Equatable, Hashable {
-    public var type: CipherType
-    public var count: UInt32
+    public let type: CipherType
+    public let count: UInt32
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -593,10 +593,10 @@ public func FfiConverterTypeCipherTypeCount_lower(_ value: CipherTypeCount) -> R
  * dropped before submission.
  */
 public struct ImportOptions: Equatable, Hashable {
-    public var organizationId: OrganizationId?
-    public var targetFolder: ImportTargetFolder?
-    public var targetCollection: ImportTargetCollection?
-    public var restrictedTypes: [CipherType]
+    public let organizationId: OrganizationId?
+    public let targetFolder: ImportTargetFolder?
+    public let targetCollection: ImportTargetCollection?
+    public let restrictedTypes: [CipherType]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -659,9 +659,9 @@ public func FfiConverterTypeImportOptions_lower(_ value: ImportOptions) -> RustB
  * render its per-type result table.
  */
 public struct ImportSummary: Equatable, Hashable {
-    public var ciphers: [CipherTypeCount]
-    public var folders: UInt32
-    public var collections: UInt32
+    public let ciphers: [CipherTypeCount]
+    public let folders: UInt32
+    public let collections: UInt32
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -720,8 +720,8 @@ public func FfiConverterTypeImportSummary_lower(_ value: ImportSummary) -> RustB
  * An existing organization collection to assign an org import to.
  */
 public struct ImportTargetCollection: Equatable, Hashable {
-    public var id: CollectionId
-    public var name: String
+    public let id: CollectionId
+    public let name: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -777,8 +777,8 @@ public func FfiConverterTypeImportTargetCollection_lower(_ value: ImportTargetCo
  * An existing personal folder to nest a personal import under.
  */
 public struct ImportTargetFolder: Equatable, Hashable {
-    public var id: FolderId
-    public var name: String
+    public let id: FolderId
+    public let name: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
