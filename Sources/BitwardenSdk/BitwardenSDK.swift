@@ -3594,6 +3594,12 @@ public protocol CollectionsClientProtocol: AnyObject, Sendable {
     func decryptList(collections: [Collection]) throws  -> [CollectionView]
     
     /**
+     * Decrypt collection list with failures
+     * Returns both successfully decrypted collections and any that failed to decrypt
+     */
+    func decryptListWithFailures(collections: [Collection])  -> DecryptCollectionListResult
+    
+    /**
      * Encrypt collection
      */
     func encrypt(collectionView: CollectionView) throws  -> Collection
@@ -3684,6 +3690,20 @@ open func decryptList(collections: [Collection])throws  -> [CollectionView]  {
     return try  FfiConverterSequenceTypeCollectionView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_collectionsclient_decrypt_list(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceTypeCollection.lower(collections),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Decrypt collection list with failures
+     * Returns both successfully decrypted collections and any that failed to decrypt
+     */
+open func decryptListWithFailures(collections: [Collection]) -> DecryptCollectionListResult  {
+    return try!  FfiConverterTypeDecryptCollectionListResult_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_collectionsclient_decrypt_list_with_failures(
             self.uniffiCloneHandle(),
         FfiConverterSequenceTypeCollection.lower(collections),uniffiCallStatus
     )
@@ -14676,6 +14696,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt_list() != 30704) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_decrypt_list_with_failures() != 58617) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_encrypt() != 42198) {

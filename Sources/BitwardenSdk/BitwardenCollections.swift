@@ -743,6 +743,79 @@ public func FfiConverterTypeCollectionView_lower(_ value: CollectionView) -> Rus
 }
 
 
+/**
+ * Represents the result of decrypting a list of collections.
+ *
+ * This struct contains two vectors: `successes` and `failures`.
+ * `successes` contains the decrypted `CollectionView` objects,
+ * while `failures` contains the original `Collection` objects that failed to decrypt.
+ */
+public struct DecryptCollectionListResult: Equatable, Hashable {
+    /**
+     * The decrypted `CollectionView` objects.
+     */
+    public let successes: [CollectionView]
+    /**
+     * The original `Collection` objects that failed to decrypt.
+     */
+    public let failures: [Collection]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The decrypted `CollectionView` objects.
+         */successes: [CollectionView], 
+        /**
+         * The original `Collection` objects that failed to decrypt.
+         */failures: [Collection]) {
+        self.successes = successes
+        self.failures = failures
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DecryptCollectionListResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptCollectionListResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptCollectionListResult {
+        return
+            try DecryptCollectionListResult(
+                successes: FfiConverterSequenceTypeCollectionView.read(from: &buf), 
+                failures: FfiConverterSequenceTypeCollection.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DecryptCollectionListResult, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeCollectionView.write(value.successes, into: &buf)
+        FfiConverterSequenceTypeCollection.write(value.failures, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCollectionListResult_lift(_ buf: RustBuffer) throws -> DecryptCollectionListResult {
+    return try FfiConverterTypeDecryptCollectionListResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptCollectionListResult_lower(_ value: DecryptCollectionListResult) -> RustBuffer {
+    return FfiConverterTypeDecryptCollectionListResult.lower(value)
+}
+
+
 public 
 enum CollectionDecryptError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -1020,6 +1093,56 @@ fileprivate struct FfiConverterOptionTypeCollectionId: FfiConverterRustBuffer {
         case 1: return try FfiConverterTypeCollectionId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCollection: FfiConverterRustBuffer {
+    typealias SwiftType = [Collection]
+
+    public static func write(_ value: [Collection], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCollection.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Collection] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Collection]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCollection.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCollectionView: FfiConverterRustBuffer {
+    typealias SwiftType = [CollectionView]
+
+    public static func write(_ value: [CollectionView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCollectionView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CollectionView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CollectionView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCollectionView.read(from: &buf))
+        }
+        return seq
     }
 }
 
