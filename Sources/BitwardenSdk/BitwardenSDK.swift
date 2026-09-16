@@ -819,13 +819,8 @@ public protocol AuthClientProtocol: AnyObject, Sendable {
     
     /**
      * Client for login functionality
-     *
-     * `client_settings` configures a client internal to the returned `LoginClient`, separate from
-     * the one backing this `AuthClient`. Pass settings matching those the SDK client was
-     * constructed with; otherwise login requests target a different server than the rest of the
-     * SDK.
      */
-    func login(clientSettings: ClientSettings)  -> LoginClient
+    func login()  -> LoginClient
     
     /**
      * Generate keys needed to onboard a new user without master key to key connector
@@ -997,18 +992,12 @@ open func hashPassword(email: String, password: String, kdfParams: Kdf, purpose:
     
     /**
      * Client for login functionality
-     *
-     * `client_settings` configures a client internal to the returned `LoginClient`, separate from
-     * the one backing this `AuthClient`. Pass settings matching those the SDK client was
-     * constructed with; otherwise login requests target a different server than the rest of the
-     * SDK.
      */
-open func login(clientSettings: ClientSettings) -> LoginClient  {
+open func login() -> LoginClient  {
     return try!  FfiConverterTypeLoginClient_lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_authclient_login(
-            self.uniffiCloneHandle(),
-        FfiConverterTypeClientSettings_lower(clientSettings),uniffiCallStatus
+            self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
 }
@@ -14203,7 +14192,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_hash_password() != 61907) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_authclient_login() != 17271) {
+    if (uniffi_bitwarden_uniffi_checksum_method_authclient_login() != 46246) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_authclient_make_key_connector_keys() != 60670) {
