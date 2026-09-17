@@ -11510,6 +11510,12 @@ public func FfiConverterTypeRepositories_lower(_ value: Repositories) -> RustBuf
 }
 
 
+/**
+ * The single error type the UniFFI surface returns.
+ *
+ * Every exported function in this crate must return it, through the crate's `Result<T>` alias.
+ * See [`bitwarden_uniffi_error`] for why.
+ */
 public 
 enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
