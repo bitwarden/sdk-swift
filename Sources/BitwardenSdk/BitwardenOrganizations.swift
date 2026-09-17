@@ -2101,6 +2101,46 @@ fileprivate struct FfiConverterOptionTypeUuid: FfiConverterRustBuffer {
     }
 }
 
+
+public typealias OrganizationUserId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeOrganizationUserId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OrganizationUserId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: OrganizationUserId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> OrganizationUserId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: OrganizationUserId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationUserId_lift(_ value: RustBuffer) throws -> OrganizationUserId {
+    return try FfiConverterTypeOrganizationUserId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOrganizationUserId_lower(_ value: OrganizationUserId) -> RustBuffer {
+    return FfiConverterTypeOrganizationUserId.lower(value)
+}
+
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
