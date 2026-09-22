@@ -717,17 +717,21 @@ public func FfiConverterTypeImportSummary_lower(_ value: ImportSummary) -> RustB
 
 
 /**
- * An existing organization collection to assign an org import to.
+ * An existing organization collection to assign an org import to. `type` distinguishes the
+ * "My items" default collection (import.rs converts groups to personal folders instead of
+ * nested collections) from a normal shared collection.
  */
 public struct ImportTargetCollection: Equatable, Hashable {
     public let id: CollectionId
     public let name: String
+    public let type: CollectionType
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CollectionId, name: String) {
+    public init(id: CollectionId, name: String, type: CollectionType) {
         self.id = id
         self.name = name
+        self.type = type
     }
 
     
@@ -747,13 +751,15 @@ public struct FfiConverterTypeImportTargetCollection: FfiConverterRustBuffer {
         return
             try ImportTargetCollection(
                 id: FfiConverterTypeCollectionId.read(from: &buf), 
-                name: FfiConverterString.read(from: &buf)
+                name: FfiConverterString.read(from: &buf), 
+                type: FfiConverterTypeCollectionType.read(from: &buf)
         )
     }
 
     public static func write(_ value: ImportTargetCollection, into buf: inout [UInt8]) {
         FfiConverterTypeCollectionId.write(value.id, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
+        FfiConverterTypeCollectionType.write(value.type, into: &buf)
     }
 }
 
