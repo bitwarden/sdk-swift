@@ -1306,6 +1306,13 @@ public struct Cipher: Equatable, Hashable {
     public let revisionDate: DateTime
     public let archivedDate: DateTime?
     public let data: String?
+    /**
+     * Raw JSON envelope for a server-restricted (PAM-gated) cipher: only contains a sub-set of
+     * non sensitive fields, all other fields are withheld by the server. Its presence marks the
+     * cipher restricted; the decrypt path parses only these allowlisted fields and produces a
+     * view with `partial = true`, never reading the secret payloads.
+     */
+    public let partialData: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1317,7 +1324,13 @@ public struct Cipher: Equatable, Hashable {
         /**
          * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
          * the sealed `data` blob; required on the legacy field-level format.
-         */name: EncString?, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?) {
+         */name: EncString?, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?, 
+        /**
+         * Raw JSON envelope for a server-restricted (PAM-gated) cipher: only contains a sub-set of
+         * non sensitive fields, all other fields are withheld by the server. Its presence marks the
+         * cipher restricted; the decrypt path parses only these allowlisted fields and produces a
+         * view with `partial = true`, never reading the secret payloads.
+         */partialData: String?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1349,6 +1362,7 @@ public struct Cipher: Equatable, Hashable {
         self.revisionDate = revisionDate
         self.archivedDate = archivedDate
         self.data = data
+        self.partialData = partialData
     }
 
     
@@ -1397,7 +1411,8 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
-                data: FfiConverterOptionString.read(from: &buf)
+                data: FfiConverterOptionString.read(from: &buf), 
+                partialData: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -1433,6 +1448,7 @@ public struct FfiConverterTypeCipher: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
         FfiConverterOptionString.write(value.data, into: &buf)
+        FfiConverterOptionString.write(value.partialData, into: &buf)
     }
 }
 
@@ -1677,6 +1693,11 @@ public struct CipherListView: Equatable, Hashable {
      */
     public let copyableFields: [CopyableCipherFields]
     public let localData: LocalDataView?
+    /**
+     * True when this view was produced from a server-restricted (PAM-gated) cipher. Only a
+     * sub-set of fields are populated. See [`Cipher::partial_data`].
+     */
+    public let partial: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1692,7 +1713,11 @@ public struct CipherListView: Equatable, Hashable {
          */hasOldAttachments: Bool, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, 
         /**
          * Hints for the presentation layer for which fields can be copied.
-         */copyableFields: [CopyableCipherFields], localData: LocalDataView?) {
+         */copyableFields: [CopyableCipherFields], localData: LocalDataView?, 
+        /**
+         * True when this view was produced from a server-restricted (PAM-gated) cipher. Only a
+         * sub-set of fields are populated. See [`Cipher::partial_data`].
+         */partial: Bool) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1715,6 +1740,7 @@ public struct CipherListView: Equatable, Hashable {
         self.archivedDate = archivedDate
         self.copyableFields = copyableFields
         self.localData = localData
+        self.partial = partial
     }
 
     
@@ -1754,7 +1780,8 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 copyableFields: FfiConverterSequenceTypeCopyableCipherFields.read(from: &buf), 
-                localData: FfiConverterOptionTypeLocalDataView.read(from: &buf)
+                localData: FfiConverterOptionTypeLocalDataView.read(from: &buf), 
+                partial: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -1781,6 +1808,7 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
         FfiConverterSequenceTypeCopyableCipherFields.write(value.copyableFields, into: &buf)
         FfiConverterOptionTypeLocalDataView.write(value.localData, into: &buf)
+        FfiConverterBool.write(value.partial, into: &buf)
     }
 }
 
@@ -2220,6 +2248,15 @@ public struct CipherView: Equatable, Hashable {
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
     public let archivedDate: DateTime?
+    /**
+     * True when this view was produced from a server-restricted (PAM-gated) cipher. Only a
+     * sub-set of fields are populated; every secret field is absent. See
+     * [`Cipher::partial_data`].
+     * Such a view is fail-closed against re-encryption: passing it to any encrypt path returns
+     * [`bitwarden_crypto::CryptoError::EncryptRestrictedView`] rather than silently stripping
+     * secrets.
+     */
+    public let partial: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -2229,7 +2266,15 @@ public struct CipherView: Equatable, Hashable {
          */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, bankAccount: BankAccountView?, driversLicense: DriversLicenseView?, passport: PassportView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
         /**
          * Attachments that failed to decrypt. Only present when there are decryption failures.
-         */attachmentDecryptionFailures: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?) {
+         */attachmentDecryptionFailures: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, 
+        /**
+         * True when this view was produced from a server-restricted (PAM-gated) cipher. Only a
+         * sub-set of fields are populated; every secret field is absent. See
+         * [`Cipher::partial_data`].
+         * Such a view is fail-closed against re-encryption: passing it to any encrypt path returns
+         * [`bitwarden_crypto::CryptoError::EncryptRestrictedView`] rather than silently stripping
+         * secrets.
+         */partial: Bool) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -2261,6 +2306,7 @@ public struct CipherView: Equatable, Hashable {
         self.deletedDate = deletedDate
         self.revisionDate = revisionDate
         self.archivedDate = archivedDate
+        self.partial = partial
     }
 
     
@@ -2309,7 +2355,8 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 creationDate: FfiConverterTypeDateTime.read(from: &buf), 
                 deletedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
-                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf)
+                archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                partial: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -2345,6 +2392,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeDateTime.write(value.deletedDate, into: &buf)
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
+        FfiConverterBool.write(value.partial, into: &buf)
     }
 }
 
@@ -7274,6 +7322,11 @@ enum EditCipherAdminError: Swift.Error, Equatable, Hashable, Foundation.Localize
     
     case Decrypt(message: String)
     
+    /**
+     * `edit` was handed a partial view as the original.
+     */
+    case PartialOriginal(message: String)
+    
 
     
 
@@ -7339,6 +7392,10 @@ public struct FfiConverterTypeEditCipherAdminError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 10: return .PartialOriginal(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -7368,6 +7425,8 @@ public struct FfiConverterTypeEditCipherAdminError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(8))
         case .Decrypt(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
+        case .PartialOriginal(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
 
         
         }
@@ -7410,6 +7469,17 @@ enum EditCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedErro
     case Repository(message: String)
     
     case Uuid(message: String)
+    
+    /**
+     * The stored cipher is PAM-gated, so local state holds only its partial copy and an edit
+     * built on it would drop the item's password history and mis-stamp its revision date.
+     */
+    case GatedCipher(message: String)
+    
+    /**
+     * `edit_gated` was handed a partial view as the original.
+     */
+    case PartialOriginal(message: String)
     
 
     
@@ -7472,6 +7542,14 @@ public struct FfiConverterTypeEditCipherError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 9: return .GatedCipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .PartialOriginal(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -7499,6 +7577,10 @@ public struct FfiConverterTypeEditCipherError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(7))
         case .Uuid(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
+        case .GatedCipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(9))
+        case .PartialOriginal(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
 
         
         }
