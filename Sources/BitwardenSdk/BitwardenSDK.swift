@@ -8994,7 +8994,7 @@ public protocol PoliciesClientProtocol: AnyObject, Sendable {
      * Returns the subset of `policies` that should be enforced against the user,
      * based on their organization memberships and roles.
      */
-    func filterByType(policies: [Policy], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType)  -> [Policy]
+    func filterByType(policies: [PolicyView], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType)  -> [PolicyView]
     
 }
 /**
@@ -9059,12 +9059,12 @@ open class PoliciesClient: PoliciesClientProtocol, @unchecked Sendable {
      * Returns the subset of `policies` that should be enforced against the user,
      * based on their organization memberships and roles.
      */
-open func filterByType(policies: [Policy], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType) -> [Policy]  {
-    return try!  FfiConverterSequenceTypePolicy.lift(try! rustCall() {
+open func filterByType(policies: [PolicyView], organizationUserPolicyContexts: [OrganizationUserPolicyContext], policyType: PolicyType) -> [PolicyView]  {
+    return try!  FfiConverterSequenceTypePolicyView.lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_policiesclient_filter_by_type(
             self.uniffiCloneHandle(),
-        FfiConverterSequenceTypePolicy.lower(policies),
+        FfiConverterSequenceTypePolicyView.lower(policies),
         FfiConverterSequenceTypeOrganizationUserPolicyContext.lower(organizationUserPolicyContexts),
         FfiConverterTypePolicyType_lower(policyType),uniffiCallStatus
     )
@@ -13443,23 +13443,23 @@ fileprivate struct FfiConverterSequenceTypeOrganizationUserPolicyContext: FfiCon
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypePolicy: FfiConverterRustBuffer {
-    typealias SwiftType = [Policy]
+fileprivate struct FfiConverterSequenceTypePolicyView: FfiConverterRustBuffer {
+    typealias SwiftType = [PolicyView]
 
-    public static func write(_ value: [Policy], into buf: inout [UInt8]) {
+    public static func write(_ value: [PolicyView], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for item in value {
-            FfiConverterTypePolicy.write(item, into: &buf)
+            FfiConverterTypePolicyView.write(item, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Policy] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PolicyView] {
         let len: Int32 = try readInt(&buf)
-        var seq = [Policy]()
+        var seq = [PolicyView]()
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
-            seq.append(try FfiConverterTypePolicy.read(from: &buf))
+            seq.append(try FfiConverterTypePolicyView.read(from: &buf))
         }
         return seq
     }
@@ -14555,7 +14555,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_servercommunicationconfigrepository_save() != 7246) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 50168) {
+    if (uniffi_bitwarden_uniffi_checksum_method_policiesclient_filter_by_type() != 17069) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_exporterclient_export_cxf() != 6329) {
