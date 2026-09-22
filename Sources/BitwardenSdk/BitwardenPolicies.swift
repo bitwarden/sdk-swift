@@ -652,89 +652,6 @@ public func FfiConverterTypeAutomaticAppLogInPolicyData_lower(_ value: Automatic
 
 
 /**
- * The FFI-facing counterpart of the native `EnforcedPolicy`, with its
- * strongly-typed `data` erased to [`PolicyDataType`] so it can cross the
- * binding boundary.
- */
-public struct EnforcedPolicyErased: Equatable, Hashable {
-    /**
-     * The organization this enforcement decision is for.
-     */
-    public let organizationId: OrganizationId
-    /**
-     * The policy data, if any.
-     */
-    public let data: PolicyDataType
-    /**
-     * Whether the policy is being enforced against the current user for this
-     * organization.
-     */
-    public let enforced: Bool
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(
-        /**
-         * The organization this enforcement decision is for.
-         */organizationId: OrganizationId, 
-        /**
-         * The policy data, if any.
-         */data: PolicyDataType, 
-        /**
-         * Whether the policy is being enforced against the current user for this
-         * organization.
-         */enforced: Bool) {
-        self.organizationId = organizationId
-        self.data = data
-        self.enforced = enforced
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension EnforcedPolicyErased: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeEnforcedPolicyErased: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EnforcedPolicyErased {
-        return
-            try EnforcedPolicyErased(
-                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
-                data: FfiConverterTypePolicyDataType.read(from: &buf), 
-                enforced: FfiConverterBool.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: EnforcedPolicyErased, into buf: inout [UInt8]) {
-        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
-        FfiConverterTypePolicyDataType.write(value.data, into: &buf)
-        FfiConverterBool.write(value.enforced, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeEnforcedPolicyErased_lift(_ buf: RustBuffer) throws -> EnforcedPolicyErased {
-    return try FfiConverterTypeEnforcedPolicyErased.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeEnforcedPolicyErased_lower(_ value: EnforcedPolicyErased) -> RustBuffer {
-    return FfiConverterTypeEnforcedPolicyErased.lower(value)
-}
-
-
-/**
  * Configuration data for the Fill Assist policy.
  */
 public struct FillAssistPolicyData: Equatable, Hashable {
@@ -1436,13 +1353,14 @@ public func FfiConverterTypePasswordGeneratorPolicyData_lower(_ value: PasswordG
 /**
  * An organization policy in the raw data format that is sent over the FFI.
  *
- * TODO: this is misnamed, but changing it is a breaking change.
+ * This is the storage-layer record. It is resolved into a strongly-typed,
+ * per-policy projection at the enforcement boundary.
  */
-public struct PolicyView: Equatable, Hashable {
+public struct Policy: Equatable, Hashable {
     /**
      * The policy's unique ID.
      */
-    public let id: Uuid
+    public let id: PolicyId
     /**
      * The organization this policy belongs to.
      */
@@ -1469,7 +1387,7 @@ public struct PolicyView: Equatable, Hashable {
     public init(
         /**
          * The policy's unique ID.
-         */id: Uuid, 
+         */id: PolicyId, 
         /**
          * The organization this policy belongs to.
          */organizationId: OrganizationId, 
@@ -1499,17 +1417,17 @@ public struct PolicyView: Equatable, Hashable {
 }
 
 #if compiler(>=6)
-extension PolicyView: Sendable {}
+extension Policy: Sendable {}
 #endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyView {
+public struct FfiConverterTypePolicy: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Policy {
         return
-            try PolicyView(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+            try Policy(
+                id: FfiConverterTypePolicyId.read(from: &buf), 
                 organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
                 type: FfiConverterTypePolicyType.read(from: &buf), 
                 data: FfiConverterOptionString.read(from: &buf), 
@@ -1518,8 +1436,8 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
         )
     }
 
-    public static func write(_ value: PolicyView, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+    public static func write(_ value: Policy, into buf: inout [UInt8]) {
+        FfiConverterTypePolicyId.write(value.id, into: &buf)
         FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterTypePolicyType.write(value.type, into: &buf)
         FfiConverterOptionString.write(value.data, into: &buf)
@@ -1532,15 +1450,98 @@ public struct FfiConverterTypePolicyView: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypePolicyView_lift(_ buf: RustBuffer) throws -> PolicyView {
-    return try FfiConverterTypePolicyView.lift(buf)
+public func FfiConverterTypePolicy_lift(_ buf: RustBuffer) throws -> Policy {
+    return try FfiConverterTypePolicy.lift(buf)
 }
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypePolicyView_lower(_ value: PolicyView) -> RustBuffer {
-    return FfiConverterTypePolicyView.lower(value)
+public func FfiConverterTypePolicy_lower(_ value: Policy) -> RustBuffer {
+    return FfiConverterTypePolicy.lower(value)
+}
+
+
+/**
+ * The FFI-facing counterpart of the native `PolicyDecision`, with its
+ * strongly-typed `data` erased to [`PolicyDataType`] so it can cross the
+ * binding boundary.
+ */
+public struct PolicyDecisionErased: Equatable, Hashable {
+    /**
+     * The organization this enforcement decision is for.
+     */
+    public let organizationId: OrganizationId
+    /**
+     * The policy data, if any.
+     */
+    public let data: PolicyDataType
+    /**
+     * Whether the policy is being enforced against the current user for this
+     * organization.
+     */
+    public let enforced: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The organization this enforcement decision is for.
+         */organizationId: OrganizationId, 
+        /**
+         * The policy data, if any.
+         */data: PolicyDataType, 
+        /**
+         * Whether the policy is being enforced against the current user for this
+         * organization.
+         */enforced: Bool) {
+        self.organizationId = organizationId
+        self.data = data
+        self.enforced = enforced
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PolicyDecisionErased: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyDecisionErased: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyDecisionErased {
+        return
+            try PolicyDecisionErased(
+                organizationId: FfiConverterTypeOrganizationId.read(from: &buf), 
+                data: FfiConverterTypePolicyDataType.read(from: &buf), 
+                enforced: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PolicyDecisionErased, into buf: inout [UInt8]) {
+        FfiConverterTypeOrganizationId.write(value.organizationId, into: &buf)
+        FfiConverterTypePolicyDataType.write(value.data, into: &buf)
+        FfiConverterBool.write(value.enforced, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyDecisionErased_lift(_ buf: RustBuffer) throws -> PolicyDecisionErased {
+    return try FfiConverterTypePolicyDecisionErased.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyDecisionErased_lower(_ value: PolicyDecisionErased) -> RustBuffer {
+    return FfiConverterTypePolicyDecisionErased.lower(value)
 }
 
 
@@ -2641,6 +2642,46 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
         }
     }
 }
+
+
+public typealias PolicyId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePolicyId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PolicyId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: PolicyId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> PolicyId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: PolicyId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyId_lift(_ value: RustBuffer) throws -> PolicyId {
+    return try FfiConverterTypePolicyId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePolicyId_lower(_ value: PolicyId) -> RustBuffer {
+    return FfiConverterTypePolicyId.lower(value)
+}
+
 
 private enum InitializationResult {
     case ok
