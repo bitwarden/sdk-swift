@@ -3156,81 +3156,6 @@ public func FfiConverterTypeCredentialsForAutofillError_lower(_ value: Credentia
 }
 
 
-public 
-enum DecryptFido2AutofillCredentialsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
-
-    
-    
-    case Fido2CredentialAutofillView(message: String)
-    
-
-    
-
-    
-
-    
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-    
-}
-
-#if compiler(>=6)
-extension DecryptFido2AutofillCredentialsError: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeDecryptFido2AutofillCredentialsError: FfiConverterRustBuffer {
-    typealias SwiftType = DecryptFido2AutofillCredentialsError
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptFido2AutofillCredentialsError {
-        let variant: Int32 = try readInt(&buf)
-        switch variant {
-
-        
-
-        
-        case 1: return .Fido2CredentialAutofillView(
-            message: try FfiConverterString.read(from: &buf)
-        )
-        
-
-        default: throw UniffiInternalError.unexpectedEnumCase
-        }
-    }
-
-    public static func write(_ value: DecryptFido2AutofillCredentialsError, into buf: inout [UInt8]) {
-        switch value {
-
-        
-
-        
-        case .Fido2CredentialAutofillView(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
-
-        
-        }
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lift(_ buf: RustBuffer) throws -> DecryptFido2AutofillCredentialsError {
-    return try FfiConverterTypeDecryptFido2AutofillCredentialsError.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeDecryptFido2AutofillCredentialsError_lower(_ value: DecryptFido2AutofillCredentialsError) -> RustBuffer {
-    return FfiConverterTypeDecryptFido2AutofillCredentialsError.lower(value)
-}
-
-
 /**
  * Errors related to processing the device auth key.
  */
@@ -3713,6 +3638,81 @@ public func FfiConverterTypeGetAssertionError_lift(_ buf: RustBuffer) throws -> 
 #endif
 public func FfiConverterTypeGetAssertionError_lower(_ value: GetAssertionError) -> RustBuffer {
     return FfiConverterTypeGetAssertionError.lower(value)
+}
+
+
+public 
+enum GetFido2AutofillCredentialsError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Fido2CredentialAutofillView(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension GetFido2AutofillCredentialsError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeGetFido2AutofillCredentialsError: FfiConverterRustBuffer {
+    typealias SwiftType = GetFido2AutofillCredentialsError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> GetFido2AutofillCredentialsError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Fido2CredentialAutofillView(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: GetFido2AutofillCredentialsError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Fido2CredentialAutofillView(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFido2AutofillCredentialsError_lift(_ buf: RustBuffer) throws -> GetFido2AutofillCredentialsError {
+    return try FfiConverterTypeGetFido2AutofillCredentialsError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeGetFido2AutofillCredentialsError_lower(_ value: GetFido2AutofillCredentialsError) -> RustBuffer {
+    return FfiConverterTypeGetFido2AutofillCredentialsError.lower(value)
 }
 
 

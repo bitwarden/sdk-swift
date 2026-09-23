@@ -762,11 +762,11 @@ public struct AttachmentView: Equatable, Hashable {
     public let size: String?
     public let sizeName: String?
     public let fileName: String?
-    public let key: EncString?
+    public let key: SymmetricCryptoKey?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String?, url: String?, size: String?, sizeName: String?, fileName: String?, key: EncString?) {
+    public init(id: String?, url: String?, size: String?, sizeName: String?, fileName: String?, key: SymmetricCryptoKey?) {
         self.id = id
         self.url = url
         self.size = size
@@ -796,7 +796,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
                 size: FfiConverterOptionString.read(from: &buf), 
                 sizeName: FfiConverterOptionString.read(from: &buf), 
                 fileName: FfiConverterOptionString.read(from: &buf), 
-                key: FfiConverterOptionTypeEncString.read(from: &buf)
+                key: FfiConverterOptionTypeSymmetricCryptoKey.read(from: &buf)
         )
     }
 
@@ -806,7 +806,7 @@ public struct FfiConverterTypeAttachmentView: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.size, into: &buf)
         FfiConverterOptionString.write(value.sizeName, into: &buf)
         FfiConverterOptionString.write(value.fileName, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
+        FfiConverterOptionTypeSymmetricCryptoKey.write(value.key, into: &buf)
     }
 }
 
@@ -1573,11 +1573,11 @@ public struct CipherEditRequest: Equatable, Hashable {
     public let revisionDate: DateTime
     public let archivedDate: DateTime?
     public let attachments: [AttachmentView]
-    public let key: EncString?
+    public let key: SymmetricCryptoKey?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CipherId, organizationId: OrganizationId?, folderId: FolderId?, favorite: Bool, reprompt: CipherRepromptType, name: String, notes: String?, fields: [FieldView], type: CipherViewType, revisionDate: DateTime, archivedDate: DateTime?, attachments: [AttachmentView], key: EncString?) {
+    public init(id: CipherId, organizationId: OrganizationId?, folderId: FolderId?, favorite: Bool, reprompt: CipherRepromptType, name: String, notes: String?, fields: [FieldView], type: CipherViewType, revisionDate: DateTime, archivedDate: DateTime?, attachments: [AttachmentView], key: SymmetricCryptoKey?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1621,7 +1621,7 @@ public struct FfiConverterTypeCipherEditRequest: FfiConverterRustBuffer {
                 revisionDate: FfiConverterTypeDateTime.read(from: &buf), 
                 archivedDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
                 attachments: FfiConverterSequenceTypeAttachmentView.read(from: &buf), 
-                key: FfiConverterOptionTypeEncString.read(from: &buf)
+                key: FfiConverterOptionTypeSymmetricCryptoKey.read(from: &buf)
         )
     }
 
@@ -1638,7 +1638,7 @@ public struct FfiConverterTypeCipherEditRequest: FfiConverterRustBuffer {
         FfiConverterTypeDateTime.write(value.revisionDate, into: &buf)
         FfiConverterOptionTypeDateTime.write(value.archivedDate, into: &buf)
         FfiConverterSequenceTypeAttachmentView.write(value.attachments, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
+        FfiConverterOptionTypeSymmetricCryptoKey.write(value.key, into: &buf)
     }
 }
 
@@ -1663,10 +1663,6 @@ public struct CipherListView: Equatable, Hashable {
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
     public let collectionIds: [CollectionId]
-    /**
-     * Temporary, required to support calculating TOTP from CipherListView.
-     */
-    public let key: EncString?
     public let name: String
     public let subtitle: String
     public let type: CipherListViewType
@@ -1701,10 +1697,7 @@ public struct CipherListView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
-        /**
-         * Temporary, required to support calculating TOTP from CipherListView.
-         */key: EncString?, name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, 
+    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], name: String, subtitle: String, type: CipherListViewType, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, 
         /**
          * The number of attachments
          */attachments: UInt32, 
@@ -1722,7 +1715,6 @@ public struct CipherListView: Equatable, Hashable {
         self.organizationId = organizationId
         self.folderId = folderId
         self.collectionIds = collectionIds
-        self.key = key
         self.name = name
         self.subtitle = subtitle
         self.type = type
@@ -1763,7 +1755,6 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
                 organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
                 folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
-                key: FfiConverterOptionTypeEncString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 subtitle: FfiConverterString.read(from: &buf), 
                 type: FfiConverterTypeCipherListViewType.read(from: &buf), 
@@ -1790,7 +1781,6 @@ public struct FfiConverterTypeCipherListView: FfiConverterRustBuffer {
         FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterString.write(value.subtitle, into: &buf)
         FfiConverterTypeCipherListViewType.write(value.type, into: &buf)
@@ -2215,10 +2205,7 @@ public struct CipherView: Equatable, Hashable {
     public let organizationId: OrganizationId?
     public let folderId: FolderId?
     public let collectionIds: [CollectionId]
-    /**
-     * Temporary, required to support re-encrypting existing items.
-     */
-    public let key: EncString?
+    public let key: SymmetricCryptoKey?
     public let name: String
     public let notes: String?
     public let type: CipherType
@@ -2260,10 +2247,7 @@ public struct CipherView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
-        /**
-         * Temporary, required to support re-encrypting existing items.
-         */key: EncString?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, bankAccount: BankAccountView?, driversLicense: DriversLicenseView?, passport: PassportView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
+    public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], key: SymmetricCryptoKey?, name: String, notes: String?, type: CipherType, login: LoginView?, identity: IdentityView?, card: CardView?, secureNote: SecureNoteView?, sshKey: SshKeyView?, bankAccount: BankAccountView?, driversLicense: DriversLicenseView?, passport: PassportView?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalDataView?, attachments: [AttachmentView]?, 
         /**
          * Attachments that failed to decrypt. Only present when there are decryption failures.
          */attachmentDecryptionFailures: [AttachmentView]?, fields: [FieldView]?, passwordHistory: [PasswordHistoryView]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, 
@@ -2329,7 +2313,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
                 organizationId: FfiConverterOptionTypeOrganizationId.read(from: &buf), 
                 folderId: FfiConverterOptionTypeFolderId.read(from: &buf), 
                 collectionIds: FfiConverterSequenceTypeCollectionId.read(from: &buf), 
-                key: FfiConverterOptionTypeEncString.read(from: &buf), 
+                key: FfiConverterOptionTypeSymmetricCryptoKey.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 notes: FfiConverterOptionString.read(from: &buf), 
                 type: FfiConverterTypeCipherType.read(from: &buf), 
@@ -2365,7 +2349,7 @@ public struct FfiConverterTypeCipherView: FfiConverterRustBuffer {
         FfiConverterOptionTypeOrganizationId.write(value.organizationId, into: &buf)
         FfiConverterOptionTypeFolderId.write(value.folderId, into: &buf)
         FfiConverterSequenceTypeCollectionId.write(value.collectionIds, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.key, into: &buf)
+        FfiConverterOptionTypeSymmetricCryptoKey.write(value.key, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterOptionString.write(value.notes, into: &buf)
         FfiConverterTypeCipherType.write(value.type, into: &buf)
@@ -3077,7 +3061,12 @@ public struct Fido2CredentialView: Equatable, Hashable {
     public let keyType: String
     public let keyAlgorithm: String
     public let keyCurve: String
-    public let keyValue: EncString
+    /**
+     * The raw private key material for this passkey credential.
+     * Callers that receive `Fido2CredentialView` over a binding boundary should
+     * treat this field with the same care as any private key material.
+     */
+    public let keyValue: String
     public let rpId: String
     public let userHandle: String?
     public let userName: String?
@@ -3089,7 +3078,12 @@ public struct Fido2CredentialView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, keyValue: EncString, rpId: String, userHandle: String?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
+    public init(credentialId: String, keyType: String, keyAlgorithm: String, keyCurve: String, 
+        /**
+         * The raw private key material for this passkey credential.
+         * Callers that receive `Fido2CredentialView` over a binding boundary should
+         * treat this field with the same care as any private key material.
+         */keyValue: String, rpId: String, userHandle: String?, userName: String?, counter: String, rpName: String?, userDisplayName: String?, discoverable: String, creationDate: DateTime) {
         self.credentialId = credentialId
         self.keyType = keyType
         self.keyAlgorithm = keyAlgorithm
@@ -3125,7 +3119,7 @@ public struct FfiConverterTypeFido2CredentialView: FfiConverterRustBuffer {
                 keyType: FfiConverterString.read(from: &buf), 
                 keyAlgorithm: FfiConverterString.read(from: &buf), 
                 keyCurve: FfiConverterString.read(from: &buf), 
-                keyValue: FfiConverterTypeEncString.read(from: &buf), 
+                keyValue: FfiConverterString.read(from: &buf), 
                 rpId: FfiConverterString.read(from: &buf), 
                 userHandle: FfiConverterOptionString.read(from: &buf), 
                 userName: FfiConverterOptionString.read(from: &buf), 
@@ -3142,7 +3136,7 @@ public struct FfiConverterTypeFido2CredentialView: FfiConverterRustBuffer {
         FfiConverterString.write(value.keyType, into: &buf)
         FfiConverterString.write(value.keyAlgorithm, into: &buf)
         FfiConverterString.write(value.keyCurve, into: &buf)
-        FfiConverterTypeEncString.write(value.keyValue, into: &buf)
+        FfiConverterString.write(value.keyValue, into: &buf)
         FfiConverterString.write(value.rpId, into: &buf)
         FfiConverterOptionString.write(value.userHandle, into: &buf)
         FfiConverterOptionString.write(value.userName, into: &buf)
@@ -3962,18 +3956,12 @@ public struct LoginListView: Equatable, Hashable {
     public let fido2Credentials: [Fido2CredentialListView]?
     public let hasFido2: Bool
     public let username: String?
-    /**
-     * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
-     */
-    public let totp: EncString?
+    public let totp: String?
     public let uris: [LoginUriView]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(fido2Credentials: [Fido2CredentialListView]?, hasFido2: Bool, username: String?, 
-        /**
-         * The TOTP key is not decrypted. Useable as is with [`crate::generate_totp_cipher_view`].
-         */totp: EncString?, uris: [LoginUriView]?) {
+    public init(fido2Credentials: [Fido2CredentialListView]?, hasFido2: Bool, username: String?, totp: String?, uris: [LoginUriView]?) {
         self.fido2Credentials = fido2Credentials
         self.hasFido2 = hasFido2
         self.username = username
@@ -4000,7 +3988,7 @@ public struct FfiConverterTypeLoginListView: FfiConverterRustBuffer {
                 fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialListView.read(from: &buf), 
                 hasFido2: FfiConverterBool.read(from: &buf), 
                 username: FfiConverterOptionString.read(from: &buf), 
-                totp: FfiConverterOptionTypeEncString.read(from: &buf), 
+                totp: FfiConverterOptionString.read(from: &buf), 
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf)
         )
     }
@@ -4009,7 +3997,7 @@ public struct FfiConverterTypeLoginListView: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeFido2CredentialListView.write(value.fido2Credentials, into: &buf)
         FfiConverterBool.write(value.hasFido2, into: &buf)
         FfiConverterOptionString.write(value.username, into: &buf)
-        FfiConverterOptionTypeEncString.write(value.totp, into: &buf)
+        FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
     }
 }
@@ -4153,11 +4141,11 @@ public struct LoginView: Equatable, Hashable {
     public let uris: [LoginUriView]?
     public let totp: String?
     public let autofillOnPageLoad: Bool?
-    public let fido2Credentials: [Fido2Credential]?
+    public let fido2Credentials: [Fido2CredentialView]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2Credential]?) {
+    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2CredentialView]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
@@ -4189,7 +4177,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf), 
                 totp: FfiConverterOptionString.read(from: &buf), 
                 autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
-                fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
+                fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialView.read(from: &buf)
         )
     }
 
@@ -4200,7 +4188,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
         FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
-        FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
+        FfiConverterOptionSequenceTypeFido2CredentialView.write(value.fido2Credentials, into: &buf)
     }
 }
 
@@ -9631,6 +9619,30 @@ fileprivate struct FfiConverterOptionSequenceTypeFido2CredentialListView: FfiCon
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialView]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeFido2CredentialView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeFido2CredentialView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceTypeField: FfiConverterRustBuffer {
     typealias SwiftType = [Field]?
 
@@ -9863,6 +9875,30 @@ fileprivate struct FfiConverterOptionTypeEncString: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeEncString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeSymmetricCryptoKey: FfiConverterRustBuffer {
+    typealias SwiftType = SymmetricCryptoKey?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSymmetricCryptoKey.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSymmetricCryptoKey.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -10110,6 +10146,31 @@ fileprivate struct FfiConverterSequenceTypeFido2CredentialListView: FfiConverter
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2CredentialListView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
+    typealias SwiftType = [Fido2CredentialView]
+
+    public static func write(_ value: [Fido2CredentialView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFido2CredentialView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Fido2CredentialView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFido2CredentialView.read(from: &buf))
         }
         return seq
     }

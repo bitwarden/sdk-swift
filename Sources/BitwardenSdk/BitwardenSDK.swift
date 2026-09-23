@@ -1904,8 +1904,6 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
      */
     func decrypt(cipher: Cipher) async throws  -> CipherView
     
-    func decryptFido2Credentials(cipherView: CipherView) throws  -> [Fido2CredentialView]
-    
     /**
      * Decrypt cipher list
      */
@@ -2003,16 +2001,6 @@ open func decrypt(cipher: Cipher)async throws  -> CipherView  {
             liftFunc: FfiConverterTypeCipherView_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
-}
-    
-open func decryptFido2Credentials(cipherView: CipherView)throws  -> [Fido2CredentialView]  {
-    return try  FfiConverterSequenceTypeFido2CredentialView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
-        uniffiCallStatus in
-    uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_fido2_credentials(
-            self.uniffiCloneHandle(),
-        FfiConverterTypeCipherView_lower(cipherView),uniffiCallStatus
-    )
-})
 }
     
     /**
@@ -2810,9 +2798,9 @@ public protocol ClientFido2Protocol: AnyObject, Sendable {
     
     func client(userInterface: Fido2UserInterface, credentialStore: Fido2CredentialStore)  -> ClientFido2Client
     
-    func decryptFido2AutofillCredentials(cipherView: CipherView) throws  -> [Fido2CredentialAutofillView]
-    
     func deviceAuthKeyAuthenticator(credentialStore: DeviceAuthKeyStore)  -> ClientDeviceAuthKeyAuthenticator
+    
+    func getFido2AutofillCredentials(cipherView: CipherView) throws  -> [Fido2CredentialAutofillView]
     
 }
 open class ClientFido2: ClientFido2Protocol, @unchecked Sendable {
@@ -2890,22 +2878,22 @@ open func client(userInterface: Fido2UserInterface, credentialStore: Fido2Creden
 })
 }
     
-open func decryptFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fido2CredentialAutofillView]  {
-    return try  FfiConverterSequenceTypeFido2CredentialAutofillView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
-        uniffiCallStatus in
-    uniffi_bitwarden_uniffi_fn_method_clientfido2_decrypt_fido2_autofill_credentials(
-            self.uniffiCloneHandle(),
-        FfiConverterTypeCipherView_lower(cipherView),uniffiCallStatus
-    )
-})
-}
-    
 open func deviceAuthKeyAuthenticator(credentialStore: DeviceAuthKeyStore) -> ClientDeviceAuthKeyAuthenticator  {
     return try!  FfiConverterTypeClientDeviceAuthKeyAuthenticator_lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_clientfido2_device_auth_key_authenticator(
             self.uniffiCloneHandle(),
         FfiConverterTypeDeviceAuthKeyStore_lower(credentialStore),uniffiCallStatus
+    )
+})
+}
+    
+open func getFido2AutofillCredentials(cipherView: CipherView)throws  -> [Fido2CredentialAutofillView]  {
+    return try  FfiConverterSequenceTypeFido2CredentialAutofillView.lift(try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_clientfido2_get_fido2_autofill_credentials(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeCipherView_lower(cipherView),uniffiCallStatus
     )
 })
 }
@@ -11597,7 +11585,7 @@ enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError
     )
     case CredentialsForAutofill(CredentialsForAutofillError
     )
-    case DecryptFido2AutofillCredentials(DecryptFido2AutofillCredentialsError
+    case GetFido2AutofillCredentials(GetFido2AutofillCredentialsError
     )
     case Fido2Client(Fido2ClientError
     )
@@ -11755,8 +11743,8 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 38: return .CredentialsForAutofill(
             try FfiConverterTypeCredentialsForAutofillError.read(from: &buf)
             )
-        case 39: return .DecryptFido2AutofillCredentials(
-            try FfiConverterTypeDecryptFido2AutofillCredentialsError.read(from: &buf)
+        case 39: return .GetFido2AutofillCredentials(
+            try FfiConverterTypeGetFido2AutofillCredentialsError.read(from: &buf)
             )
         case 40: return .Fido2Client(
             try FfiConverterTypeFido2ClientError.read(from: &buf)
@@ -11979,9 +11967,9 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeCredentialsForAutofillError.write(v1, into: &buf)
             
         
-        case let .DecryptFido2AutofillCredentials(v1):
+        case let .GetFido2AutofillCredentials(v1):
             writeInt(&buf, Int32(39))
-            FfiConverterTypeDecryptFido2AutofillCredentialsError.write(v1, into: &buf)
+            FfiConverterTypeGetFido2AutofillCredentialsError.write(v1, into: &buf)
             
         
         case let .Fido2Client(v1):
@@ -13643,31 +13631,6 @@ fileprivate struct FfiConverterSequenceTypeEncryptionContext: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypeFido2CredentialView: FfiConverterRustBuffer {
-    typealias SwiftType = [Fido2CredentialView]
-
-    public static func write(_ value: [Fido2CredentialView], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for item in value {
-            FfiConverterTypeFido2CredentialView.write(item, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Fido2CredentialView] {
-        let len: Int32 = try readInt(&buf)
-        var seq = [Fido2CredentialView]()
-        seq.reserveCapacity(Int(len))
-        for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeFido2CredentialView.read(from: &buf))
-        }
-        return seq
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterSequenceTypeFolder: FfiConverterRustBuffer {
     typealias SwiftType = [Folder]
 
@@ -14459,10 +14422,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_client() != 35328) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_decrypt_fido2_autofill_credentials() != 50189) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_device_auth_key_authenticator() != 36171) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_device_auth_key_authenticator() != 36171) {
+    if (uniffi_bitwarden_uniffi_checksum_method_clientfido2_get_fido2_autofill_credentials() != 41808) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_clientfido2authenticator_credentials_for_autofill() != 32848) {
@@ -14646,9 +14609,6 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt() != 48892) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_fido2_credentials() != 58991) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 44941) {
