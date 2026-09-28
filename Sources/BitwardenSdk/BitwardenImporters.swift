@@ -583,6 +583,97 @@ public func FfiConverterTypeCipherTypeCount_lower(_ value: CipherTypeCount) -> R
 
 
 /**
+ * The credentials for a password + Secret Key login.
+ *
+ * Deliberately not `Debug`: it holds the master password and Secret Key.
+ */
+public struct Credentials: Equatable, Hashable {
+    /**
+     * The account's email address.
+     */
+    public let username: String
+    /**
+     * The account's master password.
+     */
+    public let password: String
+    /**
+     * The account's Secret Key (Account Key), such as `A3-XXXXXX-...`.
+     */
+    public let accountKey: String
+    /**
+     * Where the account signs in, such as `my.1password.com`.
+     */
+    public let signInAddress: SignInAddress
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account's email address.
+         */username: String, 
+        /**
+         * The account's master password.
+         */password: String, 
+        /**
+         * The account's Secret Key (Account Key), such as `A3-XXXXXX-...`.
+         */accountKey: String, 
+        /**
+         * Where the account signs in, such as `my.1password.com`.
+         */signInAddress: SignInAddress) {
+        self.username = username
+        self.password = password
+        self.accountKey = accountKey
+        self.signInAddress = signInAddress
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension Credentials: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCredentials: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Credentials {
+        return
+            try Credentials(
+                username: FfiConverterString.read(from: &buf), 
+                password: FfiConverterString.read(from: &buf), 
+                accountKey: FfiConverterString.read(from: &buf), 
+                signInAddress: FfiConverterTypeSignInAddress.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Credentials, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterString.write(value.password, into: &buf)
+        FfiConverterString.write(value.accountKey, into: &buf)
+        FfiConverterTypeSignInAddress.write(value.signInAddress, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredentials_lift(_ buf: RustBuffer) throws -> Credentials {
+    return try FfiConverterTypeCredentials.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredentials_lower(_ value: Credentials) -> RustBuffer {
+    return FfiConverterTypeCredentials.lower(value)
+}
+
+
+/**
  * Destination options for a vault import.
  *
  * `organization_id` selects the destination: `None` imports into the user's personal vault (groups
@@ -836,6 +927,79 @@ public func FfiConverterTypeImportTargetFolder_lower(_ value: ImportTargetFolder
 }
 
 
+/**
+ * Where an account signs in, such as `my.1password.com`.
+ *
+ * An individual account uses `my`; a team or business account uses its own name. The domain is a
+ * closed set, so only the subdomain needs checking. The access client normalizes and validates the
+ * record before using it because foreign bindings construct records directly.
+ */
+public struct SignInAddress: Equatable, Hashable {
+    /**
+     * The account-specific DNS label, such as `my`.
+     */
+    public let subdomain: String
+    /**
+     * The 1Password domain on which the account is hosted.
+     */
+    public let domain: SignInDomain
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account-specific DNS label, such as `my`.
+         */subdomain: String, 
+        /**
+         * The 1Password domain on which the account is hosted.
+         */domain: SignInDomain) {
+        self.subdomain = subdomain
+        self.domain = domain
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SignInAddress: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignInAddress: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignInAddress {
+        return
+            try SignInAddress(
+                subdomain: FfiConverterString.read(from: &buf), 
+                domain: FfiConverterTypeSignInDomain.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SignInAddress, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.subdomain, into: &buf)
+        FfiConverterTypeSignInDomain.write(value.domain, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInAddress_lift(_ buf: RustBuffer) throws -> SignInAddress {
+    return try FfiConverterTypeSignInAddress.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInAddress_lower(_ value: SignInAddress) -> RustBuffer {
+    return FfiConverterTypeSignInAddress.lower(value)
+}
+
+
 public 
 enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -848,6 +1012,20 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     case KdbxWrongCredentials(message: String)
     
     case KdbxCorruptOrUnsupported(message: String)
+    
+    case OnePasswordInvalidSignInAddress(message: String)
+    
+    case OnePasswordBadCredentials(message: String)
+    
+    case OnePasswordTwoFactorRequired(message: String)
+    
+    case OnePasswordTwoFactorFailed(message: String)
+    
+    case OnePasswordUnsupported(message: String)
+    
+    case OnePasswordNetwork(message: String)
+    
+    case OnePasswordDecryption(message: String)
     
     case NotAuthenticated(message: String)
     
@@ -910,23 +1088,51 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .NotAuthenticated(
+        case 5: return .OnePasswordInvalidSignInAddress(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .Api(
+        case 6: return .OnePasswordBadCredentials(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .BitwardenCrypto(
+        case 7: return .OnePasswordTwoFactorRequired(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .KeeperCrypto(
+        case 8: return .OnePasswordTwoFactorFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .Export(
+        case 9: return .OnePasswordUnsupported(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 10: return .OnePasswordNetwork(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 11: return .OnePasswordDecryption(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 12: return .NotAuthenticated(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 13: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 14: return .BitwardenCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 15: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 16: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -949,16 +1155,30 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
         case .KdbxCorruptOrUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .NotAuthenticated(_ /* message is ignored*/):
+        case .OnePasswordInvalidSignInAddress(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .Api(_ /* message is ignored*/):
+        case .OnePasswordBadCredentials(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .BitwardenCrypto(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorRequired(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
-        case .KeeperCrypto(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
-        case .Export(_ /* message is ignored*/):
+        case .OnePasswordUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
+        case .OnePasswordNetwork(_ /* message is ignored*/):
+            writeInt(&buf, Int32(10))
+        case .OnePasswordDecryption(_ /* message is ignored*/):
+            writeInt(&buf, Int32(11))
+        case .NotAuthenticated(_ /* message is ignored*/):
+            writeInt(&buf, Int32(12))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(13))
+        case .BitwardenCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(14))
+        case .KeeperCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(15))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(16))
 
         
         }
@@ -979,6 +1199,106 @@ public func FfiConverterTypeImportError_lift(_ buf: RustBuffer) throws -> Import
 public func FfiConverterTypeImportError_lower(_ value: ImportError) -> RustBuffer {
     return FfiConverterTypeImportError.lower(value)
 }
+
+
+/**
+ * One of the domains 1Password serves accounts on, as offered in its sign-in form.
+ *
+ * The first three are regions, each storing its accounts in a different jurisdiction; an account
+ * belongs to exactly one of them. Enterprise accounts sit on their own domain instead.
+ *
+ * See <https://support.1password.com/regions/>.
+ */
+
+public enum SignInDomain: Equatable, Hashable {
+    
+    /**
+     * `1password.com`, the default. Data hosted in the United States.
+     */
+    case global
+    /**
+     * `1password.eu`. Data hosted in the European Union.
+     */
+    case europe
+    /**
+     * `1password.ca`. Data hosted in Canada.
+     */
+    case canada
+    /**
+     * `ent.1password.com`, for 1Password Enterprise.
+     */
+    case enterprise
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SignInDomain: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignInDomain: FfiConverterRustBuffer {
+    typealias SwiftType = SignInDomain
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignInDomain {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .global
+        
+        case 2: return .europe
+        
+        case 3: return .canada
+        
+        case 4: return .enterprise
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SignInDomain, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .global:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .europe:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .canada:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .enterprise:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInDomain_lift(_ buf: RustBuffer) throws -> SignInDomain {
+    return try FfiConverterTypeSignInDomain.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInDomain_lower(_ value: SignInDomain) -> RustBuffer {
+    return FfiConverterTypeSignInDomain.lower(value)
+}
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)

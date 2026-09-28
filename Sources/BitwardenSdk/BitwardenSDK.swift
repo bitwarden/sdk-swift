@@ -487,6 +487,22 @@ fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -6624,6 +6640,14 @@ public protocol ImporterClientProtocol: AnyObject, Sendable {
      */
     func importKdbx(file: Data, password: String?, keyFile: Data?, options: ImportOptions) async throws  -> ImportSummary
     
+    /**
+     * Import a 1Password account directly from the 1Password servers.
+     *
+     * Signs in, asks `two_factor` for a code when the account requires one, downloads every vault
+     * the account can open, and submits the result. Each vault becomes a folder.
+     */
+    func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions) async throws  -> ImportSummary
+    
 }
 open class ImporterClient: ImporterClientProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -6687,6 +6711,28 @@ open func importKdbx(file: Data, password: String?, keyFile: Data?, options: Imp
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_importerclient_import_kdbx(
                         self.uniffiCloneHandle(),FfiConverterData.lower(file),FfiConverterOptionString.lower(password),FfiConverterOptionData.lower(keyFile),FfiConverterTypeImportOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeImportSummary_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Import a 1Password account directly from the 1Password servers.
+     *
+     * Signs in, asks `two_factor` for a code when the account requires one, downloads every vault
+     * the account can open, and submits the result. Each vault becomes a folder.
+     */
+open func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions)async throws  -> ImportSummary  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_importerclient_import_onepassword(
+                        self.uniffiCloneHandle(),FfiConverterTypeCredentials_lower(credentials),FfiConverterTypeOnePasswordTwoFactorPrompt_lower(twoFactor),FfiConverterTypeImportOptions_lower(options)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -7970,6 +8016,244 @@ public func FfiConverterTypeManagedSettingsBindingClient_lift(_ handle: UInt64) 
 #endif
 public func FfiConverterTypeManagedSettingsBindingClient_lower(_ value: ManagedSettingsBindingClient) -> UInt64 {
     return FfiConverterTypeManagedSettingsBindingClient.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Asks the user for a 1Password two-factor code.
+ */
+public protocol OnePasswordTwoFactorPrompt: AnyObject, Sendable {
+    
+    /**
+     * Returns the code the user entered, or `None` if they cancelled. Each rejected code restarts
+     * the login, so `attempt` grows as the user retries.
+     */
+    func provideTotp(attempt: UInt32) async throws  -> String?
+    
+}
+/**
+ * Asks the user for a 1Password two-factor code.
+ */
+open class OnePasswordTwoFactorPromptImpl: OnePasswordTwoFactorPrompt, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_onepasswordtwofactorprompt(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_onepasswordtwofactorprompt(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Returns the code the user entered, or `None` if they cancelled. Each rejected code restarts
+     * the login, so `attempt` grows as the user retries.
+     */
+open func provideTotp(attempt: UInt32)async throws  -> String?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_onepasswordtwofactorprompt_provide_totp(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(attempt)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionString.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceOnePasswordTwoFactorPrompt {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceOnePasswordTwoFactorPrompt = UniffiVTableCallbackInterfaceOnePasswordTwoFactorPrompt(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeOnePasswordTwoFactorPrompt.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface OnePasswordTwoFactorPrompt: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeOnePasswordTwoFactorPrompt.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface OnePasswordTwoFactorPrompt: handle missing in uniffiClone")
+            }
+        },
+        provideTotp: { (
+            uniffiHandle: UInt64,
+            attempt: UInt32,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> String? in
+                guard let uniffiObj = try? FfiConverterTypeOnePasswordTwoFactorPrompt.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.provideTotp(
+                     attempt: try FfiConverterUInt32.lift(attempt)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: String?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionString.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeBitwardenError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceOnePasswordTwoFactorPrompt> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceOnePasswordTwoFactorPrompt>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitOnePasswordTwoFactorPrompt() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_onepasswordtwofactorprompt(UniffiCallbackInterfaceOnePasswordTwoFactorPrompt.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeOnePasswordTwoFactorPrompt: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<OnePasswordTwoFactorPrompt>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = OnePasswordTwoFactorPrompt
+
+    public static func lift(_ handle: UInt64) throws -> OnePasswordTwoFactorPrompt {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return OnePasswordTwoFactorPromptImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: OnePasswordTwoFactorPrompt) -> UInt64 {
+         if let rustImpl = value as? OnePasswordTwoFactorPromptImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OnePasswordTwoFactorPrompt {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: OnePasswordTwoFactorPrompt, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOnePasswordTwoFactorPrompt_lift(_ handle: UInt64) throws -> OnePasswordTwoFactorPrompt {
+    return try FfiConverterTypeOnePasswordTwoFactorPrompt.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOnePasswordTwoFactorPrompt_lower(_ value: OnePasswordTwoFactorPrompt) -> UInt64 {
+    return FfiConverterTypeOnePasswordTwoFactorPrompt.lower(value)
 }
 
 
@@ -14548,6 +14832,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_kdbx() != 13340) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_onepassword() != 610) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_onepasswordtwofactorprompt_provide_totp() != 26998) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_sendclient_decrypt() != 15802) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -14694,6 +14984,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitFolderRepository()
     uniffiCallbackInitLocalUserDataKeyStateRepository()
     uniffiCallbackInitLogCallback()
+    uniffiCallbackInitOnePasswordTwoFactorPrompt()
     uniffiCallbackInitOrganizationSharedKeyRepository()
     uniffiCallbackInitSendRepository()
     uniffiCallbackInitServerCommunicationConfigRepository()
