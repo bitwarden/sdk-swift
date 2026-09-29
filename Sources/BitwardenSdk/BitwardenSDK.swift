@@ -6644,9 +6644,10 @@ public protocol ImporterClientProtocol: AnyObject, Sendable {
      * Import a 1Password account directly from the 1Password servers.
      *
      * Signs in, asks `two_factor` for a code when the account requires one, downloads every vault
-     * the account can open, and submits the result. Each vault becomes a folder.
+     * the account can open, and submits the result. Each vault becomes a folder; the result also
+     * reports vaults and items that could not be imported.
      */
-    func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions) async throws  -> ImportSummary
+    func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions) async throws  -> OnePasswordImportSummary
     
 }
 open class ImporterClient: ImporterClientProtocol, @unchecked Sendable {
@@ -6725,9 +6726,10 @@ open func importKdbx(file: Data, password: String?, keyFile: Data?, options: Imp
      * Import a 1Password account directly from the 1Password servers.
      *
      * Signs in, asks `two_factor` for a code when the account requires one, downloads every vault
-     * the account can open, and submits the result. Each vault becomes a folder.
+     * the account can open, and submits the result. Each vault becomes a folder; the result also
+     * reports vaults and items that could not be imported.
      */
-open func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions)async throws  -> ImportSummary  {
+open func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoFactorPrompt, options: ImportOptions)async throws  -> OnePasswordImportSummary  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -6738,7 +6740,7 @@ open func importOnepassword(credentials: Credentials, twoFactor: OnePasswordTwoF
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterTypeImportSummary_lift,
+            liftFunc: FfiConverterTypeOnePasswordImportSummary_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -14832,7 +14834,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_kdbx() != 13340) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_onepassword() != 610) {
+    if (uniffi_bitwarden_uniffi_checksum_method_importerclient_import_onepassword() != 371) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_onepasswordtwofactorprompt_provide_totp() != 26998) {

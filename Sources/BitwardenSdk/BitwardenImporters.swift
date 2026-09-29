@@ -585,7 +585,7 @@ public func FfiConverterTypeCipherTypeCount_lower(_ value: CipherTypeCount) -> R
 /**
  * The credentials for a password + Secret Key login.
  *
- * Deliberately not `Debug`: it holds the master password and Secret Key.
+ * Deliberately neither `Debug` nor `Serialize`: it holds the master password and Secret Key.
  */
 public struct Credentials: Equatable, Hashable {
     /**
@@ -928,6 +928,67 @@ public func FfiConverterTypeImportTargetFolder_lower(_ value: ImportTargetFolder
 
 
 /**
+ * Result of a direct 1Password import, including source data that could not be imported.
+ */
+public struct OnePasswordImportSummary: Equatable, Hashable {
+    public let imported: ImportSummary
+    public let skippedVaults: [SkippedVault]
+    public let skippedItems: [SkippedItem]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(imported: ImportSummary, skippedVaults: [SkippedVault], skippedItems: [SkippedItem]) {
+        self.imported = imported
+        self.skippedVaults = skippedVaults
+        self.skippedItems = skippedItems
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension OnePasswordImportSummary: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeOnePasswordImportSummary: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OnePasswordImportSummary {
+        return
+            try OnePasswordImportSummary(
+                imported: FfiConverterTypeImportSummary.read(from: &buf), 
+                skippedVaults: FfiConverterSequenceTypeSkippedVault.read(from: &buf), 
+                skippedItems: FfiConverterSequenceTypeSkippedItem.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: OnePasswordImportSummary, into buf: inout [UInt8]) {
+        FfiConverterTypeImportSummary.write(value.imported, into: &buf)
+        FfiConverterSequenceTypeSkippedVault.write(value.skippedVaults, into: &buf)
+        FfiConverterSequenceTypeSkippedItem.write(value.skippedItems, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOnePasswordImportSummary_lift(_ buf: RustBuffer) throws -> OnePasswordImportSummary {
+    return try FfiConverterTypeOnePasswordImportSummary.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeOnePasswordImportSummary_lower(_ value: OnePasswordImportSummary) -> RustBuffer {
+    return FfiConverterTypeOnePasswordImportSummary.lower(value)
+}
+
+
+/**
  * Where an account signs in, such as `my.1password.com`.
  *
  * An individual account uses `my`; a team or business account uses its own name. The domain is a
@@ -1000,6 +1061,174 @@ public func FfiConverterTypeSignInAddress_lower(_ value: SignInAddress) -> RustB
 }
 
 
+/**
+ * An item that could not be read from an otherwise accessible vault.
+ */
+public struct SkippedItem: Equatable, Hashable {
+    /**
+     * The item's 1Password uuid.
+     */
+    public let id: String
+    /**
+     * The title, when the overview decrypted before another payload failed.
+     */
+    public let name: String?
+    /**
+     * The item's category, available without decrypting its payloads.
+     */
+    public let category: ItemCategory
+    /**
+     * Why the item could not be read.
+     */
+    public let reason: SkippedReason
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The item's 1Password uuid.
+         */id: String, 
+        /**
+         * The title, when the overview decrypted before another payload failed.
+         */name: String?, 
+        /**
+         * The item's category, available without decrypting its payloads.
+         */category: ItemCategory, 
+        /**
+         * Why the item could not be read.
+         */reason: SkippedReason) {
+        self.id = id
+        self.name = name
+        self.category = category
+        self.reason = reason
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SkippedItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSkippedItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SkippedItem {
+        return
+            try SkippedItem(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                category: FfiConverterTypeItemCategory.read(from: &buf), 
+                reason: FfiConverterTypeSkippedReason.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SkippedItem, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterTypeItemCategory.write(value.category, into: &buf)
+        FfiConverterTypeSkippedReason.write(value.reason, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedItem_lift(_ buf: RustBuffer) throws -> SkippedItem {
+    return try FfiConverterTypeSkippedItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedItem_lower(_ value: SkippedItem) -> RustBuffer {
+    return FfiConverterTypeSkippedItem.lower(value)
+}
+
+
+/**
+ * A vault that could not be opened.
+ */
+public struct SkippedVault: Equatable, Hashable {
+    /**
+     * The vault's 1Password uuid.
+     */
+    public let id: String
+    /**
+     * The active item count advertised by 1Password, when present.
+     */
+    public let itemCount: UInt32?
+    /**
+     * Why the vault could not be opened.
+     */
+    public let reason: SkippedReason
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The vault's 1Password uuid.
+         */id: String, 
+        /**
+         * The active item count advertised by 1Password, when present.
+         */itemCount: UInt32?, 
+        /**
+         * Why the vault could not be opened.
+         */reason: SkippedReason) {
+        self.id = id
+        self.itemCount = itemCount
+        self.reason = reason
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SkippedVault: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSkippedVault: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SkippedVault {
+        return
+            try SkippedVault(
+                id: FfiConverterString.read(from: &buf), 
+                itemCount: FfiConverterOptionUInt32.read(from: &buf), 
+                reason: FfiConverterTypeSkippedReason.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SkippedVault, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterOptionUInt32.write(value.itemCount, into: &buf)
+        FfiConverterTypeSkippedReason.write(value.reason, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedVault_lift(_ buf: RustBuffer) throws -> SkippedVault {
+    return try FfiConverterTypeSkippedVault.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedVault_lower(_ value: SkippedVault) -> RustBuffer {
+    return FfiConverterTypeSkippedVault.lower(value)
+}
+
+
 public 
 enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -1014,6 +1243,8 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     case KdbxCorruptOrUnsupported(message: String)
     
     case OnePasswordInvalidSignInAddress(message: String)
+    
+    case OnePasswordInvalidSecretKey(message: String)
     
     case OnePasswordBadCredentials(message: String)
     
@@ -1092,47 +1323,51 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .OnePasswordBadCredentials(
+        case 6: return .OnePasswordInvalidSecretKey(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .OnePasswordTwoFactorRequired(
+        case 7: return .OnePasswordBadCredentials(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .OnePasswordTwoFactorFailed(
+        case 8: return .OnePasswordTwoFactorRequired(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .OnePasswordUnsupported(
+        case 9: return .OnePasswordTwoFactorFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .OnePasswordNetwork(
+        case 10: return .OnePasswordUnsupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .OnePasswordDecryption(
+        case 11: return .OnePasswordNetwork(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .NotAuthenticated(
+        case 12: return .OnePasswordDecryption(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .Api(
+        case 13: return .NotAuthenticated(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .BitwardenCrypto(
+        case 14: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .KeeperCrypto(
+        case 15: return .BitwardenCrypto(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .Export(
+        case 16: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 17: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1157,28 +1392,30 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .OnePasswordInvalidSignInAddress(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .OnePasswordBadCredentials(_ /* message is ignored*/):
+        case .OnePasswordInvalidSecretKey(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .OnePasswordTwoFactorRequired(_ /* message is ignored*/):
+        case .OnePasswordBadCredentials(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
-        case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorRequired(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
-        case .OnePasswordUnsupported(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
-        case .OnePasswordNetwork(_ /* message is ignored*/):
+        case .OnePasswordUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
-        case .OnePasswordDecryption(_ /* message is ignored*/):
+        case .OnePasswordNetwork(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .NotAuthenticated(_ /* message is ignored*/):
+        case .OnePasswordDecryption(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .Api(_ /* message is ignored*/):
+        case .NotAuthenticated(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .BitwardenCrypto(_ /* message is ignored*/):
+        case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .KeeperCrypto(_ /* message is ignored*/):
+        case .BitwardenCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .Export(_ /* message is ignored*/):
+        case .KeeperCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(17))
 
         
         }
@@ -1199,6 +1436,286 @@ public func FfiConverterTypeImportError_lift(_ buf: RustBuffer) throws -> Import
 public func FfiConverterTypeImportError_lower(_ value: ImportError) -> RustBuffer {
     return FfiConverterTypeImportError.lower(value)
 }
+
+
+/**
+ * The kind of a vault item, mapped from its template id. The ids are 1Password's standard
+ * category template UUIDs; an unrecognized id is preserved as [`ItemCategory::Unknown`] so nothing
+ * is lost.
+ */
+
+public enum ItemCategory: Equatable, Hashable {
+    
+    /**
+     * Template `001`.
+     */
+    case login
+    /**
+     * Template `002`.
+     */
+    case creditCard
+    /**
+     * Template `003`.
+     */
+    case secureNote
+    /**
+     * Template `004`.
+     */
+    case identity
+    /**
+     * Template `005`.
+     */
+    case password
+    /**
+     * Template `006`.
+     */
+    case document
+    /**
+     * Template `100`.
+     */
+    case softwareLicense
+    /**
+     * Template `101`.
+     */
+    case bankAccount
+    /**
+     * Template `102`.
+     */
+    case database
+    /**
+     * Template `103`.
+     */
+    case driverLicense
+    /**
+     * Template `104`.
+     */
+    case outdoorLicense
+    /**
+     * Template `105`.
+     */
+    case membership
+    /**
+     * Template `106`.
+     */
+    case passport
+    /**
+     * Template `107`.
+     */
+    case rewardProgram
+    /**
+     * Template `108`.
+     */
+    case socialSecurityNumber
+    /**
+     * Template `109`.
+     */
+    case wirelessRouter
+    /**
+     * Template `110`.
+     */
+    case server
+    /**
+     * Template `111`.
+     */
+    case emailAccount
+    /**
+     * Template `112`.
+     */
+    case apiCredential
+    /**
+     * Template `113`.
+     */
+    case medicalRecord
+    /**
+     * Template `114`.
+     */
+    case sshKey
+    /**
+     * A template id this crate does not know, kept verbatim.
+     */
+    case unknown(String
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ItemCategory: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeItemCategory: FfiConverterRustBuffer {
+    typealias SwiftType = ItemCategory
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ItemCategory {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .login
+        
+        case 2: return .creditCard
+        
+        case 3: return .secureNote
+        
+        case 4: return .identity
+        
+        case 5: return .password
+        
+        case 6: return .document
+        
+        case 7: return .softwareLicense
+        
+        case 8: return .bankAccount
+        
+        case 9: return .database
+        
+        case 10: return .driverLicense
+        
+        case 11: return .outdoorLicense
+        
+        case 12: return .membership
+        
+        case 13: return .passport
+        
+        case 14: return .rewardProgram
+        
+        case 15: return .socialSecurityNumber
+        
+        case 16: return .wirelessRouter
+        
+        case 17: return .server
+        
+        case 18: return .emailAccount
+        
+        case 19: return .apiCredential
+        
+        case 20: return .medicalRecord
+        
+        case 21: return .sshKey
+        
+        case 22: return .unknown(try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ItemCategory, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .login:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .creditCard:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .secureNote:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .identity:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .password:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .document:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .softwareLicense:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .bankAccount:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .database:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .driverLicense:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .outdoorLicense:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .membership:
+            writeInt(&buf, Int32(12))
+        
+        
+        case .passport:
+            writeInt(&buf, Int32(13))
+        
+        
+        case .rewardProgram:
+            writeInt(&buf, Int32(14))
+        
+        
+        case .socialSecurityNumber:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .wirelessRouter:
+            writeInt(&buf, Int32(16))
+        
+        
+        case .server:
+            writeInt(&buf, Int32(17))
+        
+        
+        case .emailAccount:
+            writeInt(&buf, Int32(18))
+        
+        
+        case .apiCredential:
+            writeInt(&buf, Int32(19))
+        
+        
+        case .medicalRecord:
+            writeInt(&buf, Int32(20))
+        
+        
+        case .sshKey:
+            writeInt(&buf, Int32(21))
+        
+        
+        case let .unknown(v1):
+            writeInt(&buf, Int32(22))
+            FfiConverterString.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemCategory_lift(_ buf: RustBuffer) throws -> ItemCategory {
+    return try FfiConverterTypeItemCategory.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemCategory_lower(_ value: ItemCategory) -> RustBuffer {
+    return FfiConverterTypeItemCategory.lower(value)
+}
+
 
 
 /**
@@ -1300,6 +1817,129 @@ public func FfiConverterTypeSignInDomain_lower(_ value: SignInDomain) -> RustBuf
 }
 
 
+
+/**
+ * A safe, structured reason for leaving source data unimported.
+ */
+
+public enum SkippedReason: Equatable, Hashable {
+    
+    /**
+     * The account does not have the key or permission required to read the data.
+     */
+    case noAccess
+    /**
+     * The source data is encrypted with a scheme the importer does not support.
+     */
+    case unsupported
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SkippedReason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSkippedReason: FfiConverterRustBuffer {
+    typealias SwiftType = SkippedReason
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SkippedReason {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .noAccess
+        
+        case 2: return .unsupported
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SkippedReason, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .noAccess:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .unsupported:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedReason_lift(_ buf: RustBuffer) throws -> SkippedReason {
+    return try FfiConverterTypeSkippedReason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSkippedReason_lower(_ value: SkippedReason) -> RustBuffer {
+    return FfiConverterTypeSkippedReason.lower(value)
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = UInt32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
+    typealias SwiftType = String?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1392,6 +2032,56 @@ fileprivate struct FfiConverterSequenceTypeCipherTypeCount: FfiConverterRustBuff
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCipherTypeCount.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSkippedItem: FfiConverterRustBuffer {
+    typealias SwiftType = [SkippedItem]
+
+    public static func write(_ value: [SkippedItem], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSkippedItem.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SkippedItem] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SkippedItem]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSkippedItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSkippedVault: FfiConverterRustBuffer {
+    typealias SwiftType = [SkippedVault]
+
+    public static func write(_ value: [SkippedVault], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSkippedVault.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SkippedVault] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SkippedVault]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSkippedVault.read(from: &buf))
         }
         return seq
     }
