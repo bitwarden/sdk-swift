@@ -1266,6 +1266,20 @@ public func FfiConverterTypeCardView_lower(_ value: CardView) -> RustBuffer {
 }
 
 
+/**
+ * Encrypted cipher, as stored and synced.
+ *
+ * # Encryption-format internal fields
+ *
+ * Only metadata fields (ids, `key`, `type`, flags, permissions, dates, `attachments`,
+ * `local_data`) are stable to read. Fields marked "encryption-format internal" depend on the
+ * encryption format and must not be read or filtered on by clients:
+ * - Legacy field-level format: each field is individually encrypted.
+ * - Blob format: these fields are `None`; all sensitive data is sealed in `data`.
+ *
+ * Decrypt to [`CipherView`] or [`CipherListView`] to inspect item contents (e.g. whether a
+ * login has a TOTP or passkey).
+ */
 public struct Cipher: Equatable, Hashable {
     public let id: CipherId?
     public let organizationId: OrganizationId?
@@ -1279,17 +1293,45 @@ public struct Cipher: Equatable, Hashable {
     /**
      * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
      * the sealed `data` blob; required on the legacy field-level format.
+     * Encryption-format internal, not public API. See [`Cipher`].
      */
     public let name: EncString?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let notes: EncString?
     public let type: CipherType
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let login: Login?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let identity: Identity?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let card: Card?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let secureNote: SecureNote?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let sshKey: SshKey?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let bankAccount: BankAccount?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let driversLicense: DriversLicense?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let passport: Passport?
     public let favorite: Bool
     public let reprompt: CipherRepromptType
@@ -1299,12 +1341,22 @@ public struct Cipher: Equatable, Hashable {
     public let viewPassword: Bool
     public let localData: LocalData?
     public let attachments: [Attachment]?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let fields: [Field]?
+    /**
+     * Encryption-format internal, not public API. See [`Cipher`].
+     */
     public let passwordHistory: [PasswordHistory]?
     public let creationDate: DateTime
     public let deletedDate: DateTime?
     public let revisionDate: DateTime
     public let archivedDate: DateTime?
+    /**
+     * Sealed blob holding all sensitive data in the blob format; `None` on the legacy format.
+     * Opaque, not public API. See [`Cipher`].
+     */
     public let data: String?
     /**
      * Raw JSON envelope for a server-restricted (PAM-gated) cipher: only contains a sub-set of
@@ -1324,7 +1376,45 @@ public struct Cipher: Equatable, Hashable {
         /**
          * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
          * the sealed `data` blob; required on the legacy field-level format.
-         */name: EncString?, notes: EncString?, type: CipherType, login: Login?, identity: Identity?, card: Card?, secureNote: SecureNote?, sshKey: SshKey?, bankAccount: BankAccount?, driversLicense: DriversLicense?, passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, fields: [Field]?, passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, data: String?, 
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */name: EncString?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */notes: EncString?, type: CipherType, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */login: Login?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */identity: Identity?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */card: Card?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */secureNote: SecureNote?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */sshKey: SshKey?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */bankAccount: BankAccount?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */driversLicense: DriversLicense?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */passport: Passport?, favorite: Bool, reprompt: CipherRepromptType, organizationUseTotp: Bool, edit: Bool, permissions: CipherPermissions?, viewPassword: Bool, localData: LocalData?, attachments: [Attachment]?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */fields: [Field]?, 
+        /**
+         * Encryption-format internal, not public API. See [`Cipher`].
+         */passwordHistory: [PasswordHistory]?, creationDate: DateTime, deletedDate: DateTime?, revisionDate: DateTime, archivedDate: DateTime?, 
+        /**
+         * Sealed blob holding all sensitive data in the blob format; `None` on the legacy format.
+         * Opaque, not public API. See [`Cipher`].
+         */data: String?, 
         /**
          * Raw JSON envelope for a server-restricted (PAM-gated) cipher: only contains a sub-set of
          * non sensitive fields, all other fields are withheld by the server. Its presence marks the
