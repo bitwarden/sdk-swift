@@ -7658,9 +7658,7 @@ public enum WrappedAccountCryptographicState: Equatable, Hashable, Codable {
          */privateKey: EncString, 
         /**
          * The user's public-key for the private key, signed by the user's signing key.
-         * Note: This is optional for backwards compatibility. After a few releases, this will be
-         * made non-optional once all clients store the response on sync.
-         */signedPublicKey: SignedPublicKey?, 
+         */signedPublicKey: SignedPublicKey, 
         /**
          * The user's signing key, wrapped by the user key.
          */signingKey: EncString, 
@@ -7692,7 +7690,7 @@ public struct FfiConverterTypeWrappedAccountCryptographicState: FfiConverterRust
         case 1: return .v1(privateKey: try FfiConverterTypeEncString.read(from: &buf)
         )
         
-        case 2: return .v2(privateKey: try FfiConverterTypeEncString.read(from: &buf), signedPublicKey: try FfiConverterOptionTypeSignedPublicKey.read(from: &buf), signingKey: try FfiConverterTypeEncString.read(from: &buf), securityState: try FfiConverterTypeSignedSecurityState.read(from: &buf)
+        case 2: return .v2(privateKey: try FfiConverterTypeEncString.read(from: &buf), signedPublicKey: try FfiConverterTypeSignedPublicKey.read(from: &buf), signingKey: try FfiConverterTypeEncString.read(from: &buf), securityState: try FfiConverterTypeSignedSecurityState.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -7711,7 +7709,7 @@ public struct FfiConverterTypeWrappedAccountCryptographicState: FfiConverterRust
         case let .v2(privateKey,signedPublicKey,signingKey,securityState):
             writeInt(&buf, Int32(2))
             FfiConverterTypeEncString.write(privateKey, into: &buf)
-            FfiConverterOptionTypeSignedPublicKey.write(signedPublicKey, into: &buf)
+            FfiConverterTypeSignedPublicKey.write(signedPublicKey, into: &buf)
             FfiConverterTypeEncString.write(signingKey, into: &buf)
             FfiConverterTypeSignedSecurityState.write(securityState, into: &buf)
             
@@ -8042,30 +8040,6 @@ fileprivate struct FfiConverterOptionTypePasswordProtectedKeyEnvelope: FfiConver
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypePasswordProtectedKeyEnvelope.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterOptionTypeSignedPublicKey: FfiConverterRustBuffer {
-    typealias SwiftType = SignedPublicKey?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeSignedPublicKey.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeSignedPublicKey.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
