@@ -7444,7 +7444,7 @@ public protocol LogCallback: AnyObject, Sendable {
      * Called when SDK emits a log entry
      *
      * # Parameters
-     * - level: Log level ("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+     * - level: Log level
      * - target: Module that emitted log (e.g., "bitwarden_core::auth")
      * - message: The log message text
      *
@@ -7452,7 +7452,7 @@ public protocol LogCallback: AnyObject, Sendable {
      * Result<(), BitwardenError> - mobile implementations should catch exceptions
      * and return errors rather than panicking
      */
-    func onLog(level: String, target: String, message: String) throws 
+    func onLog(level: LogLevel, target: String, message: String) throws 
     
 }
 /**
@@ -7516,7 +7516,7 @@ open class LogCallbackImpl: LogCallback, @unchecked Sendable {
      * Called when SDK emits a log entry
      *
      * # Parameters
-     * - level: Log level ("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+     * - level: Log level
      * - target: Module that emitted log (e.g., "bitwarden_core::auth")
      * - message: The log message text
      *
@@ -7524,11 +7524,11 @@ open class LogCallbackImpl: LogCallback, @unchecked Sendable {
      * Result<(), BitwardenError> - mobile implementations should catch exceptions
      * and return errors rather than panicking
      */
-open func onLog(level: String, target: String, message: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
+open func onLog(level: LogLevel, target: String, message: String)throws   {try rustCallWithError(FfiConverterTypeBitwardenError_lift) {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_logcallback_on_log(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(level),
+        FfiConverterTypeLogLevel_lower(level),
         FfiConverterString.lower(target),
         FfiConverterString.lower(message),uniffiCallStatus
     )
@@ -7577,7 +7577,7 @@ fileprivate struct UniffiCallbackInterfaceLogCallback {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return try uniffiObj.onLog(
-                     level: try FfiConverterString.lift(level),
+                     level: try FfiConverterTypeLogLevel_lift(level),
                      target: try FfiConverterString.lift(target),
                      message: try FfiConverterString.lift(message)
                 )
@@ -12651,23 +12651,23 @@ public func FfiConverterTypeFido2CallbackError_lower(_ value: Fido2CallbackError
 public enum LogLevel: Equatable, Hashable {
     
     /**
-     * Most verbose: all trace, debug, info, warn, and error messages
+     * Very detailed diagnostic information
      */
     case trace
     /**
-     * Verbose: debug, info, warn, and error messages
+     * Diagnostic information for debugging
      */
     case debug
     /**
-     * Default: info, warn, and error messages
+     * Informational message
      */
     case info
     /**
-     * Only warn and error messages
+     * Potential problem that doesn't prevent the operation from completing
      */
     case warn
     /**
-     * Only error messages
+     * Failure of an operation
      */
     case error
 
@@ -14342,8 +14342,12 @@ public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
  * # Parameters
  * - `callback`: Optional callback to receive SDK log events. Pass `None` to use only platform
  * loggers (oslog on iOS, logcat on Android).
- * - `level`: Optional log level. Defaults to `Info` if not specified. Can be overridden by
- * `RUST_LOG` environment variable at runtime or compile time.
+ * - `level`: Optional minimum log level; events below it are dropped. Defaults to `Info` if not
+ * specified. Can be overridden by the `RUST_LOG` environment variable at runtime or compile
+ * time.
+ * - `platform_logger`: Whether the SDK writes log events to the platform logger (oslog on iOS,
+ * logcat on Android, stdout elsewhere). Defaults to `true`. Disable it when `callback` already
+ * forwards events there, otherwise every event is logged twice.
  *
  * # Example
  * ```kotlin
@@ -14355,13 +14359,13 @@ public func uniffiForeignFutureHandleCountBitwardenUniffi() -> Int {
  * # Notes
  * - This function can only be called once - subsequent calls are ignored
  * - If not called explicitly, logging is auto-initialized when first client is created
- * - Platform loggers (oslog/logcat) are always enabled regardless of callback
  */
-public func initLogger(callback: LogCallback?, level: LogLevel?)  {try! rustCall() {
+public func initLogger(callback: LogCallback?, level: LogLevel?, platformLogger: Bool = true)  {try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_func_init_logger(
         FfiConverterOptionTypeLogCallback.lower(callback),
-        FfiConverterOptionTypeLogLevel.lower(level),uniffiCallStatus
+        FfiConverterOptionTypeLogLevel.lower(level),
+        FfiConverterBool.lower(platformLogger),uniffiCallStatus
     )
 }
 }
@@ -14381,7 +14385,7 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 19046) {
+    if (uniffi_bitwarden_uniffi_checksum_func_init_logger() != 23594) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_client_auth() != 59537) {
@@ -14549,7 +14553,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_cryptoclient_reinit_user_crypto() != 42065) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 16572) {
+    if (uniffi_bitwarden_uniffi_checksum_method_logcallback_on_log() != 61483) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_managedsettingsbindingclient_get() != 9861) {
