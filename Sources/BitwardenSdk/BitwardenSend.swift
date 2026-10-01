@@ -1047,13 +1047,21 @@ public func FfiConverterTypeSendFileView_lower(_ value: SendFileView) -> RustBuf
  */
 public struct SendItem: Equatable, Hashable {
     public let encryptionVersion: SendEncryptionType
-    public let data: Cipher
+    /**
+     * Opaque sealed cipher blob, see [`CipherView::seal_blob_for_item_sends`].
+     */
+    public let data: String
+    public let metadata: SendItemMetadata
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(encryptionVersion: SendEncryptionType, data: Cipher) {
+    public init(encryptionVersion: SendEncryptionType, 
+        /**
+         * Opaque sealed cipher blob, see [`CipherView::seal_blob_for_item_sends`].
+         */data: String, metadata: SendItemMetadata) {
         self.encryptionVersion = encryptionVersion
         self.data = data
+        self.metadata = metadata
     }
 
     
@@ -1073,13 +1081,15 @@ public struct FfiConverterTypeSendItem: FfiConverterRustBuffer {
         return
             try SendItem(
                 encryptionVersion: FfiConverterTypeSendEncryptionType.read(from: &buf), 
-                data: FfiConverterTypeCipher.read(from: &buf)
+                data: FfiConverterString.read(from: &buf), 
+                metadata: FfiConverterTypeSendItemMetadata.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendItem, into buf: inout [UInt8]) {
         FfiConverterTypeSendEncryptionType.write(value.encryptionVersion, into: &buf)
-        FfiConverterTypeCipher.write(value.data, into: &buf)
+        FfiConverterString.write(value.data, into: &buf)
+        FfiConverterTypeSendItemMetadata.write(value.metadata, into: &buf)
     }
 }
 
@@ -1096,6 +1106,65 @@ public func FfiConverterTypeSendItem_lift(_ buf: RustBuffer) throws -> SendItem 
 #endif
 public func FfiConverterTypeSendItem_lower(_ value: SendItem) -> RustBuffer {
     return FfiConverterTypeSendItem.lower(value)
+}
+
+
+/**
+ * Unencrypted metadata of an Item Send
+ */
+public struct SendItemMetadata: Equatable, Hashable {
+    /**
+     * Id of the vault item being sent
+     */
+    public let itemId: CipherId
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Id of the vault item being sent
+         */itemId: CipherId) {
+        self.itemId = itemId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SendItemMetadata: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendItemMetadata: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendItemMetadata {
+        return
+            try SendItemMetadata(
+                itemId: FfiConverterTypeCipherId.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendItemMetadata, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.itemId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendItemMetadata_lift(_ buf: RustBuffer) throws -> SendItemMetadata {
+    return try FfiConverterTypeSendItemMetadata.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendItemMetadata_lower(_ value: SendItemMetadata) -> RustBuffer {
+    return FfiConverterTypeSendItemMetadata.lower(value)
 }
 
 
