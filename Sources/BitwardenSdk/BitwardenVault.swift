@@ -1286,8 +1286,9 @@ public struct Cipher: Equatable, Hashable {
     public let folderId: FolderId?
     public let collectionIds: [CollectionId]
     /**
-     * More recent ciphers uses individual encryption keys to encrypt the other fields of the
-     * Cipher.
+     * Per-cipher key, wrapped under the owning user or organization key, that protects the
+     * cipher's fields. Always set on ciphers the SDK encrypts; `None` only on legacy
+     * ciphers that predates per-cipher keys.
      */
     public let key: EncString?
     /**
@@ -1370,8 +1371,9 @@ public struct Cipher: Equatable, Hashable {
     // declare one manually.
     public init(id: CipherId?, organizationId: OrganizationId?, folderId: FolderId?, collectionIds: [CollectionId], 
         /**
-         * More recent ciphers uses individual encryption keys to encrypt the other fields of the
-         * Cipher.
+         * Per-cipher key, wrapped under the owning user or organization key, that protects the
+         * cipher's fields. Always set on ciphers the SDK encrypts; `None` only on legacy
+         * ciphers that predates per-cipher keys.
          */key: EncString?, 
         /**
          * Encrypted item name. `None` for blob-encrypted ciphers, where the name lives inside
