@@ -6032,6 +6032,11 @@ enum EncryptionSettingsError: Swift.Error, Equatable, Hashable, Codable, Foundat
     case WrongPin(message: String)
     
     /**
+     * No PIN envelope is available, e.g. an AfterFirstUnlock PIN after an app restart
+     */
+    case PinUnlockNotAvailable(message: String)
+    
+    /**
      * The user-key could not be set to the state, and the sdk will remain locked
      */
     case UserKeyStateUpdateFailed(message: String)
@@ -6109,31 +6114,35 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .UserKeyStateUpdateFailed(
+        case 6: return .PinUnlockNotAvailable(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .UserKeyStateRetrievalFailed(
+        case 7: return .UserKeyStateUpdateFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .InvalidUpgradeToken(
+        case 8: return .UserKeyStateRetrievalFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .KeyConnectorRetrievalFailed(
+        case 9: return .InvalidUpgradeToken(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .LocalUserDataKeyInitFailed(
+        case 10: return .KeyConnectorRetrievalFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .LocalUserDataKeyLoadFailed(
+        case 11: return .LocalUserDataKeyInitFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .LocalUserDataMigrationFailed(
+        case 12: return .LocalUserDataKeyLoadFailed(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 13: return .LocalUserDataMigrationFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -6158,20 +6167,22 @@ public struct FfiConverterTypeEncryptionSettingsError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(4))
         case .WrongPin(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .UserKeyStateUpdateFailed(_ /* message is ignored*/):
+        case .PinUnlockNotAvailable(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .UserKeyStateRetrievalFailed(_ /* message is ignored*/):
+        case .UserKeyStateUpdateFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
-        case .InvalidUpgradeToken(_ /* message is ignored*/):
+        case .UserKeyStateRetrievalFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
-        case .KeyConnectorRetrievalFailed(_ /* message is ignored*/):
+        case .InvalidUpgradeToken(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
-        case .LocalUserDataKeyInitFailed(_ /* message is ignored*/):
+        case .KeyConnectorRetrievalFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
-        case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
+        case .LocalUserDataKeyInitFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .LocalUserDataMigrationFailed(_ /* message is ignored*/):
+        case .LocalUserDataKeyLoadFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
+        case .LocalUserDataMigrationFailed(_ /* message is ignored*/):
+            writeInt(&buf, Int32(13))
 
         
         }
