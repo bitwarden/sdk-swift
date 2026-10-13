@@ -481,6 +481,30 @@ fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
+
+    public static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
+    }
+
+    public static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Bool, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -1058,6 +1082,75 @@ public func FfiConverterTypeSignInAddress_lift(_ buf: RustBuffer) throws -> Sign
 #endif
 public func FfiConverterTypeSignInAddress_lower(_ value: SignInAddress) -> RustBuffer {
     return FfiConverterTypeSignInAddress.lower(value)
+}
+
+
+/**
+ * How an account can sign in. An account may offer both.
+ */
+public struct SignInMethods: Equatable, Hashable {
+    /**
+     * With the master password and Secret Key.
+     */
+    public let password: Bool
+    /**
+     * With single sign-on through the account's identity provider.
+     */
+    public let sso: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * With the master password and Secret Key.
+         */password: Bool, 
+        /**
+         * With single sign-on through the account's identity provider.
+         */sso: Bool) {
+        self.password = password
+        self.sso = sso
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SignInMethods: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignInMethods: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignInMethods {
+        return
+            try SignInMethods(
+                password: FfiConverterBool.read(from: &buf), 
+                sso: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SignInMethods, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.password, into: &buf)
+        FfiConverterBool.write(value.sso, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInMethods_lift(_ buf: RustBuffer) throws -> SignInMethods {
+    return try FfiConverterTypeSignInMethods.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignInMethods_lower(_ value: SignInMethods) -> RustBuffer {
+    return FfiConverterTypeSignInMethods.lower(value)
 }
 
 
