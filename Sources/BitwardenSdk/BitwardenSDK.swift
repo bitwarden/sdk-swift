@@ -10034,6 +10034,645 @@ public func FfiConverterTypePolicyRepository_lower(_ value: PolicyRepository) ->
 
 
 
+public protocol ProfileOrganizationRepository: AnyObject, Sendable {
+    
+    func get(id: String) async throws  -> ProfileOrganization?
+    
+    func list() async throws  -> [ProfileOrganization]
+    
+    func set(id: String, value: ProfileOrganization) async throws 
+    
+    func setBulk(values: [String: ProfileOrganization]) async throws 
+    
+    func remove(id: String) async throws 
+    
+    func removeBulk(keys: [String]) async throws 
+    
+    func removeAll() async throws 
+    
+    func has(id: String) async throws  -> Bool
+    
+}
+open class ProfileOrganizationRepositoryImpl: ProfileOrganizationRepository, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_uniffi_fn_clone_profileorganizationrepository(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_uniffi_fn_free_profileorganizationrepository(handle, $0) }
+    }
+
+    
+
+    
+open func get(id: String)async throws  -> ProfileOrganization?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_get(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeProfileOrganization.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func list()async throws  -> [ProfileOrganization]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_list(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeProfileOrganization.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func set(id: String, value: ProfileOrganization)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_set(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(id),FfiConverterTypeProfileOrganization_lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func setBulk(values: [String: ProfileOrganization])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_set_bulk(
+                        self.uniffiCloneHandle(),FfiConverterDictionaryStringTypeProfileOrganization.lower(values)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func remove(id: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_remove(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeBulk(keys: [String])async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_remove_bulk(
+                        self.uniffiCloneHandle(),FfiConverterSequenceString.lower(keys)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func removeAll()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_remove_all(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+open func has(id: String)async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_profileorganizationrepository_has(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(id)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_i8,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_i8,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeRepositoryError_lift
+        )
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceProfileOrganizationRepository {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceProfileOrganizationRepository = UniffiVTableCallbackInterfaceProfileOrganizationRepository(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeProfileOrganizationRepository.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface ProfileOrganizationRepository: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeProfileOrganizationRepository.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface ProfileOrganizationRepository: handle missing in uniffiClone")
+            }
+        },
+        get: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> ProfileOrganization? in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.get(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ProfileOrganization?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionTypeProfileOrganization.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        list: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> [ProfileOrganization] in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.list(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: [ProfileOrganization]) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterSequenceTypeProfileOrganization.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        set: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            value: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.set(
+                     id: try FfiConverterString.lift(id),
+                     value: try FfiConverterTypeProfileOrganization_lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setBulk: { (
+            uniffiHandle: UInt64,
+            values: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.setBulk(
+                     values: try FfiConverterDictionaryStringTypeProfileOrganization.lift(values)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        remove: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.remove(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeBulk: { (
+            uniffiHandle: UInt64,
+            keys: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeBulk(
+                     keys: try FfiConverterSequenceString.lift(keys)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        removeAll: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.removeAll(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        has: { (
+            uniffiHandle: UInt64,
+            id: RustBuffer,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteI8,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> Bool in
+                guard let uniffiObj = try? FfiConverterTypeProfileOrganizationRepository.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try await uniffiObj.has(
+                     id: try FfiConverterString.lift(id)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: Bool) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultI8(
+                        returnValue: FfiConverterBool.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultI8(
+                        returnValue: 0,
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: FfiConverterTypeRepositoryError_lower,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceProfileOrganizationRepository> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceProfileOrganizationRepository>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitProfileOrganizationRepository() {
+    uniffi_bitwarden_uniffi_fn_init_callback_vtable_profileorganizationrepository(UniffiCallbackInterfaceProfileOrganizationRepository.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeProfileOrganizationRepository: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<ProfileOrganizationRepository>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = ProfileOrganizationRepository
+
+    public static func lift(_ handle: UInt64) throws -> ProfileOrganizationRepository {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return ProfileOrganizationRepositoryImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: ProfileOrganizationRepository) -> UInt64 {
+         if let rustImpl = value as? ProfileOrganizationRepositoryImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ProfileOrganizationRepository {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ProfileOrganizationRepository, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProfileOrganizationRepository_lift(_ handle: UInt64) throws -> ProfileOrganizationRepository {
+    return try FfiConverterTypeProfileOrganizationRepository.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProfileOrganizationRepository_lower(_ value: ProfileOrganizationRepository) -> UInt64 {
+    return FfiConverterTypeProfileOrganizationRepository.lower(value)
+}
+
+
+
+
+
+
 public protocol RegistrationClientProtocol: AnyObject, Sendable {
     
     /**
@@ -12364,16 +13003,18 @@ public struct Repositories {
     public let organizationSharedKey: OrganizationSharedKeyRepository?
     public let send: SendRepository?
     public let policy: PolicyRepository?
+    public let organization: ProfileOrganizationRepository?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(cipher: CipherRepository?, folder: FolderRepository?, localUserDataKeyState: LocalUserDataKeyStateRepository?, organizationSharedKey: OrganizationSharedKeyRepository?, send: SendRepository?, policy: PolicyRepository?) {
+    public init(cipher: CipherRepository?, folder: FolderRepository?, localUserDataKeyState: LocalUserDataKeyStateRepository?, organizationSharedKey: OrganizationSharedKeyRepository?, send: SendRepository?, policy: PolicyRepository?, organization: ProfileOrganizationRepository?) {
         self.cipher = cipher
         self.folder = folder
         self.localUserDataKeyState = localUserDataKeyState
         self.organizationSharedKey = organizationSharedKey
         self.send = send
         self.policy = policy
+        self.organization = organization
     }
 
     
@@ -12397,7 +13038,8 @@ public struct FfiConverterTypeRepositories: FfiConverterRustBuffer {
                 localUserDataKeyState: FfiConverterOptionTypeLocalUserDataKeyStateRepository.read(from: &buf), 
                 organizationSharedKey: FfiConverterOptionTypeOrganizationSharedKeyRepository.read(from: &buf), 
                 send: FfiConverterOptionTypeSendRepository.read(from: &buf), 
-                policy: FfiConverterOptionTypePolicyRepository.read(from: &buf)
+                policy: FfiConverterOptionTypePolicyRepository.read(from: &buf), 
+                organization: FfiConverterOptionTypeProfileOrganizationRepository.read(from: &buf)
         )
     }
 
@@ -12408,6 +13050,7 @@ public struct FfiConverterTypeRepositories: FfiConverterRustBuffer {
         FfiConverterOptionTypeOrganizationSharedKeyRepository.write(value.organizationSharedKey, into: &buf)
         FfiConverterOptionTypeSendRepository.write(value.send, into: &buf)
         FfiConverterOptionTypePolicyRepository.write(value.policy, into: &buf)
+        FfiConverterOptionTypeProfileOrganizationRepository.write(value.organization, into: &buf)
     }
 }
 
@@ -13775,6 +14418,30 @@ fileprivate struct FfiConverterOptionTypePolicyRepository: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeProfileOrganizationRepository: FfiConverterRustBuffer {
+    typealias SwiftType = ProfileOrganizationRepository?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeProfileOrganizationRepository.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeProfileOrganizationRepository.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSendRepository: FfiConverterRustBuffer {
     typealias SwiftType = SendRepository?
 
@@ -13983,6 +14650,30 @@ fileprivate struct FfiConverterOptionTypeManagementProfile: FfiConverterRustBuff
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeManagementProfile.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeProfileOrganization: FfiConverterRustBuffer {
+    typealias SwiftType = ProfileOrganization?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeProfileOrganization.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeProfileOrganization.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -14375,6 +15066,31 @@ fileprivate struct FfiConverterSequenceTypeFido2CredentialAutofillView: FfiConve
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeFido2CredentialAutofillView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeProfileOrganization: FfiConverterRustBuffer {
+    typealias SwiftType = [ProfileOrganization]
+
+    public static func write(_ value: [ProfileOrganization], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeProfileOrganization.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ProfileOrganization] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ProfileOrganization]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeProfileOrganization.read(from: &buf))
         }
         return seq
     }
@@ -14802,6 +15518,32 @@ fileprivate struct FfiConverterDictionaryStringTypeOrganizationSharedKey: FfiCon
         for _ in 0..<len {
             let key = try FfiConverterString.read(from: &buf)
             let value = try FfiConverterTypeOrganizationSharedKey.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDictionaryStringTypeProfileOrganization: FfiConverterRustBuffer {
+    public static func write(_ value: [String: ProfileOrganization], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterTypeProfileOrganization.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: ProfileOrganization] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: ProfileOrganization]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterTypeProfileOrganization.read(from: &buf)
             dict[key] = value
         }
         return dict
@@ -15420,6 +16162,30 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_policyrepository_has() != 34350) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_get() != 21562) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_list() != 56463) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set() != 37807) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set_bulk() != 15259) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_remove() != 737) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_remove_bulk() != 55299) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_remove_all() != 52193) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_has() != 22169) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_sendrepository_get() != 43169) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -15734,6 +16500,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitOnePasswordTwoFactorPrompt()
     uniffiCallbackInitOrganizationSharedKeyRepository()
     uniffiCallbackInitPolicyRepository()
+    uniffiCallbackInitProfileOrganizationRepository()
     uniffiCallbackInitSendRepository()
     uniffiCallbackInitServerCommunicationConfigRepository()
     uniffiEnsureBitwardenApiBaseInitialized()
@@ -15748,6 +16515,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenGeneratorsInitialized()
     uniffiEnsureBitwardenImportersInitialized()
     uniffiEnsureBitwardenManagedSettingsTypesInitialized()
+    uniffiEnsureBitwardenOrganizationsInitialized()
     uniffiEnsureBitwardenPoliciesInitialized()
     uniffiEnsureBitwardenRandomInitialized()
     uniffiEnsureBitwardenSendInitialized()
