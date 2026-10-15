@@ -1335,6 +1335,8 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     
     case KdbxCorruptOrUnsupported(message: String)
     
+    case OnePasswordInvalidEmail(message: String)
+    
     case OnePasswordInvalidSignInAddress(message: String)
     
     case OnePasswordInvalidSecretKey(message: String)
@@ -1412,55 +1414,59 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 5: return .OnePasswordInvalidSignInAddress(
+        case 5: return .OnePasswordInvalidEmail(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 6: return .OnePasswordInvalidSecretKey(
+        case 6: return .OnePasswordInvalidSignInAddress(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 7: return .OnePasswordBadCredentials(
+        case 7: return .OnePasswordInvalidSecretKey(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 8: return .OnePasswordTwoFactorRequired(
+        case 8: return .OnePasswordBadCredentials(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .OnePasswordTwoFactorFailed(
+        case 9: return .OnePasswordTwoFactorRequired(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .OnePasswordUnsupported(
+        case 10: return .OnePasswordTwoFactorFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .OnePasswordNetwork(
+        case 11: return .OnePasswordUnsupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .OnePasswordDecryption(
+        case 12: return .OnePasswordNetwork(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .NotAuthenticated(
+        case 13: return .OnePasswordDecryption(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .Api(
+        case 14: return .NotAuthenticated(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .BitwardenCrypto(
+        case 15: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .KeeperCrypto(
+        case 16: return .BitwardenCrypto(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .Export(
+        case 17: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 18: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1483,32 +1489,34 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
         case .KdbxCorruptOrUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(4))
-        case .OnePasswordInvalidSignInAddress(_ /* message is ignored*/):
+        case .OnePasswordInvalidEmail(_ /* message is ignored*/):
             writeInt(&buf, Int32(5))
-        case .OnePasswordInvalidSecretKey(_ /* message is ignored*/):
+        case .OnePasswordInvalidSignInAddress(_ /* message is ignored*/):
             writeInt(&buf, Int32(6))
-        case .OnePasswordBadCredentials(_ /* message is ignored*/):
+        case .OnePasswordInvalidSecretKey(_ /* message is ignored*/):
             writeInt(&buf, Int32(7))
-        case .OnePasswordTwoFactorRequired(_ /* message is ignored*/):
+        case .OnePasswordBadCredentials(_ /* message is ignored*/):
             writeInt(&buf, Int32(8))
-        case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorRequired(_ /* message is ignored*/):
             writeInt(&buf, Int32(9))
-        case .OnePasswordUnsupported(_ /* message is ignored*/):
+        case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
-        case .OnePasswordNetwork(_ /* message is ignored*/):
+        case .OnePasswordUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .OnePasswordDecryption(_ /* message is ignored*/):
+        case .OnePasswordNetwork(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .NotAuthenticated(_ /* message is ignored*/):
+        case .OnePasswordDecryption(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .Api(_ /* message is ignored*/):
+        case .NotAuthenticated(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .BitwardenCrypto(_ /* message is ignored*/):
+        case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .KeeperCrypto(_ /* message is ignored*/):
+        case .BitwardenCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
-        case .Export(_ /* message is ignored*/):
+        case .KeeperCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(17))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(18))
 
         
         }
