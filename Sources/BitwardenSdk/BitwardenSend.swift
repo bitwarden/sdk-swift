@@ -1606,6 +1606,11 @@ enum AccessSendError: Swift.Error, Equatable, Hashable, Foundation.LocalizedErro
     
     
     /**
+     * The send does not exist, has expired, or has been deleted (the server answered 404).
+     */
+    case NotFound(message: String)
+    
+    /**
      * An API or network error occurred.
      */
     case Api(message: String)
@@ -1646,11 +1651,15 @@ public struct FfiConverterTypeAccessSendError: FfiConverterRustBuffer {
         
 
         
-        case 1: return .Api(
+        case 1: return .NotFound(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 2: return .Parse(
+        case 2: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Parse(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1665,10 +1674,12 @@ public struct FfiConverterTypeAccessSendError: FfiConverterRustBuffer {
         
 
         
-        case .Api(_ /* message is ignored*/):
+        case .NotFound(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
-        case .Parse(_ /* message is ignored*/):
+        case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(2))
+        case .Parse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
 
         
         }
@@ -2518,6 +2529,12 @@ enum GetFileDownloadDataError: Swift.Error, Equatable, Hashable, Foundation.Loca
     
     
     /**
+     * The send or its file does not exist, has expired, or has been deleted (the server
+     * answered 404).
+     */
+    case NotFound(message: String)
+    
+    /**
      * An API or network error occurred.
      */
     case Api(message: String)
@@ -2551,7 +2568,11 @@ public struct FfiConverterTypeGetFileDownloadDataError: FfiConverterRustBuffer {
         
 
         
-        case 1: return .Api(
+        case 1: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -2566,8 +2587,10 @@ public struct FfiConverterTypeGetFileDownloadDataError: FfiConverterRustBuffer {
         
 
         
-        case .Api(_ /* message is ignored*/):
+        case .NotFound(_ /* message is ignored*/):
             writeInt(&buf, Int32(1))
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
 
         
         }
