@@ -16162,16 +16162,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_policyrepository_has() != 34350) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_get() != 21562) {
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_get() != 57365) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_list() != 56463) {
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_list() != 54843) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set() != 37807) {
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set() != 49986) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set_bulk() != 15259) {
+    if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_set_bulk() != 18189) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_profileorganizationrepository_remove() != 737) {

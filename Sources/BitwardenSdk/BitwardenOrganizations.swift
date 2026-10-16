@@ -820,7 +820,7 @@ public func FfiConverterTypeFamilySponsorship_lower(_ value: FamilySponsorship) 
 
 
 /**
- * Identity of the organization.
+ * Basic information about the organization.
  */
 public struct OrganizationDetails: Equatable, Hashable {
     /**
@@ -1435,7 +1435,7 @@ public struct OrganizationProvider: Equatable, Hashable {
     /**
      * The ID of the provider.
      */
-    public let id: Uuid
+    public let id: ProviderId
     /**
      * The type of provider.
      */
@@ -1451,7 +1451,7 @@ public struct OrganizationProvider: Equatable, Hashable {
     public init(
         /**
          * The ID of the provider.
-         */id: Uuid, 
+         */id: ProviderId, 
         /**
          * The type of provider.
          */type: ProviderType, 
@@ -1480,14 +1480,14 @@ public struct FfiConverterTypeOrganizationProvider: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OrganizationProvider {
         return
             try OrganizationProvider(
-                id: FfiConverterTypeUuid.read(from: &buf), 
+                id: FfiConverterTypeProviderId.read(from: &buf), 
                 type: FfiConverterTypeProviderType.read(from: &buf), 
                 name: FfiConverterOptionString.read(from: &buf)
         )
     }
 
     public static func write(_ value: OrganizationProvider, into buf: inout [UInt8]) {
-        FfiConverterTypeUuid.write(value.id, into: &buf)
+        FfiConverterTypeProviderId.write(value.id, into: &buf)
         FfiConverterTypeProviderType.write(value.type, into: &buf)
         FfiConverterOptionString.write(value.name, into: &buf)
     }
@@ -2117,8 +2117,7 @@ public enum OrganizationUserType: UInt8, Equatable, Hashable {
      */
     case user = 2
     /**
-     * User with a customized set of permissions as indicated by
-     * [`OrganizationMembership::permissions`].
+     * User with a customized set of permissions as indicated by [`Permissions`].
      */
     case custom = 4
 
@@ -2590,6 +2589,46 @@ public func FfiConverterTypeOrganizationUserId_lift(_ value: RustBuffer) throws 
 #endif
 public func FfiConverterTypeOrganizationUserId_lower(_ value: OrganizationUserId) -> RustBuffer {
     return FfiConverterTypeOrganizationUserId.lower(value)
+}
+
+
+
+public typealias ProviderId = Uuid
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeProviderId: FfiConverter {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ProviderId {
+        return try FfiConverterTypeUuid.read(from: &buf)
+    }
+
+    public static func write(_ value: ProviderId, into buf: inout [UInt8]) {
+        return FfiConverterTypeUuid.write(value, into: &buf)
+    }
+
+    public static func lift(_ value: RustBuffer) throws -> ProviderId {
+        return try FfiConverterTypeUuid_lift(value)
+    }
+
+    public static func lower(_ value: ProviderId) -> RustBuffer {
+        return FfiConverterTypeUuid_lower(value)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProviderId_lift(_ value: RustBuffer) throws -> ProviderId {
+    return try FfiConverterTypeProviderId.lift(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProviderId_lower(_ value: ProviderId) -> RustBuffer {
+    return FfiConverterTypeProviderId.lower(value)
 }
 
 
