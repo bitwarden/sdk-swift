@@ -593,10 +593,19 @@ public struct Collection: Equatable, Hashable {
     public let manage: Bool
     public let defaultUserCollectionEmail: String?
     public let type: CollectionType
+    /**
+     * True when an enabled PAM access rule governs the collection. Derived by the server; `None`
+     * when the source does not say.
+     */
+    public let hasEnabledAccessRule: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CollectionId?, organizationId: OrganizationId, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, defaultUserCollectionEmail: String?, type: CollectionType) {
+    public init(id: CollectionId?, organizationId: OrganizationId, name: EncString, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, defaultUserCollectionEmail: String?, type: CollectionType, 
+        /**
+         * True when an enabled PAM access rule governs the collection. Derived by the server; `None`
+         * when the source does not say.
+         */hasEnabledAccessRule: Bool? = nil) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -606,6 +615,7 @@ public struct Collection: Equatable, Hashable {
         self.manage = manage
         self.defaultUserCollectionEmail = defaultUserCollectionEmail
         self.type = type
+        self.hasEnabledAccessRule = hasEnabledAccessRule
     }
 
     
@@ -632,7 +642,8 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
                 readOnly: FfiConverterBool.read(from: &buf), 
                 manage: FfiConverterBool.read(from: &buf), 
                 defaultUserCollectionEmail: FfiConverterOptionString.read(from: &buf), 
-                type: FfiConverterTypeCollectionType.read(from: &buf)
+                type: FfiConverterTypeCollectionType.read(from: &buf), 
+                hasEnabledAccessRule: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
@@ -646,6 +657,7 @@ public struct FfiConverterTypeCollection: FfiConverterRustBuffer {
         FfiConverterBool.write(value.manage, into: &buf)
         FfiConverterOptionString.write(value.defaultUserCollectionEmail, into: &buf)
         FfiConverterTypeCollectionType.write(value.type, into: &buf)
+        FfiConverterOptionBool.write(value.hasEnabledAccessRule, into: &buf)
     }
 }
 
@@ -674,10 +686,19 @@ public struct CollectionView: Equatable, Hashable {
     public let readOnly: Bool
     public let manage: Bool
     public let type: CollectionType
+    /**
+     * True when an enabled PAM access rule governs the collection. Derived by the server; `None`
+     * when the source does not say.
+     */
+    public let hasEnabledAccessRule: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CollectionId?, organizationId: OrganizationId, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, type: CollectionType) {
+    public init(id: CollectionId?, organizationId: OrganizationId, name: String, externalId: String?, hidePasswords: Bool, readOnly: Bool, manage: Bool, type: CollectionType, 
+        /**
+         * True when an enabled PAM access rule governs the collection. Derived by the server; `None`
+         * when the source does not say.
+         */hasEnabledAccessRule: Bool? = nil) {
         self.id = id
         self.organizationId = organizationId
         self.name = name
@@ -686,6 +707,7 @@ public struct CollectionView: Equatable, Hashable {
         self.readOnly = readOnly
         self.manage = manage
         self.type = type
+        self.hasEnabledAccessRule = hasEnabledAccessRule
     }
 
     
@@ -711,7 +733,8 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
                 hidePasswords: FfiConverterBool.read(from: &buf), 
                 readOnly: FfiConverterBool.read(from: &buf), 
                 manage: FfiConverterBool.read(from: &buf), 
-                type: FfiConverterTypeCollectionType.read(from: &buf)
+                type: FfiConverterTypeCollectionType.read(from: &buf), 
+                hasEnabledAccessRule: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
@@ -724,6 +747,7 @@ public struct FfiConverterTypeCollectionView: FfiConverterRustBuffer {
         FfiConverterBool.write(value.readOnly, into: &buf)
         FfiConverterBool.write(value.manage, into: &buf)
         FfiConverterTypeCollectionType.write(value.type, into: &buf)
+        FfiConverterOptionBool.write(value.hasEnabledAccessRule, into: &buf)
     }
 }
 
@@ -1047,6 +1071,30 @@ public func FfiConverterTypeCollectionType_lower(_ value: CollectionType) -> Rus
     return FfiConverterTypeCollectionType.lower(value)
 }
 
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionBool: FfiConverterRustBuffer {
+    typealias SwiftType = Bool?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterBool.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterBool.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
