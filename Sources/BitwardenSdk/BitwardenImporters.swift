@@ -1322,6 +1322,78 @@ public func FfiConverterTypeSkippedVault_lower(_ value: SkippedVault) -> RustBuf
 }
 
 
+/**
+ * The credentials for a single sign-on login.
+ *
+ * Unlike [`Credentials`] there is no secret in here: the identity provider authenticates the
+ * user and the enrolled device supplies the account keys.
+ */
+public struct SsoCredentials: Equatable, Hashable {
+    /**
+     * The account's email address.
+     */
+    public let username: String
+    /**
+     * Where the account signs in, such as `my.1password.com`.
+     */
+    public let signInAddress: SignInAddress
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account's email address.
+         */username: String, 
+        /**
+         * Where the account signs in, such as `my.1password.com`.
+         */signInAddress: SignInAddress) {
+        self.username = username
+        self.signInAddress = signInAddress
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SsoCredentials: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoCredentials: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoCredentials {
+        return
+            try SsoCredentials(
+                username: FfiConverterString.read(from: &buf), 
+                signInAddress: FfiConverterTypeSignInAddress.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SsoCredentials, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterTypeSignInAddress.write(value.signInAddress, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoCredentials_lift(_ buf: RustBuffer) throws -> SsoCredentials {
+    return try FfiConverterTypeSsoCredentials.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoCredentials_lower(_ value: SsoCredentials) -> RustBuffer {
+    return FfiConverterTypeSsoCredentials.lower(value)
+}
+
+
 public 
 enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -1346,6 +1418,10 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     case OnePasswordTwoFactorRequired(message: String)
     
     case OnePasswordTwoFactorFailed(message: String)
+    
+    case OnePasswordCanceled(message: String)
+    
+    case OnePasswordDenied(message: String)
     
     case OnePasswordUnsupported(message: String)
     
@@ -1438,35 +1514,43 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 11: return .OnePasswordUnsupported(
+        case 11: return .OnePasswordCanceled(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 12: return .OnePasswordNetwork(
+        case 12: return .OnePasswordDenied(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .OnePasswordDecryption(
+        case 13: return .OnePasswordUnsupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .NotAuthenticated(
+        case 14: return .OnePasswordNetwork(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .Api(
+        case 15: return .OnePasswordDecryption(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .BitwardenCrypto(
+        case 16: return .NotAuthenticated(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .KeeperCrypto(
+        case 17: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .Export(
+        case 18: return .BitwardenCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 19: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 20: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1501,22 +1585,26 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(9))
         case .OnePasswordTwoFactorFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(10))
-        case .OnePasswordUnsupported(_ /* message is ignored*/):
+        case .OnePasswordCanceled(_ /* message is ignored*/):
             writeInt(&buf, Int32(11))
-        case .OnePasswordNetwork(_ /* message is ignored*/):
+        case .OnePasswordDenied(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .OnePasswordDecryption(_ /* message is ignored*/):
+        case .OnePasswordUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .NotAuthenticated(_ /* message is ignored*/):
+        case .OnePasswordNetwork(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .Api(_ /* message is ignored*/):
+        case .OnePasswordDecryption(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .BitwardenCrypto(_ /* message is ignored*/):
+        case .NotAuthenticated(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
-        case .KeeperCrypto(_ /* message is ignored*/):
+        case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(17))
-        case .Export(_ /* message is ignored*/):
+        case .BitwardenCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(18))
+        case .KeeperCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(19))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(20))
 
         
         }
