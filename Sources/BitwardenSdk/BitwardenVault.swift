@@ -5496,6 +5496,109 @@ public func FfiConverterTypeBulkUpdateCollectionsCipherError_lower(_ value: Bulk
 }
 
 
+/**
+ * Error returned by [`Cipher::change_login_password`].
+ */
+public 
+enum ChangeLoginPasswordError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The cipher is partial, so re-encrypting it would drop its password history.
+     */
+    case PartialCipher(message: String)
+    
+    /**
+     * The cipher is not a login.
+     */
+    case NotLogin(message: String)
+    
+    /**
+     * Strict decryption or re-encryption failed.
+     */
+    case Crypto(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ChangeLoginPasswordError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeChangeLoginPasswordError: FfiConverterRustBuffer {
+    typealias SwiftType = ChangeLoginPasswordError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ChangeLoginPasswordError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .PartialCipher(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .NotLogin(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ChangeLoginPasswordError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .PartialCipher(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .NotLogin(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeChangeLoginPasswordError_lift(_ buf: RustBuffer) throws -> ChangeLoginPasswordError {
+    return try FfiConverterTypeChangeLoginPasswordError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeChangeLoginPasswordError_lower(_ value: ChangeLoginPasswordError) -> RustBuffer {
+    return FfiConverterTypeChangeLoginPasswordError.lower(value)
+}
+
+
 public 
 enum CipherAdminGetAttachmentDownloadUrlError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
