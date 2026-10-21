@@ -497,6 +497,22 @@ fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt64: FfiConverterPrimitive {
+    typealias FfiType = UInt64
+    typealias SwiftType = UInt64
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt64 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -1564,20 +1580,80 @@ public func FfiConverterTypeCipher_lower(_ value: Cipher) -> RustBuffer {
  * Request to add a cipher.
  */
 public struct CipherCreateRequest: Equatable, Hashable {
+    /**
+     * Organization that will own the cipher, or `None` for the user's individual vault.
+     */
     public let organizationId: OrganizationId?
+    /**
+     * Collections to add the cipher to. Only applies to organization ciphers.
+     */
     public let collectionIds: [CollectionId]
+    /**
+     * Folder to place the cipher in, if any.
+     */
     public let folderId: FolderId?
+    /**
+     * Display name of the cipher.
+     */
     public let name: String
+    /**
+     * Free-form notes.
+     */
     public let notes: String?
+    /**
+     * Whether the cipher is marked as a favorite.
+     */
     public let favorite: Bool
+    /**
+     * Whether the user must re-enter their master password to view the cipher.
+     */
     public let reprompt: CipherRepromptType
+    /**
+     * Type of the cipher and its type-specific data.
+     */
     public let type: CipherViewType
+    /**
+     * Custom fields.
+     */
     public let fields: [FieldView]
+    /**
+     * When the cipher was archived, or `None` if it is not archived.
+     */
     public let archivedDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(organizationId: OrganizationId?, collectionIds: [CollectionId], folderId: FolderId?, name: String, notes: String?, favorite: Bool, reprompt: CipherRepromptType, type: CipherViewType, fields: [FieldView], archivedDate: DateTime?) {
+    public init(
+        /**
+         * Organization that will own the cipher, or `None` for the user's individual vault.
+         */organizationId: OrganizationId?, 
+        /**
+         * Collections to add the cipher to. Only applies to organization ciphers.
+         */collectionIds: [CollectionId], 
+        /**
+         * Folder to place the cipher in, if any.
+         */folderId: FolderId?, 
+        /**
+         * Display name of the cipher.
+         */name: String, 
+        /**
+         * Free-form notes.
+         */notes: String?, 
+        /**
+         * Whether the cipher is marked as a favorite.
+         */favorite: Bool, 
+        /**
+         * Whether the user must re-enter their master password to view the cipher.
+         */reprompt: CipherRepromptType, 
+        /**
+         * Type of the cipher and its type-specific data.
+         */type: CipherViewType, 
+        /**
+         * Custom fields.
+         */fields: [FieldView], 
+        /**
+         * When the cipher was archived, or `None` if it is not archived.
+         */archivedDate: DateTime?) {
         self.organizationId = organizationId
         self.collectionIds = collectionIds
         self.folderId = folderId
@@ -1653,23 +1729,101 @@ public func FfiConverterTypeCipherCreateRequest_lower(_ value: CipherCreateReque
  * Request to edit a cipher.
  */
 public struct CipherEditRequest: Equatable, Hashable {
+    /**
+     * ID of the cipher to edit.
+     */
     public let id: CipherId
+    /**
+     * Organization that owns the cipher, or `None` for the user's individual vault.
+     */
     public let organizationId: OrganizationId?
+    /**
+     * Folder to place the cipher in, if any.
+     */
     public let folderId: FolderId?
+    /**
+     * Whether the cipher is marked as a favorite.
+     */
     public let favorite: Bool
+    /**
+     * Whether the user must re-enter their master password to view the cipher.
+     */
     public let reprompt: CipherRepromptType
+    /**
+     * Display name of the cipher.
+     */
     public let name: String
+    /**
+     * Free-form notes.
+     */
     public let notes: String?
+    /**
+     * Custom fields.
+     */
     public let fields: [FieldView]
+    /**
+     * Type of the cipher and its type-specific data.
+     */
     public let type: CipherViewType
+    /**
+     * Revision date of the cipher being edited, as last seen by the client.
+     */
     public let revisionDate: DateTime
+    /**
+     * When the cipher was archived, or `None` if it is not archived.
+     */
     public let archivedDate: DateTime?
+    /**
+     * Attachments on the cipher.
+     */
     public let attachments: [AttachmentView]
+    /**
+     * The cipher's own encryption key, if it has one.
+     */
     public let key: SymmetricCryptoKey?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CipherId, organizationId: OrganizationId?, folderId: FolderId?, favorite: Bool, reprompt: CipherRepromptType, name: String, notes: String?, fields: [FieldView], type: CipherViewType, revisionDate: DateTime, archivedDate: DateTime?, attachments: [AttachmentView], key: SymmetricCryptoKey?) {
+    public init(
+        /**
+         * ID of the cipher to edit.
+         */id: CipherId, 
+        /**
+         * Organization that owns the cipher, or `None` for the user's individual vault.
+         */organizationId: OrganizationId?, 
+        /**
+         * Folder to place the cipher in, if any.
+         */folderId: FolderId?, 
+        /**
+         * Whether the cipher is marked as a favorite.
+         */favorite: Bool, 
+        /**
+         * Whether the user must re-enter their master password to view the cipher.
+         */reprompt: CipherRepromptType, 
+        /**
+         * Display name of the cipher.
+         */name: String, 
+        /**
+         * Free-form notes.
+         */notes: String?, 
+        /**
+         * Custom fields.
+         */fields: [FieldView], 
+        /**
+         * Type of the cipher and its type-specific data.
+         */type: CipherViewType, 
+        /**
+         * Revision date of the cipher being edited, as last seen by the client.
+         */revisionDate: DateTime, 
+        /**
+         * When the cipher was archived, or `None` if it is not archived.
+         */archivedDate: DateTime?, 
+        /**
+         * Attachments on the cipher.
+         */attachments: [AttachmentView], 
+        /**
+         * The cipher's own encryption key, if it has one.
+         */key: SymmetricCryptoKey?) {
         self.id = id
         self.organizationId = organizationId
         self.folderId = folderId
@@ -1997,13 +2151,31 @@ public func FfiConverterTypeCipherLoginDetails_lower(_ value: CipherLoginDetails
  * based on view (not edit) access.
  */
 public struct CipherPartialEditRequest: Equatable, Hashable {
+    /**
+     * ID of the cipher to edit.
+     */
     public let id: CipherId
+    /**
+     * Folder to place the cipher in, if any.
+     */
     public let folderId: FolderId?
+    /**
+     * Whether the cipher is marked as a favorite.
+     */
     public let favorite: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: CipherId, folderId: FolderId?, favorite: Bool) {
+    public init(
+        /**
+         * ID of the cipher to edit.
+         */id: CipherId, 
+        /**
+         * Folder to place the cipher in, if any.
+         */folderId: FolderId?, 
+        /**
+         * Whether the cipher is marked as a favorite.
+         */favorite: Bool) {
         self.id = id
         self.folderId = folderId
         self.favorite = favorite
@@ -2485,6 +2657,191 @@ public func FfiConverterTypeCipherView_lift(_ buf: RustBuffer) throws -> CipherV
 #endif
 public func FfiConverterTypeCipherView_lower(_ value: CipherView) -> RustBuffer {
     return FfiConverterTypeCipherView.lower(value)
+}
+
+
+/**
+ * Metadata for opening a new attachment slot on the server.
+ *
+ * The caller pre-encrypts the key, file name, and contents; the SDK only opens the slot and
+ * the caller uploads. See `upgrade_attachment` for the alternative where the SDK owns the
+ * encryption and upload.
+ */
+public struct CreateAttachmentRequest: Equatable, Hashable {
+    /**
+     * Encrypted attachment key.
+     */
+    public let key: EncString
+    /**
+     * Encrypted file name.
+     */
+    public let fileName: EncString
+    /**
+     * Encrypted file size in byte
+     */
+    public let fileSize: UInt64
+    /**
+     * Cipher revision date
+     */
+    public let lastKnownRevisionDate: DateTime
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Encrypted attachment key.
+         */key: EncString, 
+        /**
+         * Encrypted file name.
+         */fileName: EncString, 
+        /**
+         * Encrypted file size in byte
+         */fileSize: UInt64, 
+        /**
+         * Cipher revision date
+         */lastKnownRevisionDate: DateTime) {
+        self.key = key
+        self.fileName = fileName
+        self.fileSize = fileSize
+        self.lastKnownRevisionDate = lastKnownRevisionDate
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CreateAttachmentRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateAttachmentRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateAttachmentRequest {
+        return
+            try CreateAttachmentRequest(
+                key: FfiConverterTypeEncString.read(from: &buf), 
+                fileName: FfiConverterTypeEncString.read(from: &buf), 
+                fileSize: FfiConverterUInt64.read(from: &buf), 
+                lastKnownRevisionDate: FfiConverterTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CreateAttachmentRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeEncString.write(value.key, into: &buf)
+        FfiConverterTypeEncString.write(value.fileName, into: &buf)
+        FfiConverterUInt64.write(value.fileSize, into: &buf)
+        FfiConverterTypeDateTime.write(value.lastKnownRevisionDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateAttachmentRequest_lift(_ buf: RustBuffer) throws -> CreateAttachmentRequest {
+    return try FfiConverterTypeCreateAttachmentRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateAttachmentRequest_lower(_ value: CreateAttachmentRequest) -> RustBuffer {
+    return FfiConverterTypeCreateAttachmentRequest.lower(value)
+}
+
+
+/**
+ * Server data for a newly created attachment slot. The caller uploads the
+ * encrypted bytes to [`Self::upload_url`] using [`Self::file_upload_type`]
+ */
+public struct CreatedAttachment: Equatable, Hashable {
+    /**
+     * Server-assigned attachment ID.
+     */
+    public let attachmentId: String
+    /**
+     * Upload target for the encrypted bytes
+     */
+    public let uploadUrl: String
+    /**
+     * Bitwarden server or Azure Blob Storage.
+     */
+    public let fileUploadType: AttachmentFileUploadType
+    /**
+     * Cipher returned by the server. For non-admin requests, this is also
+     * written to the local repository
+     */
+    public let cipher: Cipher
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Server-assigned attachment ID.
+         */attachmentId: String, 
+        /**
+         * Upload target for the encrypted bytes
+         */uploadUrl: String, 
+        /**
+         * Bitwarden server or Azure Blob Storage.
+         */fileUploadType: AttachmentFileUploadType, 
+        /**
+         * Cipher returned by the server. For non-admin requests, this is also
+         * written to the local repository
+         */cipher: Cipher) {
+        self.attachmentId = attachmentId
+        self.uploadUrl = uploadUrl
+        self.fileUploadType = fileUploadType
+        self.cipher = cipher
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CreatedAttachment: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreatedAttachment: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreatedAttachment {
+        return
+            try CreatedAttachment(
+                attachmentId: FfiConverterString.read(from: &buf), 
+                uploadUrl: FfiConverterString.read(from: &buf), 
+                fileUploadType: FfiConverterTypeAttachmentFileUploadType.read(from: &buf), 
+                cipher: FfiConverterTypeCipher.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CreatedAttachment, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.attachmentId, into: &buf)
+        FfiConverterString.write(value.uploadUrl, into: &buf)
+        FfiConverterTypeAttachmentFileUploadType.write(value.fileUploadType, into: &buf)
+        FfiConverterTypeCipher.write(value.cipher, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreatedAttachment_lift(_ buf: RustBuffer) throws -> CreatedAttachment {
+    return try FfiConverterTypeCreatedAttachment.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreatedAttachment_lower(_ value: CreatedAttachment) -> RustBuffer {
+    return FfiConverterTypeCreatedAttachment.lower(value)
 }
 
 
@@ -4981,6 +5338,81 @@ public func FfiConverterTypeTotpResponse_lower(_ value: TotpResponse) -> RustBuf
 }
 
 
+/**
+ * Where attachment bytes should be uploaded.
+ */
+
+public enum AttachmentFileUploadType: Equatable, Hashable {
+    
+    /**
+     * Upload directly to the Bitwarden server.
+     */
+    case direct
+    /**
+     * Upload to Azure Blob storage via the returned presigned URL.
+     */
+    case azure
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AttachmentFileUploadType: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAttachmentFileUploadType: FfiConverterRustBuffer {
+    typealias SwiftType = AttachmentFileUploadType
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AttachmentFileUploadType {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .direct
+        
+        case 2: return .azure
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AttachmentFileUploadType, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .direct:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .azure:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAttachmentFileUploadType_lift(_ buf: RustBuffer) throws -> AttachmentFileUploadType {
+    return try FfiConverterTypeAttachmentFileUploadType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAttachmentFileUploadType_lower(_ value: AttachmentFileUploadType) -> RustBuffer {
+    return FfiConverterTypeAttachmentFileUploadType.lower(value)
+}
+
+
+
 public 
 enum BulkUpdateCollectionsCipherError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -6632,6 +7064,105 @@ public func FfiConverterTypeCopyableCipherFields_lower(_ value: CopyableCipherFi
     return FfiConverterTypeCopyableCipherFields.lower(value)
 }
 
+
+
+public 
+enum CreateAttachmentAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Api(message: String)
+    
+    case MissingField(message: String)
+    
+    case VaultParse(message: String)
+    
+    case UnsupportedFileUploadType(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension CreateAttachmentAdminError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCreateAttachmentAdminError: FfiConverterRustBuffer {
+    typealias SwiftType = CreateAttachmentAdminError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreateAttachmentAdminError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Api(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .MissingField(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .VaultParse(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .UnsupportedFileUploadType(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CreateAttachmentAdminError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Api(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .MissingField(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .VaultParse(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .UnsupportedFileUploadType(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateAttachmentAdminError_lift(_ buf: RustBuffer) throws -> CreateAttachmentAdminError {
+    return try FfiConverterTypeCreateAttachmentAdminError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCreateAttachmentAdminError_lower(_ value: CreateAttachmentAdminError) -> RustBuffer {
+    return FfiConverterTypeCreateAttachmentAdminError.lower(value)
+}
 
 
 public 

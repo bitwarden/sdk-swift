@@ -637,6 +637,12 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
 public protocol AttachmentsClientProtocol: AnyObject, Sendable {
     
     /**
+     * Create an attachment on a cipher, returning the URL the encrypted file should be uploaded
+     * to and the updated cipher
+     */
+    func createAttachment(cipherId: CipherId, request: CreateAttachmentRequest) async throws  -> CreatedAttachment
+    
+    /**
      * Decrypt an attachment file in memory
      */
     func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data) throws  -> Data
@@ -647,6 +653,11 @@ public protocol AttachmentsClientProtocol: AnyObject, Sendable {
     func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFilePath: String, decryptedFilePath: String) throws 
     
     /**
+     * Delete an attachment from a cipher, returning the updated cipher
+     */
+    func deleteAttachment(cipherId: CipherId, attachmentId: String) async throws  -> Cipher
+    
+    /**
      * Encrypt an attachment file in memory
      */
     func encryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data) throws  -> AttachmentEncryptResult
@@ -655,6 +666,22 @@ public protocol AttachmentsClientProtocol: AnyObject, Sendable {
      * Encrypt an attachment file located in the file system
      */
     func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFilePath: String, encryptedFilePath: String) throws  -> Attachment
+    
+    /**
+     * Get the download URL for an attachment. Pass `emergency_access_id` when downloading
+     * through emergency access.
+     */
+    func getAttachmentDownloadUrl(cipherId: CipherId, attachmentId: String, emergencyAccessId: String?) async throws  -> String
+    
+    /**
+     * Get a renewed upload URL for an attachment. Does not modify the attachment slot.
+     */
+    func renewFileUploadUrl(cipherId: CipherId, attachmentId: String) async throws  -> String
+    
+    /**
+     * Re-encrypt a legacy attachment that has no attachment key, returning the updated cipher
+     */
+    func upgradeAttachment(cipherId: CipherId, attachmentId: String) async throws  -> CipherView
     
 }
 open class AttachmentsClient: AttachmentsClientProtocol, @unchecked Sendable {
@@ -711,6 +738,26 @@ open class AttachmentsClient: AttachmentsClientProtocol, @unchecked Sendable {
 
     
     /**
+     * Create an attachment on a cipher, returning the URL the encrypted file should be uploaded
+     * to and the updated cipher
+     */
+open func createAttachment(cipherId: CipherId, request: CreateAttachmentRequest)async throws  -> CreatedAttachment  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_attachmentsclient_create_attachment(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterTypeCreateAttachmentRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCreatedAttachment_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Decrypt an attachment file in memory
      */
 open func decryptBuffer(cipher: Cipher, attachment: AttachmentView, buffer: Data)throws  -> Data  {
@@ -738,6 +785,25 @@ open func decryptFile(cipher: Cipher, attachment: AttachmentView, encryptedFileP
         FfiConverterString.lower(decryptedFilePath),uniffiCallStatus
     )
 }
+}
+    
+    /**
+     * Delete an attachment from a cipher, returning the updated cipher
+     */
+open func deleteAttachment(cipherId: CipherId, attachmentId: String)async throws  -> Cipher  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_attachmentsclient_delete_attachment(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterString.lower(attachmentId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipher_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
 }
     
     /**
@@ -769,6 +835,64 @@ open func encryptFile(cipher: Cipher, attachment: AttachmentView, decryptedFileP
         FfiConverterString.lower(encryptedFilePath),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * Get the download URL for an attachment. Pass `emergency_access_id` when downloading
+     * through emergency access.
+     */
+open func getAttachmentDownloadUrl(cipherId: CipherId, attachmentId: String, emergencyAccessId: String?)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_attachmentsclient_get_attachment_download_url(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterString.lower(attachmentId),FfiConverterOptionString.lower(emergencyAccessId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Get a renewed upload URL for an attachment. Does not modify the attachment slot.
+     */
+open func renewFileUploadUrl(cipherId: CipherId, attachmentId: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_attachmentsclient_renew_file_upload_url(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterString.lower(attachmentId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Re-encrypt a legacy attachment that has no attachment key, returning the updated cipher
+     */
+open func upgradeAttachment(cipherId: CipherId, attachmentId: String)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_attachmentsclient_upgrade_attachment(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterString.lower(attachmentId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
 }
     
 
@@ -1916,6 +2040,16 @@ public func FfiConverterTypeCipherRepository_lower(_ value: CipherRepository) ->
 public protocol CiphersClientProtocol: AnyObject, Sendable {
     
     /**
+     * Add or remove collections for multiple organization ciphers
+     */
+    func bulkUpdateCollections(organizationId: OrganizationId, cipherIds: [CipherId], collectionIds: [CollectionId], removeCollections: Bool) async throws 
+    
+    /**
+     * Create a new cipher and save it to the server and local state
+     */
+    func create(request: CipherCreateRequest) async throws  -> CipherView
+    
+    /**
      * Decrypt cipher
      */
     func decrypt(cipher: Cipher) async throws  -> CipherView
@@ -1926,15 +2060,76 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
     func decryptList(ciphers: [Cipher]) async throws  -> [CipherListView]
     
     /**
+     * Decrypt full cipher list
+     * Returns both successfully fully decrypted ciphers and any that failed to decrypt
+     */
+    func decryptListFullWithFailures(ciphers: [Cipher]) async throws  -> DecryptCipherResult
+    
+    /**
      * Decrypt cipher list with failures
      * Returns both successfully decrypted ciphers and any that failed to decrypt
      */
     func decryptListWithFailures(ciphers: [Cipher]) async throws  -> DecryptCipherListResult
     
     /**
+     * Permanently delete a cipher from the server and local state
+     */
+    func delete(cipherId: CipherId) async throws 
+    
+    /**
+     * Permanently delete multiple ciphers from the server and local state
+     */
+    func deleteMany(cipherIds: [CipherId], organizationId: OrganizationId?) async throws 
+    
+    /**
+     * Edit an existing cipher and save it to the server and local state
+     */
+    func edit(request: CipherEditRequest) async throws  -> CipherView
+    
+    /**
+     * Edit a PAM-gated cipher whose secrets were revealed under an active lease.
+     *
+     * Pass the full view obtained from the lease-authorised read as `original_cipher_view`. The
+     * returned view is partial, since the server withholds secrets from a gated write-return.
+     */
+    func editGated(request: CipherEditRequest, originalCipherView: CipherView) async throws  -> CipherView
+    
+    /**
+     * Update only the folder and favorite status of a cipher, for users without edit permission
+     */
+    func editPartial(request: CipherPartialEditRequest) async throws  -> CipherView
+    
+    /**
      * Encrypt cipher
      */
     func encrypt(cipherView: CipherView) async throws  -> EncryptionContext
+    
+    /**
+     * Encrypt a list of cipher views. Fails if any cipher fails to encrypt.
+     */
+    func encryptList(cipherViews: [CipherView]) async throws  -> [EncryptionContext]
+    
+    /**
+     * Get a cipher from local state and decrypt it
+     */
+    func get(cipherId: CipherId) async throws  -> CipherView
+    
+    /**
+     * Get all ciphers from local state and fully decrypt them, returning both successes and
+     * failures
+     */
+    func getAll() async throws  -> DecryptCipherResult
+    
+    /**
+     * Get all ciphers from local state and decrypt them to list views, returning both successes
+     * and failures
+     */
+    func list() async throws  -> DecryptCipherListResult
+    
+    /**
+     * Move multiple ciphers to a folder, or out of any folder when `folder_id` is `None`
+     */
+    func moveMany(cipherIds: [CipherId], folderId: FolderId?) async throws 
     
     /**
      * Move a cipher to an organization, reencrypting the cipher key if necessary
@@ -1945,6 +2140,41 @@ public protocol CiphersClientProtocol: AnyObject, Sendable {
      * Prepare ciphers for bulk share to an organization
      */
     func prepareCiphersForBulkShare(ciphers: [CipherView], organizationId: OrganizationId, collectionIds: [CollectionId]) async throws  -> [EncryptionContext]
+    
+    /**
+     * Restore a cipher from the trash
+     */
+    func restore(cipherId: CipherId) async throws  -> CipherView
+    
+    /**
+     * Restore multiple ciphers from the trash
+     */
+    func restoreMany(cipherIds: [CipherId]) async throws  -> DecryptCipherListResult
+    
+    /**
+     * Share a cipher with an organization, re-encrypting it with the organization key
+     */
+    func shareCipher(cipherView: CipherView, organizationId: OrganizationId, collectionIds: [CollectionId], originalCipherView: CipherView?) async throws  -> CipherView
+    
+    /**
+     * Share multiple ciphers with an organization, re-encrypting them with the organization key
+     */
+    func shareCiphersBulk(cipherViews: [CipherView], organizationId: OrganizationId, collectionIds: [CollectionId]) async throws  -> [CipherView]
+    
+    /**
+     * Move a cipher to the trash
+     */
+    func softDelete(cipherId: CipherId) async throws 
+    
+    /**
+     * Move multiple ciphers to the trash
+     */
+    func softDeleteMany(cipherIds: [CipherId], organizationId: OrganizationId?) async throws 
+    
+    /**
+     * Update the collections a cipher belongs to
+     */
+    func updateCollection(cipherId: CipherId, collectionIds: [CollectionId]) async throws  -> CipherView
     
 }
 open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
@@ -2001,6 +2231,44 @@ open class CiphersClient: CiphersClientProtocol, @unchecked Sendable {
 
     
     /**
+     * Add or remove collections for multiple organization ciphers
+     */
+open func bulkUpdateCollections(organizationId: OrganizationId, cipherIds: [CipherId], collectionIds: [CollectionId], removeCollections: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_bulk_update_collections(
+                        self.uniffiCloneHandle(),FfiConverterTypeOrganizationId_lower(organizationId),FfiConverterSequenceTypeCipherId.lower(cipherIds),FfiConverterSequenceTypeCollectionId.lower(collectionIds),FfiConverterBool.lower(removeCollections)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Create a new cipher and save it to the server and local state
+     */
+open func create(request: CipherCreateRequest)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_create(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherCreateRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Decrypt cipher
      */
 open func decrypt(cipher: Cipher)async throws  -> CipherView  {
@@ -2039,6 +2307,26 @@ open func decryptList(ciphers: [Cipher])async throws  -> [CipherListView]  {
 }
     
     /**
+     * Decrypt full cipher list
+     * Returns both successfully fully decrypted ciphers and any that failed to decrypt
+     */
+open func decryptListFullWithFailures(ciphers: [Cipher])async throws  -> DecryptCipherResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_decrypt_list_full_with_failures(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipher.lower(ciphers)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDecryptCipherResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Decrypt cipher list with failures
      * Returns both successfully decrypted ciphers and any that failed to decrypt
      */
@@ -2059,6 +2347,104 @@ open func decryptListWithFailures(ciphers: [Cipher])async throws  -> DecryptCiph
 }
     
     /**
+     * Permanently delete a cipher from the server and local state
+     */
+open func delete(cipherId: CipherId)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_delete(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Permanently delete multiple ciphers from the server and local state
+     */
+open func deleteMany(cipherIds: [CipherId], organizationId: OrganizationId?)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_delete_many(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherId.lower(cipherIds),FfiConverterOptionTypeOrganizationId.lower(organizationId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Edit an existing cipher and save it to the server and local state
+     */
+open func edit(request: CipherEditRequest)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_edit(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherEditRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Edit a PAM-gated cipher whose secrets were revealed under an active lease.
+     *
+     * Pass the full view obtained from the lease-authorised read as `original_cipher_view`. The
+     * returned view is partial, since the server withholds secrets from a gated write-return.
+     */
+open func editGated(request: CipherEditRequest, originalCipherView: CipherView)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_edit_gated(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherEditRequest_lower(request),FfiConverterTypeCipherView_lower(originalCipherView)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Update only the folder and favorite status of a cipher, for users without edit permission
+     */
+open func editPartial(request: CipherPartialEditRequest)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_edit_partial(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherPartialEditRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Encrypt cipher
      */
 open func encrypt(cipherView: CipherView)async throws  -> EncryptionContext  {
@@ -2073,6 +2459,103 @@ open func encrypt(cipherView: CipherView)async throws  -> EncryptionContext  {
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeEncryptionContext_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Encrypt a list of cipher views. Fails if any cipher fails to encrypt.
+     */
+open func encryptList(cipherViews: [CipherView])async throws  -> [EncryptionContext]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_encrypt_list(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherView.lower(cipherViews)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeEncryptionContext.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Get a cipher from local state and decrypt it
+     */
+open func get(cipherId: CipherId)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_get(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Get all ciphers from local state and fully decrypt them, returning both successes and
+     * failures
+     */
+open func getAll()async throws  -> DecryptCipherResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_get_all(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDecryptCipherResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Get all ciphers from local state and decrypt them to list views, returning both successes
+     * and failures
+     */
+open func list()async throws  -> DecryptCipherListResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_list(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDecryptCipherListResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Move multiple ciphers to a folder, or out of any folder when `folder_id` is `None`
+     */
+open func moveMany(cipherIds: [CipherId], folderId: FolderId?)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_move_many(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherId.lower(cipherIds),FfiConverterOptionTypeFolderId.lower(folderId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -2106,6 +2589,139 @@ open func prepareCiphersForBulkShare(ciphers: [CipherView], organizationId: Orga
             completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeEncryptionContext.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Restore a cipher from the trash
+     */
+open func restore(cipherId: CipherId)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_restore(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Restore multiple ciphers from the trash
+     */
+open func restoreMany(cipherIds: [CipherId])async throws  -> DecryptCipherListResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_restore_many(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherId.lower(cipherIds)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeDecryptCipherListResult_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Share a cipher with an organization, re-encrypting it with the organization key
+     */
+open func shareCipher(cipherView: CipherView, organizationId: OrganizationId, collectionIds: [CollectionId], originalCipherView: CipherView?)async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_share_cipher(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherView_lower(cipherView),FfiConverterTypeOrganizationId_lower(organizationId),FfiConverterSequenceTypeCollectionId.lower(collectionIds),FfiConverterOptionTypeCipherView.lower(originalCipherView)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Share multiple ciphers with an organization, re-encrypting them with the organization key
+     */
+open func shareCiphersBulk(cipherViews: [CipherView], organizationId: OrganizationId, collectionIds: [CollectionId])async throws  -> [CipherView]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_share_ciphers_bulk(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherView.lower(cipherViews),FfiConverterTypeOrganizationId_lower(organizationId),FfiConverterSequenceTypeCollectionId.lower(collectionIds)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeCipherView.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Move a cipher to the trash
+     */
+open func softDelete(cipherId: CipherId)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_soft_delete(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Move multiple ciphers to the trash
+     */
+open func softDeleteMany(cipherIds: [CipherId], organizationId: OrganizationId?)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_soft_delete_many(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeCipherId.lower(cipherIds),FfiConverterOptionTypeOrganizationId.lower(organizationId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Update the collections a cipher belongs to
+     */
+open func updateCollection(cipherId: CipherId, collectionIds: [CollectionId])async throws  -> CipherView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_ciphersclient_update_collection(
+                        self.uniffiCloneHandle(),FfiConverterTypeCipherId_lower(cipherId),FfiConverterSequenceTypeCollectionId.lower(collectionIds)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeCipherView_lift,
             errorHandler: FfiConverterTypeBitwardenError_lift
         )
 }
@@ -6292,6 +6908,11 @@ public func FfiConverterTypeFolderRepository_lower(_ value: FolderRepository) ->
 public protocol FoldersClientProtocol: AnyObject, Sendable {
     
     /**
+     * Create a new folder and save it to the server and local state
+     */
+    func create(request: FolderAddEditRequest) async throws  -> FolderView
+    
+    /**
      * Decrypt folder
      */
     func decrypt(folder: Folder) throws  -> FolderView
@@ -6302,9 +6923,24 @@ public protocol FoldersClientProtocol: AnyObject, Sendable {
     func decryptList(folders: [Folder]) throws  -> [FolderView]
     
     /**
+     * Edit an existing folder and save it to the server and local state
+     */
+    func edit(folderId: FolderId, request: FolderAddEditRequest) async throws  -> FolderView
+    
+    /**
      * Encrypt folder
      */
     func encrypt(folder: FolderView) throws  -> Folder
+    
+    /**
+     * Get a folder from local state and decrypt it
+     */
+    func get(folderId: FolderId) async throws  -> FolderView
+    
+    /**
+     * Get all folders from local state and decrypt them
+     */
+    func list() async throws  -> [FolderView]
     
 }
 open class FoldersClient: FoldersClientProtocol, @unchecked Sendable {
@@ -6361,6 +6997,25 @@ open class FoldersClient: FoldersClientProtocol, @unchecked Sendable {
 
     
     /**
+     * Create a new folder and save it to the server and local state
+     */
+open func create(request: FolderAddEditRequest)async throws  -> FolderView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_foldersclient_create(
+                        self.uniffiCloneHandle(),FfiConverterTypeFolderAddEditRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeFolderView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Decrypt folder
      */
 open func decrypt(folder: Folder)throws  -> FolderView  {
@@ -6387,6 +7042,25 @@ open func decryptList(folders: [Folder])throws  -> [FolderView]  {
 }
     
     /**
+     * Edit an existing folder and save it to the server and local state
+     */
+open func edit(folderId: FolderId, request: FolderAddEditRequest)async throws  -> FolderView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_foldersclient_edit(
+                        self.uniffiCloneHandle(),FfiConverterTypeFolderId_lower(folderId),FfiConverterTypeFolderAddEditRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeFolderView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
      * Encrypt folder
      */
 open func encrypt(folder: FolderView)throws  -> Folder  {
@@ -6397,6 +7071,44 @@ open func encrypt(folder: FolderView)throws  -> Folder  {
         FfiConverterTypeFolderView_lower(folder),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * Get a folder from local state and decrypt it
+     */
+open func get(folderId: FolderId)async throws  -> FolderView  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_foldersclient_get(
+                        self.uniffiCloneHandle(),FfiConverterTypeFolderId_lower(folderId)
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeFolderView_lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
+}
+    
+    /**
+     * Get all folders from local state and decrypt them
+     */
+open func list()async throws  -> [FolderView]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_uniffi_fn_method_foldersclient_list(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_uniffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_uniffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeFolderView.lift,
+            errorHandler: FfiConverterTypeBitwardenError_lift
+        )
 }
     
 
@@ -13133,6 +13845,36 @@ enum BitwardenError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError
     )
     case EncryptFile(EncryptFileError
     )
+    case CreateCipher(CreateCipherError
+    )
+    case EditCipher(EditCipherError
+    )
+    case DeleteCipher(DeleteCipherError
+    )
+    case GetCipher(GetCipherError
+    )
+    case RestoreCipher(RestoreCipherError
+    )
+    case MoveCipher(MoveCipherError
+    )
+    case BulkUpdateCollectionsCipher(BulkUpdateCollectionsCipherError
+    )
+    case CreateFolder(CreateFolderError
+    )
+    case EditFolder(EditFolderError
+    )
+    case GetFolder(GetFolderError
+    )
+    case CreateAttachment(CipherCreateAttachmentError
+    )
+    case DeleteAttachment(CipherDeleteAttachmentError
+    )
+    case RenewFileUploadUrl(CipherRenewFileUploadUrlError
+    )
+    case UpgradeAttachment(CipherUpgradeAttachmentError
+    )
+    case GetAttachmentDownloadUrl(CipherGetAttachmentDownloadUrlError
+    )
     case CollectionDecrypt(CollectionDecryptError
     )
     case CollectionEncrypt(CollectionEncryptError
@@ -13279,62 +14021,107 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
         case 26: return .EncryptFile(
             try FfiConverterTypeEncryptFileError.read(from: &buf)
             )
-        case 27: return .CollectionDecrypt(
+        case 27: return .CreateCipher(
+            try FfiConverterTypeCreateCipherError.read(from: &buf)
+            )
+        case 28: return .EditCipher(
+            try FfiConverterTypeEditCipherError.read(from: &buf)
+            )
+        case 29: return .DeleteCipher(
+            try FfiConverterTypeDeleteCipherError.read(from: &buf)
+            )
+        case 30: return .GetCipher(
+            try FfiConverterTypeGetCipherError.read(from: &buf)
+            )
+        case 31: return .RestoreCipher(
+            try FfiConverterTypeRestoreCipherError.read(from: &buf)
+            )
+        case 32: return .MoveCipher(
+            try FfiConverterTypeMoveCipherError.read(from: &buf)
+            )
+        case 33: return .BulkUpdateCollectionsCipher(
+            try FfiConverterTypeBulkUpdateCollectionsCipherError.read(from: &buf)
+            )
+        case 34: return .CreateFolder(
+            try FfiConverterTypeCreateFolderError.read(from: &buf)
+            )
+        case 35: return .EditFolder(
+            try FfiConverterTypeEditFolderError.read(from: &buf)
+            )
+        case 36: return .GetFolder(
+            try FfiConverterTypeGetFolderError.read(from: &buf)
+            )
+        case 37: return .CreateAttachment(
+            try FfiConverterTypeCipherCreateAttachmentError.read(from: &buf)
+            )
+        case 38: return .DeleteAttachment(
+            try FfiConverterTypeCipherDeleteAttachmentError.read(from: &buf)
+            )
+        case 39: return .RenewFileUploadUrl(
+            try FfiConverterTypeCipherRenewFileUploadUrlError.read(from: &buf)
+            )
+        case 40: return .UpgradeAttachment(
+            try FfiConverterTypeCipherUpgradeAttachmentError.read(from: &buf)
+            )
+        case 41: return .GetAttachmentDownloadUrl(
+            try FfiConverterTypeCipherGetAttachmentDownloadUrlError.read(from: &buf)
+            )
+        case 42: return .CollectionDecrypt(
             try FfiConverterTypeCollectionDecryptError.read(from: &buf)
             )
-        case 28: return .CollectionEncrypt(
+        case 43: return .CollectionEncrypt(
             try FfiConverterTypeCollectionEncryptError.read(from: &buf)
             )
-        case 29: return .SendDecrypt(
+        case 44: return .SendDecrypt(
             try FfiConverterTypeSendDecryptError.read(from: &buf)
             )
-        case 30: return .SendDecryptFile(
+        case 45: return .SendDecryptFile(
             try FfiConverterTypeSendDecryptFileError.read(from: &buf)
             )
-        case 31: return .SendEncrypt(
+        case 46: return .SendEncrypt(
             try FfiConverterTypeSendEncryptError.read(from: &buf)
             )
-        case 32: return .SendEncryptFile(
+        case 47: return .SendEncryptFile(
             try FfiConverterTypeSendEncryptFileError.read(from: &buf)
             )
-        case 33: return .Export(
+        case 48: return .Export(
             try FfiConverterTypeExportError.read(from: &buf)
             )
-        case 34: return .Import(
+        case 49: return .Import(
             try FfiConverterTypeImportError.read(from: &buf)
             )
-        case 35: return .MakeCredential(
+        case 50: return .MakeCredential(
             try FfiConverterTypeMakeCredentialError.read(from: &buf)
             )
-        case 36: return .GetAssertion(
+        case 51: return .GetAssertion(
             try FfiConverterTypeGetAssertionError.read(from: &buf)
             )
-        case 37: return .SilentlyDiscoverCredentials(
+        case 52: return .SilentlyDiscoverCredentials(
             try FfiConverterTypeSilentlyDiscoverCredentialsError.read(from: &buf)
             )
-        case 38: return .CredentialsForAutofill(
+        case 53: return .CredentialsForAutofill(
             try FfiConverterTypeCredentialsForAutofillError.read(from: &buf)
             )
-        case 39: return .GetFido2AutofillCredentials(
+        case 54: return .GetFido2AutofillCredentials(
             try FfiConverterTypeGetFido2AutofillCredentialsError.read(from: &buf)
             )
-        case 40: return .Fido2Client(
+        case 55: return .Fido2Client(
             try FfiConverterTypeFido2ClientError.read(from: &buf)
             )
-        case 41: return .DeviceAuthKey(
+        case 56: return .DeviceAuthKey(
             try FfiConverterTypeDeviceAuthKeyError.read(from: &buf)
             )
-        case 42: return .SshGeneration(
+        case 57: return .SshGeneration(
             try FfiConverterTypeKeyGenerationError.read(from: &buf)
             )
-        case 43: return .SshImport(
+        case 58: return .SshImport(
             try FfiConverterTypeSshKeyImportError.read(from: &buf)
             )
-        case 44: return .AcquireCookie(
+        case 59: return .AcquireCookie(
             try FfiConverterTypeAcquireCookieError.read(from: &buf)
             )
-        case 45: return .Callback
-        case 46: return .Conversion(
+        case 60: return .Callback
+        case 61: return .Conversion(
             try FfiConverterString.read(from: &buf)
             )
 
@@ -13479,102 +14266,177 @@ public struct FfiConverterTypeBitwardenError: FfiConverterRustBuffer {
             FfiConverterTypeEncryptFileError.write(v1, into: &buf)
             
         
-        case let .CollectionDecrypt(v1):
+        case let .CreateCipher(v1):
             writeInt(&buf, Int32(27))
+            FfiConverterTypeCreateCipherError.write(v1, into: &buf)
+            
+        
+        case let .EditCipher(v1):
+            writeInt(&buf, Int32(28))
+            FfiConverterTypeEditCipherError.write(v1, into: &buf)
+            
+        
+        case let .DeleteCipher(v1):
+            writeInt(&buf, Int32(29))
+            FfiConverterTypeDeleteCipherError.write(v1, into: &buf)
+            
+        
+        case let .GetCipher(v1):
+            writeInt(&buf, Int32(30))
+            FfiConverterTypeGetCipherError.write(v1, into: &buf)
+            
+        
+        case let .RestoreCipher(v1):
+            writeInt(&buf, Int32(31))
+            FfiConverterTypeRestoreCipherError.write(v1, into: &buf)
+            
+        
+        case let .MoveCipher(v1):
+            writeInt(&buf, Int32(32))
+            FfiConverterTypeMoveCipherError.write(v1, into: &buf)
+            
+        
+        case let .BulkUpdateCollectionsCipher(v1):
+            writeInt(&buf, Int32(33))
+            FfiConverterTypeBulkUpdateCollectionsCipherError.write(v1, into: &buf)
+            
+        
+        case let .CreateFolder(v1):
+            writeInt(&buf, Int32(34))
+            FfiConverterTypeCreateFolderError.write(v1, into: &buf)
+            
+        
+        case let .EditFolder(v1):
+            writeInt(&buf, Int32(35))
+            FfiConverterTypeEditFolderError.write(v1, into: &buf)
+            
+        
+        case let .GetFolder(v1):
+            writeInt(&buf, Int32(36))
+            FfiConverterTypeGetFolderError.write(v1, into: &buf)
+            
+        
+        case let .CreateAttachment(v1):
+            writeInt(&buf, Int32(37))
+            FfiConverterTypeCipherCreateAttachmentError.write(v1, into: &buf)
+            
+        
+        case let .DeleteAttachment(v1):
+            writeInt(&buf, Int32(38))
+            FfiConverterTypeCipherDeleteAttachmentError.write(v1, into: &buf)
+            
+        
+        case let .RenewFileUploadUrl(v1):
+            writeInt(&buf, Int32(39))
+            FfiConverterTypeCipherRenewFileUploadUrlError.write(v1, into: &buf)
+            
+        
+        case let .UpgradeAttachment(v1):
+            writeInt(&buf, Int32(40))
+            FfiConverterTypeCipherUpgradeAttachmentError.write(v1, into: &buf)
+            
+        
+        case let .GetAttachmentDownloadUrl(v1):
+            writeInt(&buf, Int32(41))
+            FfiConverterTypeCipherGetAttachmentDownloadUrlError.write(v1, into: &buf)
+            
+        
+        case let .CollectionDecrypt(v1):
+            writeInt(&buf, Int32(42))
             FfiConverterTypeCollectionDecryptError.write(v1, into: &buf)
             
         
         case let .CollectionEncrypt(v1):
-            writeInt(&buf, Int32(28))
+            writeInt(&buf, Int32(43))
             FfiConverterTypeCollectionEncryptError.write(v1, into: &buf)
             
         
         case let .SendDecrypt(v1):
-            writeInt(&buf, Int32(29))
+            writeInt(&buf, Int32(44))
             FfiConverterTypeSendDecryptError.write(v1, into: &buf)
             
         
         case let .SendDecryptFile(v1):
-            writeInt(&buf, Int32(30))
+            writeInt(&buf, Int32(45))
             FfiConverterTypeSendDecryptFileError.write(v1, into: &buf)
             
         
         case let .SendEncrypt(v1):
-            writeInt(&buf, Int32(31))
+            writeInt(&buf, Int32(46))
             FfiConverterTypeSendEncryptError.write(v1, into: &buf)
             
         
         case let .SendEncryptFile(v1):
-            writeInt(&buf, Int32(32))
+            writeInt(&buf, Int32(47))
             FfiConverterTypeSendEncryptFileError.write(v1, into: &buf)
             
         
         case let .Export(v1):
-            writeInt(&buf, Int32(33))
+            writeInt(&buf, Int32(48))
             FfiConverterTypeExportError.write(v1, into: &buf)
             
         
         case let .Import(v1):
-            writeInt(&buf, Int32(34))
+            writeInt(&buf, Int32(49))
             FfiConverterTypeImportError.write(v1, into: &buf)
             
         
         case let .MakeCredential(v1):
-            writeInt(&buf, Int32(35))
+            writeInt(&buf, Int32(50))
             FfiConverterTypeMakeCredentialError.write(v1, into: &buf)
             
         
         case let .GetAssertion(v1):
-            writeInt(&buf, Int32(36))
+            writeInt(&buf, Int32(51))
             FfiConverterTypeGetAssertionError.write(v1, into: &buf)
             
         
         case let .SilentlyDiscoverCredentials(v1):
-            writeInt(&buf, Int32(37))
+            writeInt(&buf, Int32(52))
             FfiConverterTypeSilentlyDiscoverCredentialsError.write(v1, into: &buf)
             
         
         case let .CredentialsForAutofill(v1):
-            writeInt(&buf, Int32(38))
+            writeInt(&buf, Int32(53))
             FfiConverterTypeCredentialsForAutofillError.write(v1, into: &buf)
             
         
         case let .GetFido2AutofillCredentials(v1):
-            writeInt(&buf, Int32(39))
+            writeInt(&buf, Int32(54))
             FfiConverterTypeGetFido2AutofillCredentialsError.write(v1, into: &buf)
             
         
         case let .Fido2Client(v1):
-            writeInt(&buf, Int32(40))
+            writeInt(&buf, Int32(55))
             FfiConverterTypeFido2ClientError.write(v1, into: &buf)
             
         
         case let .DeviceAuthKey(v1):
-            writeInt(&buf, Int32(41))
+            writeInt(&buf, Int32(56))
             FfiConverterTypeDeviceAuthKeyError.write(v1, into: &buf)
             
         
         case let .SshGeneration(v1):
-            writeInt(&buf, Int32(42))
+            writeInt(&buf, Int32(57))
             FfiConverterTypeKeyGenerationError.write(v1, into: &buf)
             
         
         case let .SshImport(v1):
-            writeInt(&buf, Int32(43))
+            writeInt(&buf, Int32(58))
             FfiConverterTypeSshKeyImportError.write(v1, into: &buf)
             
         
         case let .AcquireCookie(v1):
-            writeInt(&buf, Int32(44))
+            writeInt(&buf, Int32(59))
             FfiConverterTypeAcquireCookieError.write(v1, into: &buf)
             
         
         case .Callback:
-            writeInt(&buf, Int32(45))
+            writeInt(&buf, Int32(60))
         
         
         case let .Conversion(v1):
-            writeInt(&buf, Int32(46))
+            writeInt(&buf, Int32(61))
             FfiConverterString.write(v1, into: &buf)
             
         }
@@ -14778,6 +15640,30 @@ fileprivate struct FfiConverterOptionTypeCipher: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeCipherView: FfiConverterRustBuffer {
+    typealias SwiftType = CipherView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCipherView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCipherView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeFolder: FfiConverterRustBuffer {
     typealias SwiftType = Folder?
 
@@ -14866,6 +15752,54 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeDateTime.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeOrganizationId: FfiConverterRustBuffer {
+    typealias SwiftType = OrganizationId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeOrganizationId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeOrganizationId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeFolderId: FfiConverterRustBuffer {
+    typealias SwiftType = FolderId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeFolderId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeFolderId.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -15441,6 +16375,31 @@ fileprivate struct FfiConverterSequenceTypeCollectionId: FfiConverterRustBuffer 
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCollectionId.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCipherId: FfiConverterRustBuffer {
+    typealias SwiftType = [CipherId]
+
+    public static func write(_ value: [CipherId], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCipherId.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CipherId] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CipherId]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCipherId.read(from: &buf))
         }
         return seq
     }
@@ -16399,10 +17358,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_vaultclient_password_history() != 39367) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_create_attachment() != 45300) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_buffer() != 55499) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_decrypt_file() != 62701) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_delete_attachment() != 28586) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_buffer() != 50665) {
@@ -16411,22 +17376,91 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_encrypt_file() != 15093) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_get_attachment_download_url() != 19940) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_renew_file_upload_url() != 45596) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_attachmentsclient_upgrade_attachment() != 60485) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_bulk_update_collections() != 54242) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_create() != 7031) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt() != 48892) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list() != 44941) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_full_with_failures() != 62164) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_decrypt_list_with_failures() != 51963) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_delete() != 33514) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_delete_many() != 26501) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_edit() != 49878) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_edit_gated() != 60708) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_edit_partial() != 13800) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt() != 40027) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_encrypt_list() != 49913) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_get() != 54772) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_get_all() != 38597) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_list() != 26843) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_many() != 9654) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_move_to_organization() != 19757) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_prepare_ciphers_for_bulk_share() != 17223) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_restore() != 33204) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_restore_many() != 22455) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_share_cipher() != 62165) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_share_ciphers_bulk() != 34873) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_soft_delete() != 13041) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_soft_delete_many() != 57434) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_ciphersclient_update_collection() != 21435) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_collectionviewnodeitem_get_ancestors() != 12701) {
@@ -16468,13 +17502,25 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_collectionsclient_get_collection_tree() != 49401) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_create() != 41134) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt() != 19789) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_decrypt_list() != 4329) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_edit() != 28453) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_encrypt() != 32939) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_get() != 35839) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_uniffi_checksum_method_foldersclient_list() != 26897) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_decrypt_list() != 18488) {
