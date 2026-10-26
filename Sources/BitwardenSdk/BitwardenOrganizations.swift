@@ -959,6 +959,10 @@ public struct OrganizationMembership: Equatable, Hashable {
      * Whether the current user has access to Secrets Manager for this organization.
      */
     public let accessSecretsManager: Bool
+    /**
+     * Whether the current user has access to Privileged Controls for this organization.
+     */
+    public let accessPam: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -998,7 +1002,10 @@ public struct OrganizationMembership: Equatable, Hashable {
          */userIsClaimedByOrganization: Bool, 
         /**
          * Whether the current user has access to Secrets Manager for this organization.
-         */accessSecretsManager: Bool) {
+         */accessSecretsManager: Bool, 
+        /**
+         * Whether the current user has access to Privileged Controls for this organization.
+         */accessPam: Bool) {
         self.status = status
         self.type = type
         self.permissions = permissions
@@ -1010,6 +1017,7 @@ public struct OrganizationMembership: Equatable, Hashable {
         self.ssoBound = ssoBound
         self.userIsClaimedByOrganization = userIsClaimedByOrganization
         self.accessSecretsManager = accessSecretsManager
+        self.accessPam = accessPam
     }
 
     
@@ -1038,7 +1046,8 @@ public struct FfiConverterTypeOrganizationMembership: FfiConverterRustBuffer {
                 resetPasswordEnrolled: FfiConverterBool.read(from: &buf), 
                 ssoBound: FfiConverterBool.read(from: &buf), 
                 userIsClaimedByOrganization: FfiConverterBool.read(from: &buf), 
-                accessSecretsManager: FfiConverterBool.read(from: &buf)
+                accessSecretsManager: FfiConverterBool.read(from: &buf), 
+                accessPam: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -1054,6 +1063,7 @@ public struct FfiConverterTypeOrganizationMembership: FfiConverterRustBuffer {
         FfiConverterBool.write(value.ssoBound, into: &buf)
         FfiConverterBool.write(value.userIsClaimedByOrganization, into: &buf)
         FfiConverterBool.write(value.accessSecretsManager, into: &buf)
+        FfiConverterBool.write(value.accessPam, into: &buf)
     }
 }
 
@@ -1562,6 +1572,14 @@ public struct Permissions: Equatable, Hashable {
      * Can manage SCIM (System for Cross-domain Identity Management) configuration.
      */
     public let manageScim: Bool
+    /**
+     * Can manage access rules in Privileged Controls.
+     */
+    public let manageAccessRules: Bool
+    /**
+     * Can manage password rotation in Privileged Controls.
+     */
+    public let manageRotation: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1601,7 +1619,13 @@ public struct Permissions: Equatable, Hashable {
          */manageResetPassword: Bool, 
         /**
          * Can manage SCIM (System for Cross-domain Identity Management) configuration.
-         */manageScim: Bool) {
+         */manageScim: Bool, 
+        /**
+         * Can manage access rules in Privileged Controls.
+         */manageAccessRules: Bool, 
+        /**
+         * Can manage password rotation in Privileged Controls.
+         */manageRotation: Bool) {
         self.accessEventLogs = accessEventLogs
         self.accessImportExport = accessImportExport
         self.accessReports = accessReports
@@ -1614,6 +1638,8 @@ public struct Permissions: Equatable, Hashable {
         self.manageUsers = manageUsers
         self.manageResetPassword = manageResetPassword
         self.manageScim = manageScim
+        self.manageAccessRules = manageAccessRules
+        self.manageRotation = manageRotation
     }
 
     
@@ -1643,7 +1669,9 @@ public struct FfiConverterTypePermissions: FfiConverterRustBuffer {
                 managePolicies: FfiConverterBool.read(from: &buf), 
                 manageUsers: FfiConverterBool.read(from: &buf), 
                 manageResetPassword: FfiConverterBool.read(from: &buf), 
-                manageScim: FfiConverterBool.read(from: &buf)
+                manageScim: FfiConverterBool.read(from: &buf), 
+                manageAccessRules: FfiConverterBool.read(from: &buf), 
+                manageRotation: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -1660,6 +1688,8 @@ public struct FfiConverterTypePermissions: FfiConverterRustBuffer {
         FfiConverterBool.write(value.manageUsers, into: &buf)
         FfiConverterBool.write(value.manageResetPassword, into: &buf)
         FfiConverterBool.write(value.manageScim, into: &buf)
+        FfiConverterBool.write(value.manageAccessRules, into: &buf)
+        FfiConverterBool.write(value.manageRotation, into: &buf)
     }
 }
 
