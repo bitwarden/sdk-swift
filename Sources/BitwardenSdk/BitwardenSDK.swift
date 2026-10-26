@@ -2866,6 +2866,11 @@ public protocol ClientProtocol: AnyObject, Sendable {
     func ssh()  -> SshClient
     
     /**
+     * Unlock related operations.
+     */
+    func unlock()  -> UnlockClient
+    
+    /**
      * Returns the user-crypto-management sub-client (PIN settings, key rotation, etc).
      */
     func userCryptoManagement()  -> UserCryptoManagementClient
@@ -3157,6 +3162,18 @@ open func ssh() -> SshClient  {
     return try!  FfiConverterTypeSshClient_lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_method_client_ssh(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Unlock related operations.
+     */
+open func unlock() -> UnlockClient  {
+    return try!  FfiConverterTypeUnlockClient_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_uniffi_fn_method_client_unlock(
             self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
@@ -16857,6 +16874,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_client_ssh() != 4261) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_bitwarden_uniffi_checksum_method_client_unlock() != 54445) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_bitwarden_uniffi_checksum_method_client_user_crypto_management() != 21823) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -17568,6 +17588,7 @@ private let initializationResult: InitializationResult = {
     uniffiEnsureBitwardenServerCommunicationConfigInitialized()
     uniffiEnsureBitwardenSshInitialized()
     uniffiEnsureBitwardenStateInitialized()
+    uniffiEnsureBitwardenUnlockInitialized()
     uniffiEnsureBitwardenUserCryptoManagementInitialized()
     uniffiEnsureBitwardenVaultInitialized()
     return InitializationResult.ok

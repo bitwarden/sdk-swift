@@ -508,6 +508,422 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+
+
+
+/**
+ * Client for unlocking and locking the vault in memory, and for minting session keys and
+ * unlocking the vault with one.
+ */
+public protocol UnlockClientProtocol: AnyObject, Sendable {
+    
+    /**
+     * Clear the in-memory user and organization keys, retaining the client instance so that a
+     * later [`UnlockClient::unlock`] re-unlocks it.
+     *
+     * On WASM, unlocking also copies the user key into client-held state through the
+     * key-management state bridge, so locking clears it there as well. The in-memory keys are
+     * cleared first, so the SDK is locked even if the state bridge call fails.
+     */
+    func lock() async 
+    
+    /**
+     * Unlock the client with the supplied unlock factor.
+     *
+     * [`UnlockMethod::Legacy`] initializes the user's crypto state from the request, as
+     * `CryptoClient::initialize_user_crypto` does, and returns its errors as
+     * [`UnlockError::EncryptionSettings`].
+     *
+     * If the client is already unlocked, this returns [`UnlockError::AlreadyUnlocked`] before
+     * doing any work and leaves the client's keys untouched. The check only looks at whether a
+     * user key is present: it does not check which key the client holds, or whether it belongs
+     * to the user or account in the request.
+     */
+    func unlock(method: UnlockMethod) async throws 
+    
+}
+/**
+ * Client for unlocking and locking the vault in memory, and for minting session keys and
+ * unlocking the vault with one.
+ */
+open class UnlockClient: UnlockClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_unlock_fn_clone_unlockclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_unlock_fn_free_unlockclient(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Clear the in-memory user and organization keys, retaining the client instance so that a
+     * later [`UnlockClient::unlock`] re-unlocks it.
+     *
+     * On WASM, unlocking also copies the user key into client-held state through the
+     * key-management state bridge, so locking clears it there as well. The in-memory keys are
+     * cleared first, so the SDK is locked even if the state bridge call fails.
+     */
+open func lock()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_unlock_fn_method_unlockclient_lock(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_unlock_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_unlock_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_unlock_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Unlock the client with the supplied unlock factor.
+     *
+     * [`UnlockMethod::Legacy`] initializes the user's crypto state from the request, as
+     * `CryptoClient::initialize_user_crypto` does, and returns its errors as
+     * [`UnlockError::EncryptionSettings`].
+     *
+     * If the client is already unlocked, this returns [`UnlockError::AlreadyUnlocked`] before
+     * doing any work and leaves the client's keys untouched. The check only looks at whether a
+     * user key is present: it does not check which key the client holds, or whether it belongs
+     * to the user or account in the request.
+     */
+open func unlock(method: UnlockMethod)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_unlock_fn_method_unlockclient_unlock(
+                        self.uniffiCloneHandle(),FfiConverterTypeUnlockMethod_lower(method)
+                )
+            },
+            pollFunc: ffi_bitwarden_unlock_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_unlock_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_unlock_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeUnlockError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUnlockClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = UnlockClient
+
+    public static func lift(_ handle: UInt64) throws -> UnlockClient {
+        return UnlockClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: UnlockClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnlockClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: UnlockClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockClient_lift(_ handle: UInt64) throws -> UnlockClient {
+    return try FfiConverterTypeUnlockClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockClient_lower(_ value: UnlockClient) -> UInt64 {
+    return FfiConverterTypeUnlockClient.lower(value)
+}
+
+
+
+
+/**
+ * Errors returned by [`UnlockClient::generate_session_key`] and
+ * [`UnlockClient::unlock`].
+ */
+public 
+enum UnlockError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The client already holds a user key. Nothing was changed.
+     */
+    case AlreadyUnlocked(message: String)
+    
+    /**
+     * Initializing the user's crypto state failed, for example because of a wrong PIN or
+     * password.
+     */
+    case EncryptionSettings(message: String)
+    
+    /**
+     * An unknown error occurred while handling a session key. The detailed cause is emitted via
+     * `tracing::error!` rather than carried in the error, so callers see a uniform failure shape
+     * while operators retain diagnostic visibility through logs.
+     */
+    case Unknown(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension UnlockError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUnlockError: FfiConverterRustBuffer {
+    typealias SwiftType = UnlockError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnlockError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .AlreadyUnlocked(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .EncryptionSettings(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Unknown(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UnlockError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .AlreadyUnlocked(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .EncryptionSettings(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Unknown(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockError_lift(_ buf: RustBuffer) throws -> UnlockError {
+    return try FfiConverterTypeUnlockError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockError_lower(_ value: UnlockError) -> RustBuffer {
+    return FfiConverterTypeUnlockError.lower(value)
+}
+
+
+/**
+ * The unlock factor passed to [`UnlockClient::unlock`].
+ */
+
+public enum UnlockMethod: Equatable, Hashable {
+    
+    /**
+     * Unlock by initializing the user's crypto state from an [`InitUserCryptoRequest`], as
+     * [`CryptoClient::initialize_user_crypto`](bitwarden_core::key_management::CryptoClient::initialize_user_crypto)
+     * does.
+     */
+    case legacy(InitUserCryptoRequest
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension UnlockMethod: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUnlockMethod: FfiConverterRustBuffer {
+    typealias SwiftType = UnlockMethod
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnlockMethod {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .legacy(try FfiConverterTypeInitUserCryptoRequest.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: UnlockMethod, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .legacy(v1):
+            writeInt(&buf, Int32(1))
+            FfiConverterTypeInitUserCryptoRequest.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockMethod_lift(_ buf: RustBuffer) throws -> UnlockMethod {
+    return try FfiConverterTypeUnlockMethod.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnlockMethod_lower(_ value: UnlockMethod) -> RustBuffer {
+    return FfiConverterTypeUnlockMethod.lower(value)
+}
+
+private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
+private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
+
+fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
+
+fileprivate func uniffiRustCallAsync<F, T>(
+    rustFutureFunc: () -> UInt64,
+    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
+    freeFunc: (UInt64) -> (),
+    liftFunc: (F) throws -> T,
+    errorHandler: ((RustBuffer) throws -> Swift.Error)?
+) async throws -> T {
+    // Make sure to call the ensure init function since future creation doesn't have a
+    // RustCallStatus param, so doesn't use makeRustCall()
+    uniffiEnsureBitwardenUnlockInitialized()
+    let rustFuture = rustFutureFunc()
+    defer {
+        freeFunc(rustFuture)
+    }
+    var pollResult: Int8;
+    repeat {
+        pollResult = await withUnsafeContinuation {
+            pollFunc(
+                rustFuture,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
+                uniffiContinuationHandleMap.insert(obj: $0)
+            )
+        }
+    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+
+    return try liftFunc(makeRustCall(
+        { completeFunc(rustFuture, $0) },
+        errorHandler: errorHandler
+    ))
+}
+
+// Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
+// lift the return value or error and resume the suspended function.
+fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: Int8) {
+    if let continuation = try? uniffiContinuationHandleMap.remove(handle: handle) {
+        continuation.resume(returning: pollResult)
+    } else {
+        print("uniffiFutureContinuationCallback invalid handle")
+    }
+}
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -523,7 +939,14 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_bitwarden_unlock_checksum_method_unlockclient_lock() != 1127) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_unlock_checksum_method_unlockclient_unlock() != 26234) {
+        return InitializationResult.apiChecksumMismatch
+    }
 
+    uniffiEnsureBitwardenCoreInitialized()
     return InitializationResult.ok
 }()
 
