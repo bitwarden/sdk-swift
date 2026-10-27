@@ -1790,6 +1790,7 @@ public enum PolicyDataType: Equatable, Hashable {
     case sendControls
     case fillAssist(FillAssistPolicyData
     )
+    case autotypeGaPolicy
 
 
 
@@ -1865,6 +1866,8 @@ public struct FfiConverterTypePolicyDataType: FfiConverterRustBuffer {
         
         case 23: return .fillAssist(try FfiConverterTypeFillAssistPolicyData.read(from: &buf)
         )
+        
+        case 24: return .autotypeGaPolicy
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -1974,6 +1977,10 @@ public struct FfiConverterTypePolicyDataType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(23))
             FfiConverterTypeFillAssistPolicyData.write(v1, into: &buf)
             
+        
+        case .autotypeGaPolicy:
+            writeInt(&buf, Int32(24))
+        
         }
     }
 }
@@ -2108,6 +2115,11 @@ public enum PolicyType: UInt8, Equatable, Hashable {
      * rules feed URL.
      */
     case fillAssist = 22
+    /**
+     * Enables AutoType GA policy for members who have not explicitly set their AutoType GA
+     * preference.
+     */
+    case autotypeGaPolicy = 23
 
 
 
@@ -2174,6 +2186,8 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
         case 22: return .sendControls
         
         case 23: return .fillAssist
+        
+        case 24: return .autotypeGaPolicy
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -2273,6 +2287,10 @@ public struct FfiConverterTypePolicyType: FfiConverterRustBuffer {
         
         case .fillAssist:
             writeInt(&buf, Int32(23))
+        
+        
+        case .autotypeGaPolicy:
+            writeInt(&buf, Int32(24))
         
         }
     }
