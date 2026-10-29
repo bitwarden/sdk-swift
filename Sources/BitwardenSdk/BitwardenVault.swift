@@ -4590,17 +4590,27 @@ public struct LoginView: Equatable, Hashable {
     public let uris: [LoginUriView]?
     public let totp: String?
     public let autofillOnPageLoad: Bool?
+    /**
+     * Whether the login's credentials may answer HTTP authentication challenges. Only stored for
+     * blob-encrypted ciphers; `None` for ciphers in the legacy field-level format.
+     */
+    public let httpAuthenticationEnabled: Bool?
     public let fido2Credentials: [Fido2CredentialView]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2CredentialView]?) {
+    public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, 
+        /**
+         * Whether the login's credentials may answer HTTP authentication challenges. Only stored for
+         * blob-encrypted ciphers; `None` for ciphers in the legacy field-level format.
+         */httpAuthenticationEnabled: Bool? = nil, fido2Credentials: [Fido2CredentialView]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
         self.uris = uris
         self.totp = totp
         self.autofillOnPageLoad = autofillOnPageLoad
+        self.httpAuthenticationEnabled = httpAuthenticationEnabled
         self.fido2Credentials = fido2Credentials
     }
 
@@ -4626,6 +4636,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
                 uris: FfiConverterOptionSequenceTypeLoginUriView.read(from: &buf), 
                 totp: FfiConverterOptionString.read(from: &buf), 
                 autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
+                httpAuthenticationEnabled: FfiConverterOptionBool.read(from: &buf), 
                 fido2Credentials: FfiConverterOptionSequenceTypeFido2CredentialView.read(from: &buf)
         )
     }
@@ -4637,6 +4648,7 @@ public struct FfiConverterTypeLoginView: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUriView.write(value.uris, into: &buf)
         FfiConverterOptionString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
+        FfiConverterOptionBool.write(value.httpAuthenticationEnabled, into: &buf)
         FfiConverterOptionSequenceTypeFido2CredentialView.write(value.fido2Credentials, into: &buf)
     }
 }
