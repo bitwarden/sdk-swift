@@ -4334,17 +4334,27 @@ public struct Login: Equatable, Hashable {
     public let uris: [LoginUri]?
     public let totp: EncString?
     public let autofillOnPageLoad: Bool?
+    /**
+     * Whether the login's credentials may answer HTTP authentication challenges. Stored
+     * unencrypted, like `autofill_on_page_load`.
+     */
+    public let httpAuthenticationEnabled: Bool?
     public let fido2Credentials: [Fido2Credential]?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(username: EncString?, password: EncString?, passwordRevisionDate: DateTime?, uris: [LoginUri]?, totp: EncString?, autofillOnPageLoad: Bool?, fido2Credentials: [Fido2Credential]?) {
+    public init(username: EncString?, password: EncString?, passwordRevisionDate: DateTime?, uris: [LoginUri]?, totp: EncString?, autofillOnPageLoad: Bool?, 
+        /**
+         * Whether the login's credentials may answer HTTP authentication challenges. Stored
+         * unencrypted, like `autofill_on_page_load`.
+         */httpAuthenticationEnabled: Bool? = nil, fido2Credentials: [Fido2Credential]?) {
         self.username = username
         self.password = password
         self.passwordRevisionDate = passwordRevisionDate
         self.uris = uris
         self.totp = totp
         self.autofillOnPageLoad = autofillOnPageLoad
+        self.httpAuthenticationEnabled = httpAuthenticationEnabled
         self.fido2Credentials = fido2Credentials
     }
 
@@ -4370,6 +4380,7 @@ public struct FfiConverterTypeLogin: FfiConverterRustBuffer {
                 uris: FfiConverterOptionSequenceTypeLoginUri.read(from: &buf), 
                 totp: FfiConverterOptionTypeEncString.read(from: &buf), 
                 autofillOnPageLoad: FfiConverterOptionBool.read(from: &buf), 
+                httpAuthenticationEnabled: FfiConverterOptionBool.read(from: &buf), 
                 fido2Credentials: FfiConverterOptionSequenceTypeFido2Credential.read(from: &buf)
         )
     }
@@ -4381,6 +4392,7 @@ public struct FfiConverterTypeLogin: FfiConverterRustBuffer {
         FfiConverterOptionSequenceTypeLoginUri.write(value.uris, into: &buf)
         FfiConverterOptionTypeEncString.write(value.totp, into: &buf)
         FfiConverterOptionBool.write(value.autofillOnPageLoad, into: &buf)
+        FfiConverterOptionBool.write(value.httpAuthenticationEnabled, into: &buf)
         FfiConverterOptionSequenceTypeFido2Credential.write(value.fido2Credentials, into: &buf)
     }
 }
@@ -4591,8 +4603,9 @@ public struct LoginView: Equatable, Hashable {
     public let totp: String?
     public let autofillOnPageLoad: Bool?
     /**
-     * Whether the login's credentials may answer HTTP authentication challenges. Only stored for
-     * blob-encrypted ciphers; `None` for ciphers in the legacy field-level format.
+     * Whether the login's credentials may answer HTTP authentication challenges. Sealed in the
+     * blob for blob-encrypted ciphers, and stored unencrypted on [`Login`] for ciphers in the
+     * legacy field-level format.
      */
     public let httpAuthenticationEnabled: Bool?
     public let fido2Credentials: [Fido2CredentialView]?
@@ -4601,8 +4614,9 @@ public struct LoginView: Equatable, Hashable {
     // declare one manually.
     public init(username: String?, password: String?, passwordRevisionDate: DateTime?, uris: [LoginUriView]?, totp: String?, autofillOnPageLoad: Bool?, 
         /**
-         * Whether the login's credentials may answer HTTP authentication challenges. Only stored for
-         * blob-encrypted ciphers; `None` for ciphers in the legacy field-level format.
+         * Whether the login's credentials may answer HTTP authentication challenges. Sealed in the
+         * blob for blob-encrypted ciphers, and stored unencrypted on [`Login`] for ciphers in the
+         * legacy field-level format.
          */httpAuthenticationEnabled: Bool? = nil, fido2Credentials: [Fido2CredentialView]?) {
         self.username = username
         self.password = password
