@@ -1051,6 +1051,10 @@ public struct SendItem: Equatable, Hashable {
      * Opaque sealed cipher blob, see [`CipherView::seal_blob_for_item_sends`].
      */
     public let data: String
+    /**
+     * Partially encrypted metadata used to display item information that is
+     * not stored directly on the CipherView (e.g. folder/collection names)
+     */
     public let metadata: SendItemMetadata
 
     // Default memberwise initializers are never public by default, so we
@@ -1058,7 +1062,11 @@ public struct SendItem: Equatable, Hashable {
     public init(encryptionVersion: SendEncryptionType, 
         /**
          * Opaque sealed cipher blob, see [`CipherView::seal_blob_for_item_sends`].
-         */data: String, metadata: SendItemMetadata) {
+         */data: String, 
+        /**
+         * Partially encrypted metadata used to display item information that is
+         * not stored directly on the CipherView (e.g. folder/collection names)
+         */metadata: SendItemMetadata) {
         self.encryptionVersion = encryptionVersion
         self.data = data
         self.metadata = metadata
@@ -1110,21 +1118,61 @@ public func FfiConverterTypeSendItem_lower(_ value: SendItem) -> RustBuffer {
 
 
 /**
- * Unencrypted metadata of an Item Send
+ * Encrypted metadata of an Item Send
  */
 public struct SendItemMetadata: Equatable, Hashable {
     /**
      * Id of the vault item being sent
      */
     public let itemId: CipherId
+    /**
+     * The name of the folder the vault item being sent belongs to
+     */
+    public let folderName: EncString?
+    /**
+     * The name of the collections the vault item being sent belongs to
+     */
+    public let collectionNames: [EncString]?
+    /**
+     * The name of the organization the vault item being sent belongs to
+     */
+    public let organizationName: String?
+    /**
+     * The date the vault item being sent was created
+     */
+    public let creationDate: DateTime?
+    /**
+     * The date the vault item being sent was last edited
+     */
+    public let revisionDate: DateTime?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * Id of the vault item being sent
-         */itemId: CipherId) {
+         */itemId: CipherId, 
+        /**
+         * The name of the folder the vault item being sent belongs to
+         */folderName: EncString?, 
+        /**
+         * The name of the collections the vault item being sent belongs to
+         */collectionNames: [EncString]?, 
+        /**
+         * The name of the organization the vault item being sent belongs to
+         */organizationName: String?, 
+        /**
+         * The date the vault item being sent was created
+         */creationDate: DateTime?, 
+        /**
+         * The date the vault item being sent was last edited
+         */revisionDate: DateTime?) {
         self.itemId = itemId
+        self.folderName = folderName
+        self.collectionNames = collectionNames
+        self.organizationName = organizationName
+        self.creationDate = creationDate
+        self.revisionDate = revisionDate
     }
 
     
@@ -1143,12 +1191,22 @@ public struct FfiConverterTypeSendItemMetadata: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendItemMetadata {
         return
             try SendItemMetadata(
-                itemId: FfiConverterTypeCipherId.read(from: &buf)
+                itemId: FfiConverterTypeCipherId.read(from: &buf), 
+                folderName: FfiConverterOptionTypeEncString.read(from: &buf), 
+                collectionNames: FfiConverterOptionSequenceTypeEncString.read(from: &buf), 
+                organizationName: FfiConverterOptionString.read(from: &buf), 
+                creationDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                revisionDate: FfiConverterOptionTypeDateTime.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendItemMetadata, into buf: inout [UInt8]) {
         FfiConverterTypeCipherId.write(value.itemId, into: &buf)
+        FfiConverterOptionTypeEncString.write(value.folderName, into: &buf)
+        FfiConverterOptionSequenceTypeEncString.write(value.collectionNames, into: &buf)
+        FfiConverterOptionString.write(value.organizationName, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.creationDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.revisionDate, into: &buf)
     }
 }
 
@@ -1169,6 +1227,115 @@ public func FfiConverterTypeSendItemMetadata_lower(_ value: SendItemMetadata) ->
 
 
 /**
+ * Unencrypted metadata of an Item Send
+ */
+public struct SendItemMetadataView: Equatable, Hashable {
+    /**
+     * Id of the vault item being sent
+     */
+    public let itemId: CipherId
+    /**
+     * The name of the folder the vault item being sent belongs to
+     */
+    public let folderName: String?
+    /**
+     * The names of the collections the vault item being sent belongs to
+     */
+    public let collectionNames: [String]?
+    /**
+     * The name of the organization the vault item being sent belongs to
+     */
+    public let organizationName: String?
+    /**
+     * The date the vault item being sent was created
+     */
+    public let creationDate: DateTime?
+    /**
+     * The date the vault item being sent was last edited
+     */
+    public let revisionDate: DateTime?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Id of the vault item being sent
+         */itemId: CipherId, 
+        /**
+         * The name of the folder the vault item being sent belongs to
+         */folderName: String?, 
+        /**
+         * The names of the collections the vault item being sent belongs to
+         */collectionNames: [String]?, 
+        /**
+         * The name of the organization the vault item being sent belongs to
+         */organizationName: String?, 
+        /**
+         * The date the vault item being sent was created
+         */creationDate: DateTime?, 
+        /**
+         * The date the vault item being sent was last edited
+         */revisionDate: DateTime?) {
+        self.itemId = itemId
+        self.folderName = folderName
+        self.collectionNames = collectionNames
+        self.organizationName = organizationName
+        self.creationDate = creationDate
+        self.revisionDate = revisionDate
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SendItemMetadataView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSendItemMetadataView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendItemMetadataView {
+        return
+            try SendItemMetadataView(
+                itemId: FfiConverterTypeCipherId.read(from: &buf), 
+                folderName: FfiConverterOptionString.read(from: &buf), 
+                collectionNames: FfiConverterOptionSequenceString.read(from: &buf), 
+                organizationName: FfiConverterOptionString.read(from: &buf), 
+                creationDate: FfiConverterOptionTypeDateTime.read(from: &buf), 
+                revisionDate: FfiConverterOptionTypeDateTime.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SendItemMetadataView, into buf: inout [UInt8]) {
+        FfiConverterTypeCipherId.write(value.itemId, into: &buf)
+        FfiConverterOptionString.write(value.folderName, into: &buf)
+        FfiConverterOptionSequenceString.write(value.collectionNames, into: &buf)
+        FfiConverterOptionString.write(value.organizationName, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.creationDate, into: &buf)
+        FfiConverterOptionTypeDateTime.write(value.revisionDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendItemMetadataView_lift(_ buf: RustBuffer) throws -> SendItemMetadataView {
+    return try FfiConverterTypeSendItemMetadataView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSendItemMetadataView_lower(_ value: SendItemMetadataView) -> RustBuffer {
+    return FfiConverterTypeSendItemMetadataView.lower(value)
+}
+
+
+/**
  * View model for decrypted SendItem
  */
 public struct SendItemView: Equatable, Hashable {
@@ -1176,14 +1343,24 @@ public struct SendItemView: Equatable, Hashable {
      * The item content of the send
      */
     public let data: CipherView
+    /**
+     * Unencrypted metadata used to display item information that is not
+     * stored directly on the CipherView (e.g. folder/collection names)
+     */
+    public let metadata: SendItemMetadataView
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         /**
          * The item content of the send
-         */data: CipherView) {
+         */data: CipherView, 
+        /**
+         * Unencrypted metadata used to display item information that is not
+         * stored directly on the CipherView (e.g. folder/collection names)
+         */metadata: SendItemMetadataView) {
         self.data = data
+        self.metadata = metadata
     }
 
     
@@ -1202,12 +1379,14 @@ public struct FfiConverterTypeSendItemView: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SendItemView {
         return
             try SendItemView(
-                data: FfiConverterTypeCipherView.read(from: &buf)
+                data: FfiConverterTypeCipherView.read(from: &buf), 
+                metadata: FfiConverterTypeSendItemMetadataView.read(from: &buf)
         )
     }
 
     public static func write(_ value: SendItemView, into buf: inout [UInt8]) {
         FfiConverterTypeCipherView.write(value.data, into: &buf)
+        FfiConverterTypeSendItemMetadataView.write(value.metadata, into: &buf)
     }
 }
 
@@ -4064,6 +4243,54 @@ fileprivate struct FfiConverterOptionTypeSendTextView: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeEncString: FfiConverterRustBuffer {
+    typealias SwiftType = [EncString]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeEncString.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeEncString.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
     typealias SwiftType = DateTime?
 
@@ -4178,6 +4405,31 @@ fileprivate struct FfiConverterSequenceTypeSend: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeSend.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeEncString: FfiConverterRustBuffer {
+    typealias SwiftType = [EncString]
+
+    public static func write(_ value: [EncString], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeEncString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [EncString] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [EncString]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeEncString.read(from: &buf))
         }
         return seq
     }
