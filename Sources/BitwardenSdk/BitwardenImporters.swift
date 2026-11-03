@@ -1423,9 +1423,13 @@ enum ImportError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     
     case OnePasswordDenied(message: String)
     
+    case OnePasswordVerificationCodeFailed(message: String)
+    
     case OnePasswordUnsupported(message: String)
     
     case OnePasswordNetwork(message: String)
+    
+    case OnePasswordInternal(message: String)
     
     case OnePasswordDecryption(message: String)
     
@@ -1522,35 +1526,43 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 13: return .OnePasswordUnsupported(
+        case 13: return .OnePasswordVerificationCodeFailed(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 14: return .OnePasswordNetwork(
+        case 14: return .OnePasswordUnsupported(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .OnePasswordDecryption(
+        case 15: return .OnePasswordNetwork(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 16: return .NotAuthenticated(
+        case 16: return .OnePasswordInternal(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .Api(
+        case 17: return .OnePasswordDecryption(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .BitwardenCrypto(
+        case 18: return .NotAuthenticated(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .KeeperCrypto(
+        case 19: return .Api(
             message: try FfiConverterString.read(from: &buf)
         )
         
-        case 20: return .Export(
+        case 20: return .BitwardenCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 21: return .KeeperCrypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 22: return .Export(
             message: try FfiConverterString.read(from: &buf)
         )
         
@@ -1589,22 +1601,26 @@ public struct FfiConverterTypeImportError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(11))
         case .OnePasswordDenied(_ /* message is ignored*/):
             writeInt(&buf, Int32(12))
-        case .OnePasswordUnsupported(_ /* message is ignored*/):
+        case .OnePasswordVerificationCodeFailed(_ /* message is ignored*/):
             writeInt(&buf, Int32(13))
-        case .OnePasswordNetwork(_ /* message is ignored*/):
+        case .OnePasswordUnsupported(_ /* message is ignored*/):
             writeInt(&buf, Int32(14))
-        case .OnePasswordDecryption(_ /* message is ignored*/):
+        case .OnePasswordNetwork(_ /* message is ignored*/):
             writeInt(&buf, Int32(15))
-        case .NotAuthenticated(_ /* message is ignored*/):
+        case .OnePasswordInternal(_ /* message is ignored*/):
             writeInt(&buf, Int32(16))
-        case .Api(_ /* message is ignored*/):
+        case .OnePasswordDecryption(_ /* message is ignored*/):
             writeInt(&buf, Int32(17))
-        case .BitwardenCrypto(_ /* message is ignored*/):
+        case .NotAuthenticated(_ /* message is ignored*/):
             writeInt(&buf, Int32(18))
-        case .KeeperCrypto(_ /* message is ignored*/):
+        case .Api(_ /* message is ignored*/):
             writeInt(&buf, Int32(19))
-        case .Export(_ /* message is ignored*/):
+        case .BitwardenCrypto(_ /* message is ignored*/):
             writeInt(&buf, Int32(20))
+        case .KeeperCrypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(21))
+        case .Export(_ /* message is ignored*/):
+            writeInt(&buf, Int32(22))
 
         
         }
