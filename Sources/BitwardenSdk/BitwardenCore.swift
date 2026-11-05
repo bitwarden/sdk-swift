@@ -489,6 +489,22 @@ fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterUInt64: FfiConverterPrimitive {
     typealias FfiType = UInt64
     typealias SwiftType = UInt64
@@ -1068,6 +1084,21 @@ public protocol StateBridgeForeignImpl: AnyObject, Sendable {
     func clearEncryptedPin() async 
     
     /**
+     * Stores the `pin_length` value.
+     */
+    func setPinLength(value: UInt32) async 
+    
+    /**
+     * Returns the `pin_length` value, if available.
+     */
+    func getPinLength() async  -> UInt32?
+    
+    /**
+     * Clears the `pin_length` value.
+     */
+    func clearPinLength() async 
+    
+    /**
      * Stores the `v2_upgrade_token` value.
      */
     func setV2UpgradeToken(value: V2UpgradeToken) async 
@@ -1506,6 +1537,66 @@ open func clearEncryptedPin()async   {
         try!  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_encrypted_pin(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Stores the `pin_length` value.
+     */
+open func setPinLength(value: UInt32)async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_set_pin_length(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(value)
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_void,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_void,
+            freeFunc: ffi_bitwarden_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the `pin_length` value, if available.
+     */
+open func getPinLength()async  -> UInt32?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_get_pin_length(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Clears the `pin_length` value.
+     */
+open func clearPinLength()async   {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_core_fn_method_statebridgeforeignimpl_clear_pin_length(
                         self.uniffiCloneHandle()
                 )
             },
@@ -2470,6 +2561,124 @@ fileprivate struct UniffiCallbackInterfaceStateBridgeForeignImpl {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
                 return await uniffiObj.clearEncryptedPin(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        setPinLength: { (
+            uniffiHandle: UInt64,
+            value: UInt32,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.setPinLength(
+                     value: try FfiConverterUInt32.lift(value)
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: ()) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultVoid(
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        getPinLength: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteRustBuffer,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> UInt32? in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.getPinLength(
+                )
+            }
+
+            let uniffiHandleSuccess = { (returnValue: UInt32?) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: FfiConverterOptionUInt32.lower(returnValue),
+                        callStatus: RustCallStatus()
+                    )
+                )
+            }
+            let uniffiHandleError = { (statusCode, errorBuf) in
+                uniffiFutureCallback(
+                    uniffiCallbackData,
+                    UniffiForeignFutureResultRustBuffer(
+                        returnValue: RustBuffer.empty(),
+                        callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
+                    )
+                )
+            }
+            uniffiTraitInterfaceCallAsync(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                droppedCallback: uniffiOutDroppedCallback
+            )
+        },
+        clearPinLength: { (
+            uniffiHandle: UInt64,
+            uniffiFutureCallback: @escaping UniffiForeignFutureCompleteVoid,
+            uniffiCallbackData: UInt64,
+            uniffiOutDroppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+        ) in
+            let makeCall = {
+                () async throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeStateBridgeForeignImpl.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return await uniffiObj.clearPinLength(
                 )
             }
 
@@ -7516,6 +7725,30 @@ public func FfiConverterTypeWrappedAccountCryptographicState_lower(_ value: Wrap
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = UInt32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -8418,58 +8651,67 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_encrypted_pin() != 10055) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 9446) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_pin_length() != 46363) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 53579) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_pin_length() != 21267) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 28561) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_pin_length() != 2074) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 60012) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_upgrade_token() != 20011) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 47859) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_upgrade_token() != 33248) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 8738) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_upgrade_token() != 55443) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 28882) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_account_cryptographic_state() != 64529) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 61247) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_account_cryptographic_state() != 5648) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 32522) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_account_cryptographic_state() != 51351) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 33517) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_masterpassword_unlock_data() != 49623) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 45954) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_masterpassword_unlock_data() != 14817) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 27969) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_masterpassword_unlock_data() != 62328) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 13425) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_webauthn_prf_unlock_data() != 44351) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 32905) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_webauthn_prf_unlock_data() != 41596) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 3217) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_webauthn_prf_unlock_data() != 223) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_encrypted_migrations_grace_period_start() != 2362) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_kdf_config() != 24096) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_encrypted_migrations_grace_period_start() != 35678) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_kdf_config() != 38912) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_encrypted_migrations_grace_period_start() != 23521) {
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_kdf_config() != 47539) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_set_v2_encrypted_migrations_grace_period_start() != 52484) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_get_v2_encrypted_migrations_grace_period_start() != 30674) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_core_checksum_method_statebridgeforeignimpl_clear_v2_encrypted_migrations_grace_period_start() != 57812) {
         return InitializationResult.apiChecksumMismatch
     }
 

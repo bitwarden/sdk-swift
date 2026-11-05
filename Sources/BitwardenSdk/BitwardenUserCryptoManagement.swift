@@ -465,6 +465,22 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterBool : FfiConverter {
     typealias FfiType = Int8
     typealias SwiftType = Bool
@@ -549,6 +565,13 @@ public protocol PinSettingsClientProtocol: AnyObject, Sendable {
      * Returns the currently configured PIN, if available.
      */
     func getPin() async  -> String?
+    
+    /**
+     * Returns the number of characters in the PIN, readable while locked, e.g. so the lock screen
+     * can try the PIN as soon as it is fully typed. `None` when no PIN is set, or for a PIN set
+     * before its length was stored that hasn't unlocked since.
+     */
+    func getPinLength() async  -> UInt32?
     
     /**
      * Returns the current status of PIN unlock
@@ -665,6 +688,28 @@ open func getPin()async  -> String?  {
             completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_rust_buffer,
             freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_rust_buffer,
             liftFunc: FfiConverterOptionString.lift,
+            errorHandler: nil
+            
+        )
+}
+    
+    /**
+     * Returns the number of characters in the PIN, readable while locked, e.g. so the lock screen
+     * can try the PIN as soon as it is fully typed. `None` when no PIN is set, or for a PIN set
+     * before its length was stored that hasn't unlocked since.
+     */
+open func getPinLength()async  -> UInt32?  {
+    return
+        try!  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_bitwarden_user_crypto_management_fn_method_pinsettingsclient_get_pin_length(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_bitwarden_user_crypto_management_rust_future_poll_rust_buffer,
+            completeFunc: ffi_bitwarden_user_crypto_management_rust_future_complete_rust_buffer,
+            freeFunc: ffi_bitwarden_user_crypto_management_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
             errorHandler: nil
             
         )
@@ -2139,6 +2184,30 @@ public func FfiConverterTypeUpgradeTokenAction_lower(_ value: UpgradeTokenAction
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = UInt32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -2276,6 +2345,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_pin() != 9959) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_pin_length() != 52322) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_user_crypto_management_checksum_method_pinsettingsclient_get_status() != 14937) {
