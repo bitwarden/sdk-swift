@@ -839,6 +839,11 @@ public struct OrganizationDetails: Equatable, Hashable {
      * Whether the organization has both a public and private key configured.
      */
     public let hasPublicAndPrivateKeys: Bool
+    /**
+     * The id of the organization key, as recorded by the server. `None` when the server has not
+     * recorded one yet.
+     */
+    public let keyId: KeyId?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -854,11 +859,16 @@ public struct OrganizationDetails: Equatable, Hashable {
          */enabled: Bool, 
         /**
          * Whether the organization has both a public and private key configured.
-         */hasPublicAndPrivateKeys: Bool) {
+         */hasPublicAndPrivateKeys: Bool, 
+        /**
+         * The id of the organization key, as recorded by the server. `None` when the server has not
+         * recorded one yet.
+         */keyId: KeyId? = nil) {
         self.id = id
         self.name = name
         self.enabled = enabled
         self.hasPublicAndPrivateKeys = hasPublicAndPrivateKeys
+        self.keyId = keyId
     }
 
     
@@ -880,7 +890,8 @@ public struct FfiConverterTypeOrganizationDetails: FfiConverterRustBuffer {
                 id: FfiConverterTypeOrganizationId.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 enabled: FfiConverterBool.read(from: &buf), 
-                hasPublicAndPrivateKeys: FfiConverterBool.read(from: &buf)
+                hasPublicAndPrivateKeys: FfiConverterBool.read(from: &buf), 
+                keyId: FfiConverterOptionTypeKeyId.read(from: &buf)
         )
     }
 
@@ -889,6 +900,7 @@ public struct FfiConverterTypeOrganizationDetails: FfiConverterRustBuffer {
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterBool.write(value.enabled, into: &buf)
         FfiConverterBool.write(value.hasPublicAndPrivateKeys, into: &buf)
+        FfiConverterOptionTypeKeyId.write(value.keyId, into: &buf)
     }
 }
 
@@ -2561,6 +2573,30 @@ fileprivate struct FfiConverterOptionTypeDateTime: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeKeyId: FfiConverterRustBuffer {
+    typealias SwiftType = KeyId?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeKeyId.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeKeyId.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeOrganizationUserId: FfiConverterRustBuffer {
     typealias SwiftType = OrganizationUserId?
 
@@ -2679,6 +2715,7 @@ private let initializationResult: InitializationResult = {
     }
 
     uniffiEnsureBitwardenCoreInitialized()
+    uniffiEnsureBitwardenCryptoInitialized()
     return InitializationResult.ok
 }()
 
