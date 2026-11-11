@@ -602,6 +602,15 @@ public struct JitMasterPasswordRegistrationRequest: Equatable, Hashable {
      * Should enroll user into admin password reset
      */
     public let resetPasswordEnroll: Bool
+    /**
+     * Whether the server moves the pending organization membership from Invited to Accepted and
+     * the user is enrolled in admin account recovery. Send `false` for open-invite links so the
+     * membership stays Invited and is Accepted by the client after successful registration.
+     * This also skips account recovery enrollment, even when `reset_password_enroll` is `true`.
+     * Defaults to `true` when not set. Only used when the
+     * `pm-34429-invite-link-auto-confirm` flag is on.
+     */
+    public let acceptOrganizationInvite: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -630,7 +639,15 @@ public struct JitMasterPasswordRegistrationRequest: Equatable, Hashable {
          */masterPasswordHint: String?, 
         /**
          * Should enroll user into admin password reset
-         */resetPasswordEnroll: Bool) {
+         */resetPasswordEnroll: Bool, 
+        /**
+         * Whether the server moves the pending organization membership from Invited to Accepted and
+         * the user is enrolled in admin account recovery. Send `false` for open-invite links so the
+         * membership stays Invited and is Accepted by the client after successful registration.
+         * This also skips account recovery enrollment, even when `reset_password_enroll` is `true`.
+         * Defaults to `true` when not set. Only used when the
+         * `pm-34429-invite-link-auto-confirm` flag is on.
+         */acceptOrganizationInvite: Bool? = nil) {
         self.orgId = orgId
         self.orgPublicKey = orgPublicKey
         self.organizationSsoIdentifier = organizationSsoIdentifier
@@ -639,6 +656,7 @@ public struct JitMasterPasswordRegistrationRequest: Equatable, Hashable {
         self.masterPassword = masterPassword
         self.masterPasswordHint = masterPasswordHint
         self.resetPasswordEnroll = resetPasswordEnroll
+        self.acceptOrganizationInvite = acceptOrganizationInvite
     }
 
     
@@ -664,7 +682,8 @@ public struct FfiConverterTypeJitMasterPasswordRegistrationRequest: FfiConverter
                 salt: FfiConverterString.read(from: &buf), 
                 masterPassword: FfiConverterString.read(from: &buf), 
                 masterPasswordHint: FfiConverterOptionString.read(from: &buf), 
-                resetPasswordEnroll: FfiConverterBool.read(from: &buf)
+                resetPasswordEnroll: FfiConverterBool.read(from: &buf), 
+                acceptOrganizationInvite: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
@@ -677,6 +696,7 @@ public struct FfiConverterTypeJitMasterPasswordRegistrationRequest: FfiConverter
         FfiConverterString.write(value.masterPassword, into: &buf)
         FfiConverterOptionString.write(value.masterPasswordHint, into: &buf)
         FfiConverterBool.write(value.resetPasswordEnroll, into: &buf)
+        FfiConverterOptionBool.write(value.acceptOrganizationInvite, into: &buf)
     }
 }
 
@@ -1621,6 +1641,13 @@ public struct TdeRegistrationRequest: Equatable, Hashable {
      * Whether to trust this device for TDE
      */
     public let trustDevice: Bool
+    /**
+     * Whether the server moves the pending organization membership from Invited to Accepted and
+     * enrolls the user in admin account recovery. Send `false` for open-invite links so the
+     * membership stays Invited for later Admin Console checks. Defaults to `true` when not set.
+     * Only used when the `pm-34429-invite-link-auto-confirm` flag is on.
+     */
+    public let acceptOrganizationInvite: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -1640,12 +1667,19 @@ public struct TdeRegistrationRequest: Equatable, Hashable {
          */deviceIdentifier: String, 
         /**
          * Whether to trust this device for TDE
-         */trustDevice: Bool) {
+         */trustDevice: Bool, 
+        /**
+         * Whether the server moves the pending organization membership from Invited to Accepted and
+         * enrolls the user in admin account recovery. Send `false` for open-invite links so the
+         * membership stays Invited for later Admin Console checks. Defaults to `true` when not set.
+         * Only used when the `pm-34429-invite-link-auto-confirm` flag is on.
+         */acceptOrganizationInvite: Bool? = nil) {
         self.orgId = orgId
         self.orgPublicKey = orgPublicKey
         self.userId = userId
         self.deviceIdentifier = deviceIdentifier
         self.trustDevice = trustDevice
+        self.acceptOrganizationInvite = acceptOrganizationInvite
     }
 
     
@@ -1668,7 +1702,8 @@ public struct FfiConverterTypeTdeRegistrationRequest: FfiConverterRustBuffer {
                 orgPublicKey: FfiConverterTypeB64.read(from: &buf), 
                 userId: FfiConverterTypeUserId.read(from: &buf), 
                 deviceIdentifier: FfiConverterString.read(from: &buf), 
-                trustDevice: FfiConverterBool.read(from: &buf)
+                trustDevice: FfiConverterBool.read(from: &buf), 
+                acceptOrganizationInvite: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
@@ -1678,6 +1713,7 @@ public struct FfiConverterTypeTdeRegistrationRequest: FfiConverterRustBuffer {
         FfiConverterTypeUserId.write(value.userId, into: &buf)
         FfiConverterString.write(value.deviceIdentifier, into: &buf)
         FfiConverterBool.write(value.trustDevice, into: &buf)
+        FfiConverterOptionBool.write(value.acceptOrganizationInvite, into: &buf)
     }
 }
 

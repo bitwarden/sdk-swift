@@ -11413,8 +11413,10 @@ public protocol RegistrationClientProtocol: AnyObject, Sendable {
     /**
      * Initializes a new cryptographic state for a user and posts it to the server; enrolls the
      * user to key connector unlock.
+     *
+     * `accept_organization_invite` defaults to `true` when not set.
      */
-    func postKeysForKeyConnectorRegistration(keyConnectorUrl: String, ssoOrgIdentifier: String) async throws  -> KeyConnectorRegistrationResult
+    func postKeysForKeyConnectorRegistration(keyConnectorUrl: String, ssoOrgIdentifier: String, acceptOrganizationInvite: Bool?) async throws  -> KeyConnectorRegistrationResult
     
     /**
      * Initializes a new cryptographic state for a user and posts it to the server; enrolls in
@@ -11505,13 +11507,15 @@ open func postKeysForJitPasswordRegistration(request: JitMasterPasswordRegistrat
     /**
      * Initializes a new cryptographic state for a user and posts it to the server; enrolls the
      * user to key connector unlock.
+     *
+     * `accept_organization_invite` defaults to `true` when not set.
      */
-open func postKeysForKeyConnectorRegistration(keyConnectorUrl: String, ssoOrgIdentifier: String)async throws  -> KeyConnectorRegistrationResult  {
+open func postKeysForKeyConnectorRegistration(keyConnectorUrl: String, ssoOrgIdentifier: String, acceptOrganizationInvite: Bool? = nil)async throws  -> KeyConnectorRegistrationResult  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_bitwarden_uniffi_fn_method_registrationclient_post_keys_for_key_connector_registration(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(keyConnectorUrl),FfiConverterString.lower(ssoOrgIdentifier)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(keyConnectorUrl),FfiConverterString.lower(ssoOrgIdentifier),FfiConverterOptionBool.lower(acceptOrganizationInvite)
                 )
             },
             pollFunc: ffi_bitwarden_uniffi_rust_future_poll_rust_buffer,
@@ -15081,6 +15085,30 @@ public func FfiConverterTypeUIHint_lower(_ value: UiHint) -> RustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionBool: FfiConverterRustBuffer {
+    typealias SwiftType = Bool?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterBool.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterBool.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -16937,7 +16965,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_jit_password_registration() != 1194) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_key_connector_registration() != 8513) {
+    if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_key_connector_registration() != 1018) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_method_registrationclient_post_keys_for_tde_registration() != 50071) {
