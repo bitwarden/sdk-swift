@@ -7787,6 +7787,101 @@ public func FfiConverterTypeDecryptFileError_lower(_ value: DecryptFileError) ->
 }
 
 
+/**
+ * A cipher list decrypt failed.
+ *
+ * `decrypt_list_with_failures` and `decrypt_list_full_with_failures` report ciphers that fail to
+ * decrypt in their result, so they only return [`DecryptListError::InvalidInput`].
+ */
+public 
+enum DecryptListError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * A cipher failed to decrypt.
+     */
+    case Crypto(message: String)
+    
+    /**
+     * An item of the input list is not valid.
+     */
+    case InvalidInput(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension DecryptListError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDecryptListError: FfiConverterRustBuffer {
+    typealias SwiftType = DecryptListError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DecryptListError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Crypto(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .InvalidInput(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DecryptListError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Crypto(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .InvalidInput(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptListError_lift(_ buf: RustBuffer) throws -> DecryptListError {
+    return try FfiConverterTypeDecryptListError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDecryptListError_lower(_ value: DecryptListError) -> RustBuffer {
+    return FfiConverterTypeDecryptListError.lower(value)
+}
+
+
 public 
 enum DeleteAttachmentAdminError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
