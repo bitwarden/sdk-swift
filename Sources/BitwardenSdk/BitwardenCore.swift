@@ -3585,20 +3585,16 @@ public func FfiConverterTypeAuthRequestResponse_lower(_ value: AuthRequestRespon
  * Basic client behavior settings. These settings specify the various targets and behavior of the
  * Bitwarden Client. They are optional and uneditable once the client is initialized.
  *
- * Defaults to
+ * Set the fields you need and take the rest from [`Default`], so that adding a field doesn't
+ * break callers:
  *
  * ```
- * # use bitwarden_core::{ClientSettings, DeviceType};
+ * # use bitwarden_core::ClientSettings;
  * let settings = ClientSettings {
- * identity_url: "https://identity.bitwarden.com".to_string(),
- * api_url: "https://api.bitwarden.com".to_string(),
- * user_agent: "Bitwarden Rust-SDK".to_string(),
- * device_type: DeviceType::SDK,
- * bitwarden_client_version: None,
- * bitwarden_package_type: None,
- * device_identifier: None,
+ * identity_url: "https://identity.bitwarden.eu".to_string(),
+ * api_url: "https://api.bitwarden.eu".to_string(),
+ * ..Default::default()
  * };
- * let default = ClientSettings::default();
  * ```
  */
 public struct ClientSettings: Equatable, Hashable, Codable {
@@ -3631,6 +3627,11 @@ public struct ClientSettings: Equatable, Hashable, Codable {
      * should be optional later.
      */
     public let bitwardenPackageType: String?
+    /**
+     * Proxy and timeout settings for the SDK's HTTP clients. Not available on WASM, where the
+     * browser or Node fetch backend owns the transport.
+     */
+    public let transport: TransportSettings?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -3656,7 +3657,11 @@ public struct ClientSettings: Equatable, Hashable, Codable {
         /**
          * Bitwarden Package Type to send to Bitwarden. We should evaluate this field to see if it
          * should be optional later.
-         */bitwardenPackageType: String?) {
+         */bitwardenPackageType: String?, 
+        /**
+         * Proxy and timeout settings for the SDK's HTTP clients. Not available on WASM, where the
+         * browser or Node fetch backend owns the transport.
+         */transport: TransportSettings? = nil) {
         self.identityUrl = identityUrl
         self.apiUrl = apiUrl
         self.userAgent = userAgent
@@ -3664,6 +3669,7 @@ public struct ClientSettings: Equatable, Hashable, Codable {
         self.deviceIdentifier = deviceIdentifier
         self.bitwardenClientVersion = bitwardenClientVersion
         self.bitwardenPackageType = bitwardenPackageType
+        self.transport = transport
     }
 
     
@@ -3688,7 +3694,8 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
                 deviceType: FfiConverterTypeDeviceType.read(from: &buf), 
                 deviceIdentifier: FfiConverterOptionString.read(from: &buf), 
                 bitwardenClientVersion: FfiConverterOptionString.read(from: &buf), 
-                bitwardenPackageType: FfiConverterOptionString.read(from: &buf)
+                bitwardenPackageType: FfiConverterOptionString.read(from: &buf), 
+                transport: FfiConverterOptionTypeTransportSettings.read(from: &buf)
         )
     }
 
@@ -3700,6 +3707,7 @@ public struct FfiConverterTypeClientSettings: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.deviceIdentifier, into: &buf)
         FfiConverterOptionString.write(value.bitwardenClientVersion, into: &buf)
         FfiConverterOptionString.write(value.bitwardenPackageType, into: &buf)
+        FfiConverterOptionTypeTransportSettings.write(value.transport, into: &buf)
     }
 }
 
@@ -4605,6 +4613,156 @@ public func FfiConverterTypeOrganizationSharedKey_lower(_ value: OrganizationSha
 }
 
 
+/**
+ * HTTP Basic credentials for a proxy.
+ */
+public struct ProxyCredentials: Equatable, Hashable, Codable {
+    /**
+     * Proxy username.
+     */
+    public let username: String
+    /**
+     * Proxy password.
+     */
+    public let password: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Proxy username.
+         */username: String, 
+        /**
+         * Proxy password.
+         */password: String) {
+        self.username = username
+        self.password = password
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ProxyCredentials: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeProxyCredentials: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ProxyCredentials {
+        return
+            try ProxyCredentials(
+                username: FfiConverterString.read(from: &buf), 
+                password: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ProxyCredentials, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterString.write(value.password, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProxyCredentials_lift(_ buf: RustBuffer) throws -> ProxyCredentials {
+    return try FfiConverterTypeProxyCredentials.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProxyCredentials_lower(_ value: ProxyCredentials) -> RustBuffer {
+    return FfiConverterTypeProxyCredentials.lower(value)
+}
+
+
+/**
+ * An HTTP proxy. HTTPS requests are tunneled through it with `CONNECT`.
+ */
+public struct ProxySettings: Equatable, Hashable, Codable {
+    /**
+     * Proxy URL, for example `http://proxy.example.com:3128`.
+     */
+    public let url: String
+    /**
+     * Credentials sent to the proxy with HTTP Basic authentication.
+     */
+    public let credentials: ProxyCredentials?
+    /**
+     * Comma-separated hosts, domains, and CIDR ranges that bypass the proxy, in the same format
+     * as the `NO_PROXY` environment variable.
+     */
+    public let noProxy: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Proxy URL, for example `http://proxy.example.com:3128`.
+         */url: String, 
+        /**
+         * Credentials sent to the proxy with HTTP Basic authentication.
+         */credentials: ProxyCredentials? = nil, 
+        /**
+         * Comma-separated hosts, domains, and CIDR ranges that bypass the proxy, in the same format
+         * as the `NO_PROXY` environment variable.
+         */noProxy: String? = nil) {
+        self.url = url
+        self.credentials = credentials
+        self.noProxy = noProxy
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ProxySettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeProxySettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ProxySettings {
+        return
+            try ProxySettings(
+                url: FfiConverterString.read(from: &buf), 
+                credentials: FfiConverterOptionTypeProxyCredentials.read(from: &buf), 
+                noProxy: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ProxySettings, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterOptionTypeProxyCredentials.write(value.credentials, into: &buf)
+        FfiConverterOptionString.write(value.noProxy, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProxySettings_lift(_ buf: RustBuffer) throws -> ProxySettings {
+    return try FfiConverterTypeProxySettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProxySettings_lower(_ value: ProxySettings) -> RustBuffer {
+    return FfiConverterTypeProxySettings.lower(value)
+}
+
+
 public struct RegisterKeyResponse: Equatable, Hashable, Codable {
     public let masterPasswordHash: B64
     public let encryptedUserKey: EncString
@@ -4940,6 +5098,158 @@ public func FfiConverterTypeSecurityState_lift(_ buf: RustBuffer) throws -> Secu
 #endif
 public func FfiConverterTypeSecurityState_lower(_ value: SecurityState) -> RustBuffer {
     return FfiConverterTypeSecurityState.lower(value)
+}
+
+
+/**
+ * Request timeout overrides, in milliseconds. Unset fields keep the SDK defaults.
+ */
+public struct TimeoutSettings: Equatable, Hashable, Codable {
+    /**
+     * Maximum time to establish a connection, including the TLS handshake and any proxy tunnel.
+     */
+    public let connectMs: UInt64?
+    /**
+     * Read timeout. Bounds the wait from sending the request to receiving the response headers,
+     * and then each gap between chunks of the response body.
+     */
+    public let readMs: UInt64?
+    /**
+     * Deadline for the whole request, from connecting until the response body is read.
+     */
+    public let requestMs: UInt64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Maximum time to establish a connection, including the TLS handshake and any proxy tunnel.
+         */connectMs: UInt64? = nil, 
+        /**
+         * Read timeout. Bounds the wait from sending the request to receiving the response headers,
+         * and then each gap between chunks of the response body.
+         */readMs: UInt64? = nil, 
+        /**
+         * Deadline for the whole request, from connecting until the response body is read.
+         */requestMs: UInt64? = nil) {
+        self.connectMs = connectMs
+        self.readMs = readMs
+        self.requestMs = requestMs
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TimeoutSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTimeoutSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TimeoutSettings {
+        return
+            try TimeoutSettings(
+                connectMs: FfiConverterOptionUInt64.read(from: &buf), 
+                readMs: FfiConverterOptionUInt64.read(from: &buf), 
+                requestMs: FfiConverterOptionUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TimeoutSettings, into buf: inout [UInt8]) {
+        FfiConverterOptionUInt64.write(value.connectMs, into: &buf)
+        FfiConverterOptionUInt64.write(value.readMs, into: &buf)
+        FfiConverterOptionUInt64.write(value.requestMs, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTimeoutSettings_lift(_ buf: RustBuffer) throws -> TimeoutSettings {
+    return try FfiConverterTypeTimeoutSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTimeoutSettings_lower(_ value: TimeoutSettings) -> RustBuffer {
+    return FfiConverterTypeTimeoutSettings.lower(value)
+}
+
+
+/**
+ * Network transport settings applied to the SDK's HTTP clients.
+ */
+public struct TransportSettings: Equatable, Hashable, Codable {
+    /**
+     * Proxy to route every SDK request through. `None` keeps the default behavior, which honors
+     * the standard proxy environment variables.
+     */
+    public let proxy: ProxySettings?
+    /**
+     * Overrides for the default request timeouts.
+     */
+    public let timeouts: TimeoutSettings?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Proxy to route every SDK request through. `None` keeps the default behavior, which honors
+         * the standard proxy environment variables.
+         */proxy: ProxySettings? = nil, 
+        /**
+         * Overrides for the default request timeouts.
+         */timeouts: TimeoutSettings? = nil) {
+        self.proxy = proxy
+        self.timeouts = timeouts
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TransportSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransportSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransportSettings {
+        return
+            try TransportSettings(
+                proxy: FfiConverterOptionTypeProxySettings.read(from: &buf), 
+                timeouts: FfiConverterOptionTypeTimeoutSettings.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TransportSettings, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeProxySettings.write(value.proxy, into: &buf)
+        FfiConverterOptionTypeTimeoutSettings.write(value.timeouts, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransportSettings_lift(_ buf: RustBuffer) throws -> TransportSettings {
+    return try FfiConverterTypeTransportSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransportSettings_lower(_ value: TransportSettings) -> RustBuffer {
+    return FfiConverterTypeTransportSettings.lower(value)
 }
 
 
@@ -7749,6 +8059,30 @@ fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionUInt64: FfiConverterRustBuffer {
+    typealias SwiftType = UInt64?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt64.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt64.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -7789,6 +8123,102 @@ fileprivate struct FfiConverterOptionTypeMasterPasswordUnlockData: FfiConverterR
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeMasterPasswordUnlockData.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeProxyCredentials: FfiConverterRustBuffer {
+    typealias SwiftType = ProxyCredentials?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeProxyCredentials.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeProxyCredentials.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeProxySettings: FfiConverterRustBuffer {
+    typealias SwiftType = ProxySettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeProxySettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeProxySettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTimeoutSettings: FfiConverterRustBuffer {
+    typealias SwiftType = TimeoutSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTimeoutSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTimeoutSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTransportSettings: FfiConverterRustBuffer {
+    typealias SwiftType = TransportSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTransportSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTransportSettings.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
