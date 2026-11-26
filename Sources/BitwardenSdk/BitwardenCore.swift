@@ -5103,19 +5103,25 @@ public func FfiConverterTypeSecurityState_lower(_ value: SecurityState) -> RustB
 
 /**
  * Request timeout overrides, in milliseconds. Unset fields keep the SDK defaults.
+ *
+ * HTTP/2 pings and TCP keep-alive already close connections to a dead peer. A hung server on
+ * HTTP/1.1 is only detected by `read_ms` or `request_ms`.
  */
 public struct TimeoutSettings: Equatable, Hashable, Codable {
     /**
      * Maximum time to establish a connection, including the TLS handshake and any proxy tunnel.
+     * Defaults to 30 seconds.
      */
     public let connectMs: UInt64?
     /**
-     * Read timeout. Bounds the wait from sending the request to receiving the response headers,
-     * and then each gap between chunks of the response body.
+     * Bounds the wait for the response headers, then each gap between response body chunks. It
+     * also caps the upload time, since it is not reset while the request body uploads. No
+     * default.
      */
     public let readMs: UInt64?
     /**
-     * Deadline for the whole request, from connecting until the response body is read.
+     * Deadline for the whole request, from connecting until the response body is read. No
+     * default.
      */
     public let requestMs: UInt64?
 
@@ -5124,13 +5130,16 @@ public struct TimeoutSettings: Equatable, Hashable, Codable {
     public init(
         /**
          * Maximum time to establish a connection, including the TLS handshake and any proxy tunnel.
+         * Defaults to 30 seconds.
          */connectMs: UInt64? = nil, 
         /**
-         * Read timeout. Bounds the wait from sending the request to receiving the response headers,
-         * and then each gap between chunks of the response body.
+         * Bounds the wait for the response headers, then each gap between response body chunks. It
+         * also caps the upload time, since it is not reset while the request body uploads. No
+         * default.
          */readMs: UInt64? = nil, 
         /**
-         * Deadline for the whole request, from connecting until the response body is read.
+         * Deadline for the whole request, from connecting until the response body is read. No
+         * default.
          */requestMs: UInt64? = nil) {
         self.connectMs = connectMs
         self.readMs = readMs
