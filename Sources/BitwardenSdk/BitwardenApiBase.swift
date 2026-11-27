@@ -460,7 +460,13 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 
 
 // Public interface members begin here.
-
+// Magic number for the Rust proxy to call using the same mechanism as every other method,
+// to free the callback once it's dropped by Rust.
+private let IDX_CALLBACK_FREE: Int32 = 0
+// Callback return codes
+private let UNIFFI_CALLBACK_SUCCESS: Int32 = 0
+private let UNIFFI_CALLBACK_ERROR: Int32 = 1
+private let UNIFFI_CALLBACK_UNEXPECTED_ERROR: Int32 = 2
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -523,6 +529,438 @@ fileprivate struct FfiConverterString: FfiConverter {
         writeBytes(&buf, value.utf8)
     }
 }
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
+
+
+
+/**
+ * Signs TLS handshakes with the private key of a client certificate, which never leaves the
+ * host application.
+ *
+ * Both methods are called synchronously on the caller's thread: `schemes` inside
+ * [`ClientCertificate::new`], and `sign` during the TLS handshake, on the thread that awaits the
+ * networked SDK call. Apps must not await networked SDK calls on the main thread, and
+ * implementations must be thread-safe and must not block on user interaction.
+ */
+public protocol ClientCertSigner: AnyObject, Sendable {
+    
+    /**
+     * Signs `message` with `scheme`, which is always one of the schemes returned by
+     * [`schemes`](Self::schemes).
+     *
+     * `message` is the raw data to sign, not a digest: hash it with the scheme's hash as part of
+     * signing. The result must be an ASN.1 DER `ECDSA-Sig-Value` for ECDSA, an RSASSA-PKCS1-v1_5
+     * signature for the PKCS#1 schemes, and an RSASSA-PSS signature with MGF1 over the same hash
+     * and a salt as long as the digest for the PSS schemes.
+     */
+    func sign(scheme: TlsSigScheme, message: Data) throws  -> Data
+    
+    /**
+     * Every scheme the key can sign with. The SDK calls this once, when the certificate is
+     * configured, and picks its preferred scheme among those the server accepts.
+     */
+    func schemes()  -> [TlsSigScheme]
+    
+}
+/**
+ * Signs TLS handshakes with the private key of a client certificate, which never leaves the
+ * host application.
+ *
+ * Both methods are called synchronously on the caller's thread: `schemes` inside
+ * [`ClientCertificate::new`], and `sign` during the TLS handshake, on the thread that awaits the
+ * networked SDK call. Apps must not await networked SDK calls on the main thread, and
+ * implementations must be thread-safe and must not block on user interaction.
+ */
+open class ClientCertSignerImpl: ClientCertSigner, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_api_base_fn_clone_clientcertsigner(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_api_base_fn_free_clientcertsigner(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Signs `message` with `scheme`, which is always one of the schemes returned by
+     * [`schemes`](Self::schemes).
+     *
+     * `message` is the raw data to sign, not a digest: hash it with the scheme's hash as part of
+     * signing. The result must be an ASN.1 DER `ECDSA-Sig-Value` for ECDSA, an RSASSA-PKCS1-v1_5
+     * signature for the PKCS#1 schemes, and an RSASSA-PSS signature with MGF1 over the same hash
+     * and a salt as long as the digest for the PSS schemes.
+     */
+open func sign(scheme: TlsSigScheme, message: Data)throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeClientCertSignerError_lift) {
+        uniffiCallStatus in
+    uniffi_bitwarden_api_base_fn_method_clientcertsigner_sign(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeTlsSigScheme_lower(scheme),
+        FfiConverterData.lower(message),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Every scheme the key can sign with. The SDK calls this once, when the certificate is
+     * configured, and picks its preferred scheme among those the server accepts.
+     */
+open func schemes() -> [TlsSigScheme]  {
+    return try!  FfiConverterSequenceTypeTlsSigScheme.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_api_base_fn_method_clientcertsigner_schemes(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceClientCertSigner {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceClientCertSigner = UniffiVTableCallbackInterfaceClientCertSigner(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeClientCertSigner.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface ClientCertSigner: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeClientCertSigner.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface ClientCertSigner: handle missing in uniffiClone")
+            }
+        },
+        sign: { (
+            uniffiHandle: UInt64,
+            scheme: RustBuffer,
+            message: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> Data in
+                guard let uniffiObj = try? FfiConverterTypeClientCertSigner.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.sign(
+                     scheme: try FfiConverterTypeTlsSigScheme_lift(scheme),
+                     message: try FfiConverterData.lift(message)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterData.lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeClientCertSignerError_lower
+            )
+        },
+        schemes: { (
+            uniffiHandle: UInt64,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> [TlsSigScheme] in
+                guard let uniffiObj = try? FfiConverterTypeClientCertSigner.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return uniffiObj.schemes(
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterSequenceTypeTlsSigScheme.lower($0) }
+            uniffiTraitInterfaceCall(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceClientCertSigner> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceClientCertSigner>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitClientCertSigner() {
+    uniffi_bitwarden_api_base_fn_init_callback_vtable_clientcertsigner(UniffiCallbackInterfaceClientCertSigner.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeClientCertSigner: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<ClientCertSigner>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = ClientCertSigner
+
+    public static func lift(_ handle: UInt64) throws -> ClientCertSigner {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return ClientCertSignerImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: ClientCertSigner) -> UInt64 {
+         if let rustImpl = value as? ClientCertSignerImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientCertSigner {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ClientCertSigner, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertSigner_lift(_ handle: UInt64) throws -> ClientCertSigner {
+    return try FfiConverterTypeClientCertSigner.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertSigner_lower(_ value: ClientCertSigner) -> UInt64 {
+    return FfiConverterTypeClientCertSigner.lower(value)
+}
+
+
+
+
+
+
+/**
+ * A client certificate chain and the signer for its private key.
+ *
+ * It is presented to every host that requests client authentication on a connection the client
+ * opens. That includes an `https://` proxy and the target of a cross-host redirect, which is
+ * still followed.
+ */
+public protocol ClientCertificateProtocol: AnyObject, Sendable {
+    
+}
+/**
+ * A client certificate chain and the signer for its private key.
+ *
+ * It is presented to every host that requests client authentication on a connection the client
+ * opens. That includes an `https://` proxy and the target of a cross-host redirect, which is
+ * still followed.
+ */
+open class ClientCertificate: ClientCertificateProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_bitwarden_api_base_fn_clone_clientcertificate(self.handle, $0) }
+    }
+    /**
+     * Creates a client certificate from its DER-encoded chain, leaf first, followed by any
+     * intermediates, and the signer for the leaf's private key.
+     */
+public convenience init(chain: [Data], signer: ClientCertSigner) {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_bitwarden_api_base_fn_constructor_clientcertificate_new(
+        FfiConverterSequenceData.lower(chain),
+        FfiConverterTypeClientCertSigner_lower(signer),uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_bitwarden_api_base_fn_free_clientcertificate(handle, $0) }
+    }
+
+    
+
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeClientCertificate: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ClientCertificate
+
+    public static func lift(_ handle: UInt64) throws -> ClientCertificate {
+        return ClientCertificate(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ClientCertificate) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientCertificate {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ClientCertificate, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertificate_lift(_ handle: UInt64) throws -> ClientCertificate {
+    return try FfiConverterTypeClientCertificate.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertificate_lower(_ value: ClientCertificate) -> UInt64 {
+    return FfiConverterTypeClientCertificate.lower(value)
+}
+
+
 
 
 /**
@@ -719,6 +1157,291 @@ public func FfiConverterTypeApiError_lower(_ value: ApiError) -> RustBuffer {
 }
 
 
+/**
+ * Error returned by a [`ClientCertSigner`].
+ */
+public 
+enum ClientCertSignerError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * The platform could not produce the signature.
+     */
+    case SigningFailed(
+        /**
+         * Description of the failure. It reaches the SDK logs, so it must not contain secrets.
+         */reason: String
+    )
+    /**
+     * The foreign implementation raised an error it did not declare.
+     */
+    case Unexpected(
+        /**
+         * Description of the failure.
+         */reason: String
+    )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ClientCertSignerError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeClientCertSignerError: FfiConverterRustBuffer {
+    typealias SwiftType = ClientCertSignerError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ClientCertSignerError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .SigningFailed(
+            reason: try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .Unexpected(
+            reason: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ClientCertSignerError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .SigningFailed(reason):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(reason, into: &buf)
+            
+        
+        case let .Unexpected(reason):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(reason, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertSignerError_lift(_ buf: RustBuffer) throws -> ClientCertSignerError {
+    return try FfiConverterTypeClientCertSignerError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeClientCertSignerError_lower(_ value: ClientCertSignerError) -> RustBuffer {
+    return FfiConverterTypeClientCertSignerError.lower(value)
+}
+
+
+/**
+ * A TLS signature scheme a client certificate key can sign with.
+ */
+
+public enum TlsSigScheme: Equatable, Hashable {
+    
+    /**
+     * RSASSA-PKCS1-v1_5 with SHA-256.
+     */
+    case rsaPkcs1Sha256
+    /**
+     * RSASSA-PKCS1-v1_5 with SHA-384.
+     */
+    case rsaPkcs1Sha384
+    /**
+     * RSASSA-PKCS1-v1_5 with SHA-512.
+     */
+    case rsaPkcs1Sha512
+    /**
+     * RSASSA-PSS with SHA-256, MGF1 with SHA-256, and a 32-byte salt.
+     */
+    case rsaPssSha256
+    /**
+     * RSASSA-PSS with SHA-384, MGF1 with SHA-384, and a 48-byte salt.
+     */
+    case rsaPssSha384
+    /**
+     * RSASSA-PSS with SHA-512, MGF1 with SHA-512, and a 64-byte salt.
+     */
+    case rsaPssSha512
+    /**
+     * ECDSA on P-256 with SHA-256.
+     */
+    case ecdsaP256Sha256
+    /**
+     * ECDSA on P-384 with SHA-384.
+     */
+    case ecdsaP384Sha384
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension TlsSigScheme: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTlsSigScheme: FfiConverterRustBuffer {
+    typealias SwiftType = TlsSigScheme
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TlsSigScheme {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .rsaPkcs1Sha256
+        
+        case 2: return .rsaPkcs1Sha384
+        
+        case 3: return .rsaPkcs1Sha512
+        
+        case 4: return .rsaPssSha256
+        
+        case 5: return .rsaPssSha384
+        
+        case 6: return .rsaPssSha512
+        
+        case 7: return .ecdsaP256Sha256
+        
+        case 8: return .ecdsaP384Sha384
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TlsSigScheme, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .rsaPkcs1Sha256:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .rsaPkcs1Sha384:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .rsaPkcs1Sha512:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .rsaPssSha256:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .rsaPssSha384:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .rsaPssSha512:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .ecdsaP256Sha256:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .ecdsaP384Sha384:
+            writeInt(&buf, Int32(8))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTlsSigScheme_lift(_ buf: RustBuffer) throws -> TlsSigScheme {
+    return try FfiConverterTypeTlsSigScheme.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTlsSigScheme_lower(_ value: TlsSigScheme) -> RustBuffer {
+    return FfiConverterTypeTlsSigScheme.lower(value)
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceData: FfiConverterRustBuffer {
+    typealias SwiftType = [Data]
+
+    public static func write(_ value: [Data], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterData.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Data] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Data]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterData.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTlsSigScheme: FfiConverterRustBuffer {
+    typealias SwiftType = [TlsSigScheme]
+
+    public static func write(_ value: [TlsSigScheme], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTlsSigScheme.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TlsSigScheme] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TlsSigScheme]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTlsSigScheme.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+
 public typealias StatusCode = UInt16
 
 #if swift(>=5.8)
@@ -773,7 +1496,17 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_bitwarden_api_base_checksum_method_clientcertsigner_sign() != 63670) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_api_base_checksum_method_clientcertsigner_schemes() != 29092) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_bitwarden_api_base_checksum_constructor_clientcertificate_new() != 1998) {
+        return InitializationResult.apiChecksumMismatch
+    }
 
+    uniffiCallbackInitClientCertSigner()
     return InitializationResult.ok
 }()
 

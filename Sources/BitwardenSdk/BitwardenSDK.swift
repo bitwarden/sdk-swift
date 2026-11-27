@@ -2927,15 +2927,19 @@ open class Client: ClientProtocol, @unchecked Sendable {
      * Management profile. The client shares its profile, so profiles pushed after construction
      * are visible here. Pass a fresh `ManagedSettingsBindingClient` where the host has no UEM
      * source.
+     *
+     * `client_certificate` is presented when the Bitwarden server requests client authentication
+     * (mTLS).
      */
-public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSettings?, managedSettings: ManagedSettingsBindingClient) {
+public convenience init(tokenProvider: ClientManagedTokens, settings: ClientSettings?, managedSettings: ManagedSettingsBindingClient, clientCertificate: ClientCertificate? = nil) {
     let handle =
         try! rustCall() {
         uniffiCallStatus in
     uniffi_bitwarden_uniffi_fn_constructor_client_new(
         FfiConverterTypeClientManagedTokens_lower(tokenProvider),
         FfiConverterOptionTypeClientSettings.lower(settings),
-        FfiConverterTypeManagedSettingsBindingClient_lower(managedSettings),uniffiCallStatus
+        FfiConverterTypeManagedSettingsBindingClient_lower(managedSettings),
+        FfiConverterOptionTypeClientCertificate.lower(clientCertificate),uniffiCallStatus
     )
 }
     self.init(unsafeFromHandle: handle)
@@ -15157,6 +15161,30 @@ fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeClientCertificate: FfiConverterRustBuffer {
+    typealias SwiftType = ClientCertificate?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeClientCertificate.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeClientCertificate.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeCipherRepository: FfiConverterRustBuffer {
     typealias SwiftType = CipherRepository?
 
@@ -17577,7 +17605,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_bitwarden_uniffi_checksum_method_passwordhistoryclient_encrypt() != 49379) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 3828) {
+    if (uniffi_bitwarden_uniffi_checksum_constructor_client_new() != 53494) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bitwarden_uniffi_checksum_constructor_managedsettingsbindingclient_new() != 23819) {
